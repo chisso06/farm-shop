@@ -3,13 +3,16 @@ const STRIPE_SK_KEY = config.get('STRIPE_SK_KEY');
 // const stripe = require('stripe')(STRIPE_SK_KEY);
 const express = require('express');
 const app = express();
-// app.use(express.static('public'));
 
 // const YOUR_DOMAIN = 'http://localhost:4242';
 
 app.get('/', (req, res) => {
 	res.send('Hello World!');
-})
+});
+
+app.get('/test', (req, res) => {
+	res.json({message: "Hello World!"});
+});
 
 // app.post('/create-checkout-session', async (req, res) => {
 //   const session = await stripe.checkout.sessions.create({

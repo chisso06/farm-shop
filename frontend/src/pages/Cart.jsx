@@ -5,6 +5,9 @@ const Cart = () => {
 	var sum = 0;
 
 	const handleSubmit = () => {
+		fetch('/test')
+			.then((res) => res.json())
+			.then((data) => console.log(data.message));
 		window.confirm("デモサイトのため、決済はできません。");
 	}
 
