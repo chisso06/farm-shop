@@ -26,6 +26,8 @@ const Goods = () => {
 								<img src={p.src} alt='goods' class='aspect-video sm:aspect-square object-cover' ></img>
 							</a>
 						)
+					} else {
+						return (<></>);
 					}
 				})}
 			</div>
