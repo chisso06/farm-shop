@@ -4,19 +4,16 @@ import { cart, products } from '../db';
 const Cart = () => {
 	var sum = 0;
 
-	const handleSubmit = () => {
-		fetch('/test')
-			.then((res) => res.json())
-			.then((data) => console.log(data.message));
-		window.confirm("デモサイトのため、決済はできません。");
-	}
+	// const handleSubmit = async () => {
+	// 	window.confirm("デモサイトのため、決済はできません。");
+	// }
 
 	return (
-		<div class='my-16'>
-			<p class='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
+		<div className='my-16'>
+			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
 				カートに入っている商品
 			</p>
-			<div class='w-3/4 mx-auto'>
+			<div className='w-3/4 mx-auto'>
 				{cart.map((item, i) => {
 					const productList = products.find(({productId}) => productId === item.productId);
 					sum += productList.price * item.number;
@@ -39,12 +36,14 @@ const Cart = () => {
 						</a>
 					);
 				})}
-				<div class='w-60 mx-auto my-10'>
-					<p class='my-10 text-center text-2xl sm:text-3xl font-mono font-bold'>合計：{sum}円</p>
-					<button onClick={handleSubmit} className='w-60 p-2 text-white bg-amber-600 hover:bg-amber-500 rounded'>
+				<form action='/create-checkout-session' method='POST' className='w-60 mx-auto my-10'>
+					<p className='my-10 text-center text-2xl sm:text-3xl font-mono font-bold'>
+						合計：{sum}円
+					</p>
+					<button type='submit' className='w-60 p-2 text-white bg-amber-600 hover:bg-amber-500 rounded'>
 						お支払いにすすむ
 					</button>
-				</div>
+				</form>
 			</div>
 		</div>
 	);
