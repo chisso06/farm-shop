@@ -20,7 +20,9 @@
   "homepage": "https://github.com/chisso06/farm-shop#readme",
   "dependencies": {
     "config": "^3.3.11",
+    "cors": "^2.8.5",
     "express": "^4.19.2",
+    "mysql2": "^3.9.3",
     "stripe": "^14.24.0"
   }
 }

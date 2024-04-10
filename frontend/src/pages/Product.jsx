@@ -1,16 +1,28 @@
+import axios from 'axios';
 import { React, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Toast } from '../components';
-import { products } from '../db';
 
 const Product = () => {
 	const params = useParams();
-	const product = products.find(({productId}) => productId === Number(params.productId));
+	const productId = params.productId;
+	const [product, setProduct] = useState({});
 	const [item, setItem] = useState({
-		productId: product.productId,
+		productId: productId,
 		number: 0,
 	});
 	const [isVisible, setIsVisible] = useState(false);
+
+	useEffect(() => {
+		const getProduct = async () => {
+			await axios.get(`/backend/product/${productId}`)
+			.then((res) => {
+				console.log(res.data);
+				setProduct(res.data);
+			});
+		}
+		getProduct();
+	}, [productId]);
 
 	const handleChange = (e) => {
 		const {name, value} = e.target;
@@ -42,10 +54,13 @@ const Product = () => {
 			</p>
 			<div className='sm:flex gap-4'>
 				<div className='sm:w-2/3'>
-					<img src={product.src} alt='商品画像' className='' />
+					<img
+						src='/images/sample_product.jpg'
+						alt='商品画像'
+						className='w-full aspect-[3/2] object-contain bg-stone-200' />
 					<div className='my-10'>
-						<p className='text-2xl font-bold font-mono'>商品について</p>
-						<p className='whitespace-pre-line'>{product.content}</p>
+						<p className='mb-4 text-2xl font-bold font-mono'>商品について</p>
+						<p className='whitespace-pre-line'>{product.description}</p>
 					</div>
 				</div>
 				<div className='sm:w-1/3'>
