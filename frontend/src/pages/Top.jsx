@@ -1,14 +1,29 @@
-import { React } from 'react';
+import axios from 'axios';
+import { React, useEffect, useState } from 'react';
 import { products } from '../db';
 
 const News = () => {
+	const [news, setNews] = useState([]);
+
+	useEffect(() => {
+		const getNews = async () => {
+			await axios.get('/backend/news')
+			.then((res) => {
+				console.log(res.data);
+				setNews(res.data);
+			});
+		}
+		getNews();
+	}, []);
+
 	return (
 		<div className='my-20 w-3/4 mx-auto'>
 			<p className='mb-20 text-center text-4xl text-black'>お知らせ</p>
-			<ul>
-				<li className='py-5 border-b' >2023年10月1日 MHK『ひだまりTV』に出演します。</li>
-				<li className='py-5 border-b' >2023年9月10日 ひだまりメディアに取材されました。</li>
-				<li className='py-5 border-b' >2023年5月25日 ひだまり新聞にコラムが掲載されました。</li>
+			<ul>{
+				news.map((n, i) => {
+					return (<li key={i} className='py-5 border-b' >{n.date} {n.content}</li>);
+				})
+			}
 			</ul>
 		</div>
 	);
