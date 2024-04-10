@@ -79,6 +79,20 @@ app.get('/product/:id', (req, res) => {
   );
 });
 
+app.get('/news', (req, res) => {
+	connection.query(`
+		SELECT id, DATE_FORMAT(date, '%Y年%m月%d日') AS date, content
+		FROM news ORDER BY date desc`,
+	(err, results, fields) => {
+		if (err) {
+			console.log('connection error');
+			throw err;
+		}
+		console.log(results);
+		res.json(results);
+	});
+});
+
 app.post('/order-process', async (req, res, next) => {
 	const data = req.body;
 	console.log("[backend]order-process");
