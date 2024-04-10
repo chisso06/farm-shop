@@ -12,14 +12,16 @@ const OrderProcessing = () => {
 		const process = async () => {
 			console.log("OrderProcessingPage");
 			console.log("checkout_session_id: " + checkout_session_id);
-			await axios.post('/order-process', {checkout_session_id: checkout_session_id})
+			await axios.post('/backend/order-process', {checkout_session_id: checkout_session_id})
 			.then((res) => res.data)
 			.then((data) => {
-				navigate(`/order-completed?order_id=${data.order_id}`);
-			}).catch((err) => {
-				console.log(err);
-				navigate('/cart');
-			})
+				console.log(data.status);
+				if (data.status === 'complete') {
+					navigate(`/order-completed?order_id=${data.order_id}`);
+				} else {
+					navigate('/cart');
+				}
+			});
 		}
 		process();
 	}, [navigate, checkout_session_id]);
