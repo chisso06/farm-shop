@@ -7,6 +7,7 @@ const Product = () => {
 	const params = useParams();
 	const productId = params.productId;
 	const [product, setProduct] = useState({});
+	const [images, setImages] = useState([]);
 	const [item, setItem] = useState({
 		productId: productId,
 		number: 0,
@@ -15,13 +16,21 @@ const Product = () => {
 
 	useEffect(() => {
 		const getProduct = async () => {
-			await axios.get(`/backend/product/${productId}`)
+			await axios.get(`/backend/products/${productId}`)
 			.then((res) => {
-				console.log(res.data);
+				console.log('product:', res.data);
 				setProduct(res.data);
 			});
 		}
+		const getImages = async () => {
+			await axios.get(`/backend/products/${productId}/images`)
+			.then((res) => {
+				console.log('images:', res.data);
+				setImages(res.data);
+			})
+		}
 		getProduct();
+		getImages();
 	}, [productId]);
 
 	const handleChange = (e) => {
@@ -55,7 +64,7 @@ const Product = () => {
 			<div className='sm:flex gap-4'>
 				<div className='sm:w-2/3'>
 					<img
-						src='/images/sample_product.jpg'
+						src={images[0] ? '/products/' + images[0].id + '.jpg' : ''}
 						alt='商品画像'
 						className='w-full aspect-[3/2] object-contain bg-stone-200' />
 					<div className='my-10'>
