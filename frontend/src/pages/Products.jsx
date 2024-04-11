@@ -6,7 +6,7 @@ const Products = () => {
 
 	useEffect(() => {
 		const getProducts = async () => {
-			await axios.get('/backend/products?col=id,name')
+			await axios.get('/backend/products')
 			.then((res) => {
 				console.log(res.data);
 				setProducts(res.data);
@@ -23,7 +23,7 @@ const Products = () => {
 					return (
 						<li key={i} className='bg-stone-200 hover:opacity-60'>
 							<a href={'/products/' + p.id} className='aspect-square' >
-								<img src='/images/sample_product.jpg' alt='goods' className='aspect-video object-cover' />
+								<img src={'/products/' + p.image_id +'.jpg'} alt='goods' className='aspect-video object-cover' />
 								<p className='p-2 text-sm font-mono' >{p.name}</p>
 							</a>
 						</li>

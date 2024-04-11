@@ -45,12 +45,14 @@ app.get('/test', (req, res) => {
 });
 
 app.get('/products', (req, res) => {
-	console.log('[backend] products');
-
 	const sql_prompt = `
-		SELECT ${req.query.col ? req.query.col : '*'}
+		SELECT products.*, images.id AS image_id
 		FROM products
-		${req.query.condition ? `WHERE ${req.query.condition}` : ''}
+		INNER JOIN images ON products.id=product_id
+		WHERE
+			${req.query.category ? `category=${req.query.category} AND` : ''}
+			${req.query.popular_status ? `popular_status=${req.query.popular_status} AND`: ''}
+			order_of_images=1
 		`;
 
   connection.query(
@@ -66,7 +68,7 @@ app.get('/products', (req, res) => {
   );
 });
 
-app.get('/product/:id', (req, res) => {
+app.get('/products/:id', (req, res) => {
   connection.query(
     `SELECT * FROM products WHERE id=${req.params.id}`,
 		(err, results, fields) => {
@@ -74,9 +76,42 @@ app.get('/product/:id', (req, res) => {
 				console.log('connection error');
 				throw err;
 			}
+			console.log(results[0]);
 			res.json(results[0]);
 		}
   );
+});
+
+app.get('/products/:id/images', (req, res) => {
+	const sql_prompt = `
+		SELECT * FROM images WHERE product_id=${req.params.id} ORDER BY order_of_images
+	`;
+
+  connection.query(
+		sql_prompt,
+    (err, results, fields) => {
+      if (err) {
+        console.log('connection error');
+        throw err;
+      }
+			console.log(results);
+			res.json(results);
+    }
+  );
+});
+
+app.get('/news', (req, res) => {
+	connection.query(`
+		SELECT id, DATE_FORMAT(date, '%Y年%m月%d日') AS date, content
+		FROM news ORDER BY date desc`,
+	(err, results, fields) => {
+		if (err) {
+			console.log('connection error');
+			throw err;
+		}
+		console.log(results);
+		res.json(results);
+	});
 });
 
 app.post('/order-process', async (req, res, next) => {

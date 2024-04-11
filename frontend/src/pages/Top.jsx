@@ -1,34 +1,57 @@
-import { React } from 'react';
-import { products } from '../db';
+import axios from 'axios';
+import { React, useEffect, useState } from 'react';
 
 const News = () => {
+	const [news, setNews] = useState([]);
+
+	useEffect(() => {
+		const getNews = async () => {
+			await axios.get('/backend/news')
+			.then((res) => {
+				console.log(res.data);
+				setNews(res.data);
+			});
+		}
+		getNews();
+	}, []);
+
 	return (
 		<div className='my-20 w-3/4 mx-auto'>
 			<p className='mb-20 text-center text-4xl text-black'>お知らせ</p>
-			<ul>
-				<li className='py-5 border-b' >2023年10月1日 MHK『ひだまりTV』に出演します。</li>
-				<li className='py-5 border-b' >2023年9月10日 ひだまりメディアに取材されました。</li>
-				<li className='py-5 border-b' >2023年5月25日 ひだまり新聞にコラムが掲載されました。</li>
+			<ul>{
+				news.map((n, i) => {
+					return (<li key={i} className='py-5 border-b' >{n.date} {n.content}</li>);
+				})
+			}
 			</ul>
 		</div>
 	);
 };
 
-const Goods = () => {
+const PopularItems = () => {
+	const [products, setProducts] = useState([]);
+
+	useEffect(() => {
+		const getProducts = async () => {
+			await axios.get('/backend/products?popular_status=1')
+			.then((res) => {
+				console.log(res.data);
+				setProducts(res.data);
+			});
+		}
+		getProducts();
+	}, []);
+
 	return (
 		<div className='my-20 w-3/4 mx-auto'>
 			<p className='mb-20 text-center text-4xl text-black'>人気商品</p>
 			<div className='grid md:grid-cols-3 gap-5' >
 				{products.map((p, i) => {
-					if (p.popular) {
-						return (
-							<a href={'/products/' + p.productId} className='bg-black hover:opacity-60' >
-								<img src={p.src} alt='goods' className='aspect-video sm:aspect-square object-cover' ></img>
-							</a>
-						)
-					} else {
-						return (<></>);
-					}
+					return (
+						<a href={'/products/' + p.id} className='bg-black hover:opacity-60' >
+							<img src={'/products/' + p.image_id +'.jpg'} alt='goods' className='aspect-video sm:aspect-square object-cover' ></img>
+						</a>
+					)
 				})}
 			</div>
 		</div>
@@ -40,7 +63,7 @@ const Top = () => {
 		<div>
 			<img src='images/top.png' alt='top' className='w-full' ></img>
 			<News />
-			<Goods />
+			<PopularItems />
 		</div>
 	);
 };
