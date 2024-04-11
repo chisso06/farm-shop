@@ -8,7 +8,7 @@ const Cart = () => {
 
 	useEffect(() => {
 		const getProducts = async () => {
-			await axios.get('/backend/products?col=id,name,price')
+			await axios.get('/backend/products')
 			.then((res) => {
 				console.log(res.data);
 				setProducts(res.data);
@@ -23,21 +23,22 @@ const Cart = () => {
 				カートに入っている商品
 			</p>
 			<div className='w-3/4 mx-auto'>
-				{ products.length ? cart.map((item, i) => {
-					sum += products[i].price * item.number;
+				{ products.length ? cart.map((c, i) => {
+					const p = products[i];
+					sum += p.price * c.number;
 					return (
-						<a href={'/products/' + item.productId} key={i} className='w- py-4 flex border-b items-center'>
+						<a href={'/products/' + p.id} key={i} className='w- py-4 flex border-b items-center'>
 							<img
-								src='/images/sample_product.jpg'
+								src={'/products/' + p.image_id + '.jpg'}
 								alt='商品画像'
 								className='w-16 sm:w-32 aspect-square object-cover' />
 							<div className='w-full sm:flex pl-4 font-mono items-center'>
-								<p className='h-full sm:w-3/4'>{products[i].name}</p>
+								<p className='h-full sm:w-3/4'>{p.name}</p>
 								<div className='h-full sm:w-1/4 flex'>
 									<p className='h-full text-xl font-bold'>
-										¥{products[i].price}
+										¥{p.price}
 										<span className='text-stone-400 font-normal text-base'>/個</span>
-										<span className='h-full text-base font-normal items-center text-center'> ×{item.number}</span>
+										<span className='h-full text-base font-normal items-center text-center'> ×{c.number}</span>
 									</p>
 									</div>
 							</div>
