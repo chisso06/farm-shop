@@ -46,9 +46,10 @@ const Cart = () => {
 					);
 				}) : <div />}
 				<form action='/backend/create-checkout-session' method='POST' className='w-60 mx-auto my-10'>
-					<p className='my-10 text-center text-2xl sm:text-3xl font-mono font-bold'>
+					<p className='mt-10 text-center text-2xl sm:text-3xl font-mono font-bold'>
 						合計：{sum}円
 					</p>
+					<p className='pt-4 mb-8 text-center text-sm text-stone-600'>※送料は購入手続き時に計算されます</p>
 					<button type='submit' className='w-60 p-2 text-white bg-amber-600 hover:bg-amber-500 rounded'>
 						お支払いにすすむ
 					</button>
