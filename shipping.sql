@@ -2,7 +2,7 @@ USE farm_shop;
 
 CREATE TABLE shipping_methods (
 	id INT PRIMARY KEY AUTO_INCREMENT,
-	name VARCHAR(10) NOT NULL
+	name VARCHAR(10) NOT NULL UNIQUE
 );
 
 CREATE TABLE shipping_fees (
