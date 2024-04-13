@@ -62,7 +62,6 @@ app.get('/products', (req, res) => {
         console.log('connection error');
         throw err;
       }
-			console.log(results);
 			res.json(results);
     }
   );
@@ -76,7 +75,6 @@ app.get('/products/:id', (req, res) => {
 				console.log('connection error');
 				throw err;
 			}
-			console.log(results[0]);
 			res.json(results[0]);
 		}
   );
@@ -94,7 +92,6 @@ app.get('/products/:id/images', (req, res) => {
         console.log('connection error');
         throw err;
       }
-			console.log(results);
 			res.json(results);
     }
   );
@@ -109,7 +106,27 @@ app.get('/news', (req, res) => {
 			console.log('connection error');
 			throw err;
 		}
-		console.log(results);
+		res.json(results);
+	});
+});
+
+app.get('/shipping/:id', (req, res) => {
+	connection.query(`
+		SELECT
+			method_id,
+			name,
+			size,
+			min_n, max_n,
+			Hokkaido, Tohoku, Kanto, Sinetsu, Hokuriku, Tokai, Kinki, Chugoku, Shikoku, Kyusyu, Okinawa
+		FROM shipping_methods
+		INNER JOIN shipping_fees ON shipping_methods.id=shipping_fees.method_id
+		WHERE method_id=${req.params.id}
+		ORDER BY method_id, size`,
+	(err, results, fields) => {
+		if (err) {
+			console.log('connection error');
+			throw err;
+		}
 		res.json(results);
 	});
 });
