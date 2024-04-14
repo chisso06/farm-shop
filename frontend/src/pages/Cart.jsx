@@ -1,29 +1,11 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import axios from 'axios';
 import { React, useEffect, useState } from 'react';
+import { CreateCart } from '../functions';
 
 const Cart = () => {
 	var sum = 0;
   const [cart, setCart] = useState([]);
-
-  const CreateCart = async (cartStorage) => {
-		if (cartStorage) {
-			const cartList = await Promise.all(cartStorage.map(async (c) => {
-				const res = await axios.get(`/backend/products/${c.product_id}`)
-					.catch((err) => console(err));
-				const item = {
-					product_id: c.product_id,
-					number: c.number,
-					name: res.data.name,
-					price: res.data.price,
-					image_id: 1
-				};
-				return item;
-			}));
-			setCart(cartList);
-		}
-  }
 
 	const handleChange = (e, i) => {
 		var value = Number(e.target.value);
@@ -33,7 +15,7 @@ const Cart = () => {
 			value = 0;
 		cartStorage[i].number = value;
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
-		CreateCart(cartStorage);
+		CreateCart(setCart);
 	}
 
 	const handleTrash = (i) => {
@@ -41,13 +23,11 @@ const Cart = () => {
 
 		cartStorage.splice(i, 1);
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
-		CreateCart(cartStorage);
+		CreateCart(setCart);
 	}
 
 	useEffect(() => {
-		const cartStorage = JSON.parse(localStorage.getItem('cart'));
-
-		CreateCart(cartStorage);
+		CreateCart(setCart);
 	}, []);
 
 	return (
@@ -95,15 +75,15 @@ const Cart = () => {
 							</div>
 						);
 					})}
-					<form action='/backend/create-checkout-session' method='POST' className='w-60 mx-auto my-10'>
+					<div className='w-60 mx-auto my-10'>
 						<p className='mt-10 text-center text-2xl sm:text-3xl font-mono font-bold'>
-							合計：{sum}円
+							小計：{sum}円
 						</p>
 						<p className='pt-4 mb-8 text-center text-sm text-stone-600'>※送料は購入手続き時に計算されます</p>
-						<button type='submit' className='w-60 p-2 text-white bg-amber-600 hover:bg-amber-500 rounded'>
+						<a href='/order-form' className='w-60 p-2 inline-block text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
 							お支払いにすすむ
-						</button>
-					</form>
+						</a>
+					</div>
 				</div>
 				: <p className='my-48 text-center'>現在、カートに入っている商品はありません。</p>
 			}

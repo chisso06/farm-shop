@@ -11,6 +11,7 @@ import {
   Cart,
   FAQ,
   OrderCompleted,
+  OrderForm,
   OrderProcessing,
   Product,
   Products,
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
   { path: '/products/:product_id', element: <Product /> },
   { path: '/cart', element: <Cart /> },
   { path: '/faq', element: <FAQ /> },
+  { path: '/order-form', element: <OrderForm />},
   { path: '/order-completed', element: <OrderCompleted />},
   { path: '/order-processing', element: <OrderProcessing />}
 ]);

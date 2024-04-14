@@ -121,7 +121,7 @@ app.get('/shipping/:id', (req, res) => {
 		FROM shipping_methods
 		INNER JOIN shipping_fees ON shipping_methods.id=shipping_fees.method_id
 		WHERE method_id=${req.params.id}
-		ORDER BY method_id, size`,
+		ORDER BY min_n`,
 	(err, results, fields) => {
 		if (err) {
 			console.log('connection error');
@@ -151,15 +151,11 @@ app.post('/order-process', async (req, res, next) => {
 });
 
 app.post('/create-checkout-session', async (req, res) => {
+	console.log(req.body);
 	const price = 6000; // フロントからcookieを受け取り、カートのデータベースから金額を取得する
+	/*
 	const session = await stripe.checkout.sessions.create({
 		billing_address_collection: 'required',
-		shipping_address_collection: {
-			allowed_countries: ['JP'],
-		},
-		phone_number_collection: {
-			enabled: true,
-		},
 		line_items: [
 			{
 				price_data: {
@@ -176,7 +172,9 @@ app.post('/create-checkout-session', async (req, res) => {
 		success_url: `${FRONTEND_ORIGIN}/order-processing?checkout_session_id={CHECKOUT_SESSION_ID}`,
 		cancel_url: `${FRONTEND_ORIGIN}/order-processing?checkout_session_id={CHECKOUT_SESSION_ID}`,
 	});
-	res.redirect(303, `${session.url}`);
+	*/
+	res.json({status: 'success', order_id: '0123456789'});
+	// res.redirect(303, `${session.url}`);
 });
 
 app.all("*", (req, res) => {

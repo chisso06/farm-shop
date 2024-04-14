@@ -12,7 +12,7 @@ const OrderProcessing = () => {
 		const process = async () => {
 			console.log("OrderProcessingPage");
 			console.log("checkout_session_id: " + checkout_session_id);
-			await axios.post('/backend/order-process', {checkout_session_id: checkout_session_id})
+			await axios.post('/backend/order-process', {checkout_session_id})
 			.then((res) => res.data)
 			.then((data) => {
 				console.log(data.status);
