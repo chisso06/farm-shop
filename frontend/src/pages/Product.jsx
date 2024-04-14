@@ -77,9 +77,9 @@ const Product = () => {
 			localStorage.setItem('cart', JSON.stringify([]));
 	}, [])
 
-	const Modal = () => {
+	const ShippingModal = () => {
 		const areaList = [
-			{method_name: 'Hokkaido', name: '北海道', prefectures: ''},
+			{method_name: 'Hokkaido', name: '北海道', prefectures: '北海道'},
 			{method_name: 'Hokkaido', name: '東北', prefectures: '青森県, 岩手県, 宮城県, 秋田県, 山形県, 福島県'},
 			{method_name: 'Hokkaido', name: '関東', prefectures: '茨城県, 栃木県, 群馬県, 埼玉県, 千葉県, 東京都, 神奈川県, 山梨県'},
 			{method_name: 'Hokkaido', name: '信越', prefectures: '新潟県, 長野県'},
@@ -89,7 +89,7 @@ const Product = () => {
 			{method_name: 'Hokkaido', name: '中国', prefectures: '鳥取県, 島根県, 岡山県, 広島県, 山口県'},
 			{method_name: 'Hokkaido', name: '四国', prefectures: '徳島県, 香川県, 愛媛県, 高知県'},
 			{method_name: 'Hokkaido', name: '九州', prefectures: '福岡県, 佐賀県, 長崎県, 熊本県, 大分県, 宮崎県, 鹿児島県'},
-			{method_name: 'Hokkaido', name: '沖縄', prefectures: ''},
+			{method_name: 'Hokkaido', name: '沖縄', prefectures: '沖縄県'},
 		];
 		if (shippingMethod.length) {
 			return (
@@ -135,7 +135,7 @@ const Product = () => {
 
 	return (
 		<div className='w-3/4 my-16 mx-auto'>
-			<Modal />
+			<ShippingModal />
 			<Toast isVisible={isVisible} setIsVisible={setIsVisible} />
 			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
 				{product.name}
