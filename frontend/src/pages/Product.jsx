@@ -5,15 +5,40 @@ import { Toast } from '../components';
 
 const Product = () => {
 	const params = useParams();
-	const productId = params.productId;
+	const productId = Number(params.product_id);
 	const [product, setProduct] = useState({});
 	const [images, setImages] = useState([]);
 	const [shippingMethod, setShippingMethod] = useState([]);
 	const [item, setItem] = useState({
-		productId: productId,
+		product_id: productId,
 		number: 0,
 	});
 	const [isVisible, setIsVisible] = useState(false);
+
+	const handleChange = (e) => {
+		const {name, value} = e.target;
+		setItem({...item, [name]: Number(value) });
+		if (Number(value) > 0) {
+			document.getElementById("button").removeAttribute("disabled");
+			document.getElementById("button").className = 'w-full p-2 mt-6 text-white bg-amber-600 hover:bg-amber-500 rounded';
+		} else if (document.getElementById("button").disabled === false) {
+			document.getElementById("button").setAttribute("disabled", true);
+			document.getElementById("button").className = 'w-full p-2 mt-6 text-white bg-stone-400 rounded';
+		}
+	};
+
+	const handleSubmit = async (e) => {
+		const cart = JSON.parse(localStorage.getItem('cart'));
+		const i = cart.findIndex(({product_id}) => product_id === item.product_id);
+
+		if (i < 0)
+			cart.push(item);
+		else
+			cart[i].number += item.number
+		localStorage.setItem('cart', JSON.stringify(cart));
+		console.log(cart);
+		setIsVisible(true);
+	};
 
 	useEffect(() => {
 		const getProduct = async () => {
@@ -46,26 +71,10 @@ const Product = () => {
 			getShippingMethod();
 	}, [product]);
 
-	const handleChange = (e) => {
-		const {name, value} = e.target;
-		setItem({...item, [name]: Number(value) });
-		if (Number(value) > 0) {
-			document.getElementById("button").removeAttribute("disabled");
-			document.getElementById("button").className = 'w-full p-2 mt-6 text-white bg-amber-600 hover:bg-amber-500 rounded';
-		} else if (document.getElementById("button").disabled === false) {
-			document.getElementById("button").setAttribute("disabled", true);
-			document.getElementById("button").className = 'w-full p-2 mt-6 text-white bg-stone-400 rounded';
-		}
-	};
-
-	const handleSubmit = async (e) => {
-		console.log("handleSubmit");
-		setIsVisible(true);
-		window.confirm("デモサイトのため、カートに追加できません。");
-	};
-
 	useEffect(() => {
 		document.getElementById("button").setAttribute("disabled", true);
+		if (!localStorage.getItem('cart'))
+			localStorage.setItem('cart', JSON.stringify([]));
 	}, [])
 
 	const Modal = () => {
@@ -87,7 +96,6 @@ const Product = () => {
 				<dialog id="modal" className="modal modal-bottom sm:modal-middle p-4 rounded-md">
 					<div className="modal-box">
 						<form method="dialog">
-							{/* if there is a button in form, it will close the modal */}
 							<button className="btn btn-sm btn-ghost absolute right-4 top-4">✕</button>
 						</form>
 						<h3 className="font-bold text-lg">送料・配送方法について</h3>

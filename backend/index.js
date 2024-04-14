@@ -181,7 +181,7 @@ app.post('/create-checkout-session', async (req, res) => {
 
 app.all("*", (req, res) => {
 	console.log('[backend]404 ');
-  res.send("404!")
+  res.send("404!");
 })
 
 app.listen(4242, () => console.log('Running on port 4242'));
