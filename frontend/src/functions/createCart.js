@@ -13,7 +13,7 @@ const createCart = async (setCart) => {
 				price: res.data.price,
 				shipping_method: res.data.shipping_method,
 				stock: res.data.stock,
-				image_id: 1
+				image_id: res.data.image_id
 			};
 			if (res.data.stock < item.number) {
 				item.number = res.data.stock;

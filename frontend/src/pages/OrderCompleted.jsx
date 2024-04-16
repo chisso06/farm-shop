@@ -1,5 +1,6 @@
+import axios from 'axios';
 import { React, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { PopularItems } from '../components';
 import { updateCartStorage } from '../functions';
 
@@ -7,10 +8,19 @@ const OrderCompleted = () => {
 	const search = useLocation().search;
 	const query = new URLSearchParams(search);
 	const orderId = query.get('order_id');
+	const navigate = useNavigate();
 
 	useEffect(() => {
-		var order_id = localStorage.getItem('order_id');
+		const orderCheck = async () => {
+			const res = await axios.get(`/backend/orders/${orderId}`)
+				.catch((err) => console.log(err));
+			console.log(res.data)
+			if (res.data.status === 'pending-payment')
+				navigate('/');
+		}
+		orderCheck();
 
+		const order_id = localStorage.getItem('order_id');
 		if (order_id === orderId) {
 			updateCartStorage([]);
 		}
