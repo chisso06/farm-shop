@@ -74,7 +74,10 @@ app.get('/products', (req, res) => {
 
 app.get('/products/:id', (req, res) => {
   connection.query(
-    `SELECT * FROM products WHERE id=${req.params.id}`,
+    `SELECT products.*, images.id AS image_id
+		FROM products
+		INNER JOIN images ON products.id=images.product_id
+		WHERE products.id=${req.params.id} AND images.order_of_images=1`,
 		(err, results, fields) => {
 			if (err) {
 				console.log('connection error');
@@ -136,23 +139,17 @@ app.get('/shipping/:id', (req, res) => {
 	});
 });
 
-app.post('/order-process', async (req, res, next) => {
-	const data = req.body;
-	console.log("[backend]order-process");
-	console.log("checkout_session_id: " + data.checkout_session_id);
-	const session = await stripe.checkout.sessions.retrieve(data.checkout_session_id);
-	console.log(session.status);
-	if (session.status === 'complete') {
-    console.log("[checkout completed]");
-		// カートを削除
-		// 注文番号を発行
-		// データベースに保存
-		// メール送信
-		return res.json({status: session.status, order_id: '0000000000'});
-	} else {
-    console.log("[checkout canceled]");
-    return res.json({status: session.status});
-  }
+app.get('/orders/:id', (req, res) => {
+  connection.query(
+    `SELECT * FROM orders WHERE id='${req.params.id}'`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json(results[0]);
+		}
+  );
 });
 
 app.post('/create-checkout-session', async (req, res) => {
@@ -208,7 +205,7 @@ app.post('/create-checkout-session', async (req, res) => {
 	// 在庫確認
 	var stock_status = 1;
 	await Promise.all(cart.map(async (item, i) => {
-		// 在庫確認・更新
+		// 在庫確認
 		if (stock_status) {
 			await connectionPromise.beginTransaction();
 			const [stock_results] = await connectionPromise.query(
@@ -229,17 +226,6 @@ app.post('/create-checkout-session', async (req, res) => {
 
 	// line_itemsの作成、shippingMethods(配送方法の種類と数)の作成、合計額の計算
 	await Promise.all(cart.map(async (item, i) => {
-		// 在庫更新
-		connection.query(`
-			UPDATE products SET stock=${item.stock - item.number} WHERE id=${item.product_id}`,
-			(err, results, fields) => {
-				if (err) {
-					console.log('connection error');
-					throw err;
-				}
-			}
-		);
-
 		// line_item
 		await connectionPromise.beginTransaction();
 		const [results] = await connectionPromise.query(
@@ -324,6 +310,19 @@ app.post('/create-checkout-session', async (req, res) => {
 		throw (err);
 	});
 
+	await Promise.all(cart.map(async (item, i) => {
+		// 在庫更新
+		connection.query(`
+			UPDATE products SET stock=${item.stock - item.number} WHERE id=${item.product_id}`,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+			}
+		);
+	}));
+
 	// order database
 	var sql_prompt = `
 		INSERT INTO orders (
@@ -365,6 +364,75 @@ app.post('/create-checkout-session', async (req, res) => {
 			});
 	})
 	res.redirect(303, session.url);
+});
+
+app.post('/stripe-webhook', async (req, res) => {
+  const event = req.body;
+	const client_reference_id = event.data.object.client_reference_id;
+	const connectionPromise = await mysqlPromise.createConnection({
+		host: 'localhost',
+		user: 'miyu',
+		password: '',
+		database: 'farm_shop',
+		// namedPlaceholders: true
+	});
+
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+			connection.query(`
+				UPDATE orders SET status='pending_shipping' WHERE id='${client_reference_id}'`,
+				(err, results, fields) => {
+					if (err) {
+						console.log('connection error');
+						throw err;
+					}
+				}
+			);
+      break;
+    case 'checkout.session.expired':
+			const [results] = await connectionPromise.query(`
+			SELECT * FROM orders WHERE id='${client_reference_id}'`)
+			.catch((err) => {
+				console.log('connection error');
+				throw err;
+			});
+			if (!results.length)
+				return res.json({received: true});
+
+			// 在庫を戻す
+			const [ordered_products] = await connectionPromise.query(`
+				SELECT * FROM ordered_products WHERE order_id='${client_reference_id}'`)
+			.catch((err) => {
+				console.log('connection error');
+				throw err;
+			});
+			ordered_products.map((item) => {
+				connection.query(`
+					UPDATE products
+					SET stock=products.stock+${item.number}
+					WHERE id=${item.product_id}`,
+					(err, results, fields) => {
+						if (err) {
+							console.log('connection error');
+							throw err;
+						}
+					}
+				);
+			});
+			// レコード削除
+			connection.query(`
+			DELETE FROM orders WHERE id='${client_reference_id}'`,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+			});
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+  res.json({received: true});
 });
 
 app.all("*", (req, res) => {
