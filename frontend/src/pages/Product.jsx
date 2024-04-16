@@ -2,6 +2,7 @@ import axios from 'axios';
 import { React, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Toast } from '../components';
+import { updateCartStorage } from '../functions';
 
 const Product = () => {
 	const params = useParams();
@@ -31,13 +32,17 @@ const Product = () => {
 		const cart = JSON.parse(localStorage.getItem('cart'));
 		const i = cart.findIndex(({product_id}) => product_id === item.product_id);
 
-		if (i < 0)
-			cart.push(item);
-		else
-			cart[i].number += item.number
-		localStorage.setItem('cart', JSON.stringify(cart));
-		console.log(cart);
-		setIsVisible(true);
+		if ((i < 0 && product.stock < item.number)
+			|| (i >= 0 && product.stock < cart[i].number + item.number))
+			window.confirm('在庫数を超えています。');
+		else {
+			if (i < 0)
+				cart.push(item);
+			else
+				cart[i].number += item.number;
+			updateCartStorage(cart);
+			setIsVisible(true);
+		}
 	};
 
 	useEffect(() => {
@@ -74,7 +79,7 @@ const Product = () => {
 	useEffect(() => {
 		document.getElementById("button").setAttribute("disabled", true);
 		if (!localStorage.getItem('cart'))
-			localStorage.setItem('cart', JSON.stringify([]));
+			updateCartStorage([])
 	}, [])
 
 	const ShippingModal = () => {
@@ -136,7 +141,10 @@ const Product = () => {
 	return (
 		<div className='w-3/4 my-16 mx-auto'>
 			<ShippingModal />
-			<Toast isVisible={isVisible} setIsVisible={setIsVisible} />
+			<Toast
+				isVisible={isVisible}
+				setIsVisible={setIsVisible}
+				message={'商品をカートに追加しました'} />
 			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
 				{product.name}
 			</p>
@@ -162,9 +170,18 @@ const Product = () => {
 						</button>
 						<div className='pt-10 flex items-center'>
 							<p className='pr-4'>数量</p>
-							<input name='number' onChange={handleChange} type='number' min='0' className='w-20 p-2 border rounded'></input>
+							<input
+								name='number'
+								onChange={handleChange}
+								type='number'
+								min='0'
+								max={product.stock}
+								className='w-20 p-2 border rounded' />
 						</div>
-						<button onClick={handleSubmit} id='button' className='w-full p-2 mt-6 text-white bg-stone-400 rounded'>
+						<button
+							onClick={handleSubmit}
+							id='button'
+							className='w-full p-2 mt-6 text-white bg-stone-400 rounded'>
 							カートに入れる
 						</button>
 					</div>

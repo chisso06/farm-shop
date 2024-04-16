@@ -18,6 +18,12 @@ import {
   Top
 } from './pages';
 
+window.onpageshow = function(event) {
+	if (event.persisted) {
+		 window.location.reload();
+	}
+};
+
 const router = createBrowserRouter([
   { path: '/', element: <Top /> },
   { path: '/about', element: <About /> },

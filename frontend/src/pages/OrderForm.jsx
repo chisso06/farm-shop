@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { React, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreateCart } from '../functions';
+import { Toast } from '../components';
+import { createCart } from '../functions';
 
 const OrderForm = () => {
+	const [orderId, setOrderId] = useState('');
 	const [sum, setSum] = useState(0);
 	const [shippingMethods, setShippingMethods] = useState([]);
 	const [shippingFee, setShippingFee] = useState(0);
@@ -15,21 +17,13 @@ const OrderForm = () => {
 		zipCode: '',
 		prefecture: '',
 		address: '',
-    memo: ''
+		memo: ''
 	});
-	// const [customerData, setCustomerData] = useState({
-	// 	email: 'tkgth0725@gmail.com',
-	// 	phone: '09032824468',
-	// 	name: '鈴木美優',
-	// 	zipCode: '6310003',
-	// 	prefecture: '奈良県',
-	// 	address: '奈良市中登美ヶ丘4-1-2-103',
-  //   memo: '特になし'
-	// });
+	const [isVisible, setIsVisible] = useState(false);
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
-		setCustomerData({...customerData, [e.target.name]: e.target.value});
+		setCustomerData({...customerData, [e.target.id]: e.target.value});
 	};
 
 	const handleAreaChange = async (e) => {
@@ -64,7 +58,14 @@ const OrderForm = () => {
 	};
 
 	useEffect(() => {
-		CreateCart(setCart);
+		var order_id = localStorage.getItem('order_id');
+
+		if (!order_id) {
+			order_id = crypto.randomUUID().substring(0, 8).toUpperCase();
+			localStorage.setItem('order_id', order_id);
+		}
+		setOrderId(order_id);
+		createCart(setCart);
 	}, []);
 
 	useEffect(() => {
@@ -94,6 +95,10 @@ const OrderForm = () => {
 
 	return (
 		<div className='mt-32 mb-10 sm:mt-40 sm:mb-20'>
+			<Toast
+				isVisible={isVisible}
+				setIsVisible={setIsVisible}
+				message={'在庫の上限を超えている商品があります。'} />
 			<div className='w-3/4 mx-auto sm:flex sm:gap-2'>
 				<div className='w-full sm:w-2/5 mb-10'>
 					<div className='p-2 border rounded'>
@@ -146,22 +151,23 @@ const OrderForm = () => {
 					</p>
 					<div className='mt-4'>
 						<label>メールアドレス<span className='text-amber-600'>*</span></label>
-						<input onChange={handleChange} name='email' type='email' className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.email} required />
+						<input onChange={handleChange} id='email' type='email' className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.email} required />
 					</div>
 					<p className='mt-6 text-lg sm:text-2xl'>配達</p>
 					<div className='mt-4'>
 						<label>氏名<span className='text-amber-600'>*</span></label>
-						<input onChange={handleChange} name='name' type='text' className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.name} required />
+						<input onChange={handleChange} id='name' type='text' className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.name} required />
 					</div>
 					<div className='mt-4 sm:flex gap-2'>
 						<div className='w-full'>
 							<label>郵便番号（半角数字7桁）<span className='text-amber-600'>*</span></label>
-							<input onChange={handleChange} name='zipCode' type='text' pattern="\d{7}" className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.zipCode} required />
+							<input onChange={handleChange} id='zipCode' type='text' pattern="\d{7}" className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.zipCode} required />
 						</div>
 						<div className='w-full'>
 							<label>都道府県<span className='text-amber-600'>*</span></label>
 							<select
 								onChange={handleAreaChange}
+								id='prefecture'
 								className='w-full h-10 bg-gray-50 border rounded invalid:border-amber-600'
 								value={customerData.prefecture}
 								required>
@@ -218,15 +224,17 @@ const OrderForm = () => {
 					</div>
 					<div className='mt-4'>
 						<label>市区町村<span className='text-amber-600'>*</span></label>
-						<input onChange={handleChange} name='address' type='text' className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.address} required />
+						<input onChange={handleChange} id='address' type='text' className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.address} required />
 					</div>
 					<div className='mt-4'>
 						<label>電話番号（半角数字11桁）<span className='text-amber-600'>*</span></label>
-						<input onChange={handleChange} name='phone' type='tel' pattern="\d{11}" className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.phone} required />
+						<input onChange={handleChange} id='phone' type='tel' pattern="\d{11}" className='w-full p-2 border rounded invalid:border-amber-600' value={customerData.phone} required />
 					</div>
 					<p className='mt-6 text-lg sm:text-2xl'>備考欄</p>
-					<textarea onChange={handleChange} name='memo' className='mt-4 h-40 w-full p-2 border rounded' />
-					<input type="hidden" name="customerData" value={customerData} />
+					<textarea onChange={handleChange} id='memo' className='mt-4 h-40 w-full p-2 border rounded' />
+					<input type="hidden" name='order_id' value={orderId} />
+					<input type="hidden" name='cart' value={JSON.stringify(cart)} />
+					<input type="hidden" name='customer' value={JSON.stringify(customerData)} />
 					<button
 						type='submit'
 						className='w-full mt-6 p-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
