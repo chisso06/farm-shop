@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const CreateCart = async (setCart) => {
+const createCart = async (setCart) => {
 	const cartStorage = JSON.parse(localStorage.getItem('cart'));
 	if (cartStorage) {
 		const cartList = await Promise.all(cartStorage.map(async (c) => {
@@ -12,12 +12,16 @@ const CreateCart = async (setCart) => {
 				name: res.data.name,
 				price: res.data.price,
 				shipping_method: res.data.shipping_method,
+				stock: res.data.stock,
 				image_id: 1
 			};
+			if (res.data.stock < item.number) {
+				item.number = res.data.stock;
+			}
 			return item;
 		}));
 		setCart(cartList);
 	}
 }
 
-export default CreateCart;
+export default createCart;

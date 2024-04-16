@@ -1,44 +1,65 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { React, useEffect, useState } from 'react';
-import { CreateCart } from '../functions';
+import { useLocation } from 'react-router-dom';
+import { Toast } from '../components';
+import { createCart, updateCartStorage } from '../functions';
 
 const Cart = () => {
-	var sum = 0;
+	const search = useLocation().search;
+	const query = new URLSearchParams(search);
+	const message = query.get('message');
+  const [sum, setSum] = useState(0);
   const [cart, setCart] = useState([]);
+	const [isVisible, setIsVisible] = useState(false);
 
 	const handleChange = (e, i) => {
 		var value = Number(e.target.value);
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
 
-		if (value < 0)
-			value = 0;
-		cartStorage[i].number = value;
-		localStorage.setItem('cart', JSON.stringify(cartStorage));
-		CreateCart(setCart);
+		if (value <= 0)
+			cartStorage.splice(i, 1);
+		else
+			cartStorage[i].number = value;
+		updateCartStorage(cartStorage);
+		createCart(setCart);
 	}
 
 	const handleTrash = (i) => {
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
 
 		cartStorage.splice(i, 1);
-		localStorage.setItem('cart', JSON.stringify(cartStorage));
-		CreateCart(setCart);
+		updateCartStorage(cartStorage);
+		createCart(setCart);
 	}
 
 	useEffect(() => {
-		CreateCart(setCart);
+		createCart(setCart);
 	}, []);
 
+	useEffect(() => {
+		if (message)
+			setIsVisible(true);
+	}, [message]);
+
+	useEffect(() => {
+		var calcSum = 0;
+
+		cart.map((item) => {
+			calcSum += item.price * item.number;
+		});
+		setSum(calcSum);
+	}, [cart]);
+
 	return (
-		<div className='my-16'>
+		<div className='w-3/4 my-16 mx-auto'>
+			<Toast isVisible={isVisible} setIsVisible={setIsVisible} message={message} />
 			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
 				カートに入っている商品
 			</p>
 			{ cart.length ?
-				<div className='w-3/4 mx-auto'>
+				<div className='mx-auto'>
 					{ cart.map((item, i) => {
-						sum += item.price * item.number;
 						return (
 							<div key={i} className='pr-2 py-4 flex border-b items-center'>
 								<img
@@ -61,9 +82,10 @@ const Cart = () => {
 										<input
 											value={item.number}
 											min={0}
+											max={item.stock}
 											type='number'
 											onChange={(e) => {handleChange(e, i)}}
-											className='w-16 mx-2 p-2 border rounded' />
+											className='w-16 mx-2 p-2 border rounded invalid:text-amber-700 invalid:border-amber-600' />
 										<button>
 											<FontAwesomeIcon
 												onClick={() => {handleTrash(i)}}

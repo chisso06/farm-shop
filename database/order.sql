@@ -2,7 +2,7 @@ USE farm_shop
 
 CREATE TABLE orders (
   id VARCHAR(20) PRIMARY KEY,
-  shipping_name VARCHAR(10) NOT NULL,
+  checkout_session_id VARCHAR(100) NOT NULL UNIQUE,
   shipping_fee INT NOT NULL,
   total_amount INT NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'pending-payment',
@@ -25,14 +25,14 @@ CREATE TABLE ordered_products (
 
 INSERT INTO orders (
   id,
-  shipping_name,
+  checkout_session_id,
   shipping_fee,
   total_amount,
   status,
   customer
 ) VALUES (
   'TH1HOGEH',
-  '配送方法1',
+  'cs_test_1',
   100,
   1000,
   'pending-payment',
@@ -47,7 +47,7 @@ INSERT INTO orders (
   }'
 ), (
   'TT2HOGEH',
-  '配送方法2',
+  'cs_test_2',
   150,
   2000,
   'pending-shipping',
@@ -62,7 +62,7 @@ INSERT INTO orders (
   }'
 ), (
   'YH3HOGEH',
-  '配送方法3',
+  'cs_test_3',
   400,
   3000,
   'shipping',
@@ -77,7 +77,7 @@ INSERT INTO orders (
   }'
 ), (
   'YT4HOGEH',
-  '配送方法1',
+  'cs_test_4',
   200,
   4000,
   'completed',
@@ -92,7 +92,7 @@ INSERT INTO orders (
   }'
 ), (
   'ST5HOGEH',
-  '配送方法2',
+  'cs_test_5',
   300,
   5000,
   'pending',
