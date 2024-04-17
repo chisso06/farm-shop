@@ -8,6 +8,7 @@ import './App.css';
 import { Footer, Header } from './components';
 import {
   About,
+  AdminPage,
   Cart,
   FAQ,
   OrderCompleted,
@@ -33,7 +34,8 @@ const router = createBrowserRouter([
   { path: '/faq', element: <FAQ /> },
   { path: '/order-form', element: <OrderForm />},
   { path: '/order-completed', element: <OrderCompleted />},
-  { path: '/order-processing', element: <OrderProcessing />}
+  { path: '/order-processing', element: <OrderProcessing />},
+  { path: '/admin', element: <AdminPage />}
 ]);
 
 function App() {

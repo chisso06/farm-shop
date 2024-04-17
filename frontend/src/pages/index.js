@@ -1,4 +1,5 @@
 export { default as About } from './About';
+export { default as AdminPage } from './AdminPage';
 export { default as Cart } from './Cart';
 export { default as FAQ } from './FAQ';
 export { default as OrderCompleted } from './OrderCompleted';
