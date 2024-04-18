@@ -139,15 +139,73 @@ app.get('/shipping/:id', (req, res) => {
 	});
 });
 
+app.get('/orders', (req, res) => {
+  connection.query(
+    `SELECT
+			id,
+			checkout_session_id,
+			shipping_fee,
+			total_amount,
+			status,
+			DATE_FORMAT(ordered_at, '%Y年%m月%d日 %h:%i') AS ordered_at,
+			customer
+		FROM orders`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json(results);
+		}
+  );
+});
+
 app.get('/orders/:id', (req, res) => {
   connection.query(
-    `SELECT * FROM orders WHERE id='${req.params.id}'`,
+    `SELECT
+			id,
+			checkout_session_id,
+			shipping_fee,
+			total_amount,
+			status,
+			DATE_FORMAT(ordered_at, '%Y年%m月%d日 %h:%i') AS ordered_at,
+			customer
+		FROM orders
+		WHERE id='${req.params.id}'`,
 		(err, results, fields) => {
 			if (err) {
 				console.log('connection error');
 				throw err;
 			}
 			res.json(results[0]);
+		}
+  );
+});
+
+app.post('/orders/:id', (req, res) => {
+	connection.query(`
+		UPDATE orders
+		SET status='${req.body.status}'
+		WHERE id='${req.params.id}'`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json({message: '注文ステータスを変更しました'})
+		}
+	);
+});
+
+app.get('/ordered_products/:order_id', (req, res) => {
+  connection.query(
+    `SELECT * FROM ordered_products WHERE order_id='${req.params.order_id}'`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json(results);
 		}
   );
 });
@@ -380,7 +438,7 @@ app.post('/stripe-webhook', async (req, res) => {
   switch (event.type) {
     case 'payment_intent.succeeded':
 			connection.query(`
-				UPDATE orders SET status='pending_shipping' WHERE id='${client_reference_id}'`,
+				UPDATE orders SET status='pending-shipping' WHERE id='${client_reference_id}'`,
 				(err, results, fields) => {
 					if (err) {
 						console.log('connection error');

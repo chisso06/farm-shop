@@ -1,41 +1,81 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminOrders from './admin/AdminOrders';
 
 const AdminPage = () => {
 	const [width, setWidth] = useState(960);
-	const [settingItem, setSettingItem] = useState('');
-	const settingItems = [
-		'注文管理',
-		'商品管理',
-		'送料管理',
-		'ブログ管理',
-		'お知らせ管理'
+	const [adminPage, setAdminPage] = useState('');
+	const adminPages = [
+		{
+			name: 'admin-orders',
+			title: '注文管理'
+		},
+		{
+			name: 'admin-products',
+			title: '商品管理'
+		},
+		{
+			name: 'admin-shipping',
+			title: '送料管理'
+		},
+		{
+			name: 'admin-blog',
+			title: 'ブログ管理'
+		},
+		{
+			name: 'admin-news',
+			title: 'お知らせ管理'
+		},
 	];
 	const navigate = useNavigate();
 
-	const handleClick = (item) => {
-		setSettingItem(item);
+	const handleClick = (name) => {
+		setAdminPage(name);
 	}
 
 	const AdminMenu = () => {
 		return (
 			<div className=''>{
-				settingItems.map((item, i) => {
+				adminPages.map((p, i) => {
 					var className = 'w-full p-4 text-left border-b hover:bg-stone-300';
-					if (item === settingItem)
+					if (p.name === adminPage)
 						className += ' bg-stone-300';
 					return (
 						<button
-							name={item}
-							onClick={() => handleClick(item)}
+							onClick={() => handleClick(p.name)}
 							key={i}
 							className={className}>
-							{item}
+							{p.title}
 						</button>
 					);
 				})
 			}</div>
 		);
+	};
+
+	const AdminContent = () => {
+		switch(adminPage) {
+			case 'admin-orders': 
+				return <AdminOrders />
+			case 'admin-products': 
+				return (<div>
+
+				</div>);
+			case 'admin-shipping': 
+				return (<div>
+
+				</div>);
+			case 'admin-blog': 
+				return (<div>
+
+				</div>);
+			case 'admin-news': 
+				return (<div>
+
+				</div>);
+			default: 
+				return <AdminOrders />;
+		}
 	};
 
 	useEffect(() => {
@@ -61,19 +101,21 @@ const AdminPage = () => {
 		if (width < 960) {
 			window.confirm('画面が小さすぎます。幅が960px以上のpcでアクセスしてください。');
 		} else {
-			setSettingItem('注文管理');
+			setAdminPage('admin-orders');
 		}
 	}, [width]);
 
 	return (
 		<div className='mt-16'> {
 			width >= 960 && sessionStorage.getItem('session') ?
-			<div className='flex border-t'>
+			<div className='flex'>
 				<div className='min-h-screen w-1/4 border-r bg-stone-100'>
 					<p className='w-full px-4 py-8 text-left border-b bg-white font-bold'>管理画面</p>
 					<AdminMenu />
 				</div>
-				<div className='h-full w-3/4'></div>
+				<div className='h-full w-3/4'>
+					<AdminContent />
+				</div>
 			</div>
 			:
 			<div />
