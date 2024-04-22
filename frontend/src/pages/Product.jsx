@@ -115,9 +115,9 @@ const Product = () => {
 								</tr>
 							</thead>
 							<tbody>{
-								areaList.map((area) => {
+								areaList.map((area, i) => {
 									return (
-										<tr className='border'>
+										<tr key={i} className='border'>
 											<td>
 												<p>{area.name}</p>
 												<p className='text-xs'>{area.prefectures}</p>
@@ -151,7 +151,7 @@ const Product = () => {
 			<div className='sm:flex gap-4'>
 				<div className='sm:w-2/3'>
 					<img
-						src={images[0] ? '/products/' + images[0].id + '.jpg' : ''}
+						src={'/products/' + (images[0] ? images[0].id : 0) + '.jpg'}
 						alt='商品画像'
 						className='w-full aspect-[3/2] object-contain bg-stone-200' />
 					<div className='my-10'>
@@ -168,6 +168,7 @@ const Product = () => {
 							className="btn text-stone-500 text-sm">
 							ⓘ<span className='hover:underline'>送料について</span>
 						</button>
+						<p className='text-sm'>在庫：{product.stock}</p>
 						<div className='pt-10 flex items-center'>
 							<p className='pr-4'>数量</p>
 							<input

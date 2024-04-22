@@ -53,11 +53,11 @@ app.get('/products', (req, res) => {
 	const sql_prompt = `
 		SELECT products.*, images.id AS image_id
 		FROM products
-		INNER JOIN images ON products.id=product_id
+		LEFT JOIN images ON products.id=product_id
 		WHERE
 			${req.query.category ? `category='${req.query.category}' AND` : ''}
 			${req.query.popular_status ? `popular_status=${req.query.popular_status} AND`: ''}
-			order_of_images=1
+			(images.id IS NULL OR order_of_images=1)
 		`;
 
   connection.query(
@@ -76,8 +76,8 @@ app.get('/products/:id', (req, res) => {
   connection.query(
     `SELECT products.*, images.id AS image_id
 		FROM products
-		INNER JOIN images ON products.id=images.product_id
-		WHERE products.id=${req.params.id} AND images.order_of_images=1`,
+		LEFT JOIN images ON products.id=images.product_id
+		WHERE products.id=${req.params.id} AND (images.id IS NULL OR order_of_images=1)`,
 		(err, results, fields) => {
 			if (err) {
 				console.log('connection error');
@@ -86,6 +86,32 @@ app.get('/products/:id', (req, res) => {
 			res.json(results[0]);
 		}
   );
+});
+
+app.post('/products/:id', (req, res) => {
+	const product = {
+		...req.body,
+		id: req.params.id > 0 ? Number(req.params.id) : 0
+	};
+	delete product.public_status_checkbox;
+	const sql_prompt = `
+		INSERT INTO products (??) VALUES (?)
+		ON DUPLICATE KEY UPDATE updated_at=NOW(),`
+		+ Object.entries(product).map((field) => {
+			return `${field[0]}='${field[1]}'`
+		}).join();
+	connection.query(
+		sql_prompt,
+		[Object.keys(product), Object.values(product)],
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			console.log(`${FRONTEND_ORIGIN}/admin?message=商品を保存しました`);
+			return res.redirect(`${FRONTEND_ORIGIN}/admin?message=商品を保存しました`);
+		}
+	);
 });
 
 app.get('/products/:id/images', (req, res) => {
@@ -116,6 +142,15 @@ app.get('/news', (req, res) => {
 		}
 		res.json(results);
 	});
+});
+
+app.get('/shipping', (req, res) => {
+	connection.query(
+		`SELECT * FROM shipping_methods`,
+		(err, results, fields) => {
+			if (err) { throw err; }
+			res.json(results);
+		});
 });
 
 app.get('/shipping/:id', (req, res) => {

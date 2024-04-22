@@ -10,7 +10,7 @@ CREATE TABLE shipping_fees (
 	size VARCHAR(10) NOT NULL,
 	min_n INT NOT NULL,
 	max_n INT NOT NULL,
-	CHECK (min_n <= max_n),
+	-- CHECK (min_n <= max_n),
 	Hokkaido INT NOT NULL DEFAULT 0,
 	Tohoku INT NOT NULL DEFAULT 0,
 	Kanto INT NOT NULL DEFAULT 0,

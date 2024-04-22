@@ -1,6 +1,7 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminOrders from './admin/AdminOrders';
+import AdminProducts from './admin/AdminProducts';
 
 const AdminPage = () => {
 	const [width, setWidth] = useState(960);
@@ -58,9 +59,7 @@ const AdminPage = () => {
 			case 'admin-orders': 
 				return <AdminOrders />
 			case 'admin-products': 
-				return (<div>
-
-				</div>);
+				return <AdminProducts />;
 			case 'admin-shipping': 
 				return (<div>
 
@@ -100,7 +99,7 @@ const AdminPage = () => {
 	useEffect(() => {
 		if (width < 960) {
 			window.confirm('画面が小さすぎます。幅が960px以上のpcでアクセスしてください。');
-		} else {
+		} else if (!adminPage) {
 			setAdminPage('admin-orders');
 		}
 	}, [width]);
