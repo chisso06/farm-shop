@@ -37,6 +37,11 @@ const AdminProductForm = ({productId, setProductId}) => {
 			return ;
 		const fileArray = Array.from(files);
 		fileArray.forEach((file) => {
+			const SIZE_5MB = 1024 * 1024 * 5;
+			if (file.size > SIZE_5MB) {
+				window.alert('ファイルサイズが5MBを超えています。');
+				return ;
+			}
 			const image = {
 				id: 0,
 				order_of_images: images.length + 1,
