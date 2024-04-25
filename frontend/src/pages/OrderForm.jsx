@@ -2,7 +2,7 @@ import axios from 'axios';
 import { React, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toast } from '../components';
-import { createCart } from '../functions';
+import { createCart, getIndexBase64Images, imageSrc } from '../functions';
 
 const OrderForm = () => {
 	const [orderId, setOrderId] = useState('');
@@ -19,6 +19,7 @@ const OrderForm = () => {
 		address: '',
 		memo: ''
 	});
+	const [base64Images, setBase64Images] = useState([]);
 	const [isVisible, setIsVisible] = useState(false);
 	const navigate = useNavigate();
 
@@ -85,6 +86,12 @@ const OrderForm = () => {
 			})
 			setSum(sum_calc);
 			setShippingMethods(shippingMethodList);
+
+			const getData = async () => {
+				const base64ImagesData = await getIndexBase64Images(cart);
+				setBase64Images(base64ImagesData);
+			}
+			getData();
 		}
 	}, [cart]);
 
@@ -104,10 +111,10 @@ const OrderForm = () => {
 					<div className='p-2 border rounded'>
 						<a href='/cart'>&lt; <span className='text-sm hover:underline'>買い物かごに戻る</span></a>
 						<ul className='p-2 font-mono'>{
-							cart.length && Object.keys(cart[0]).length ? cart.map((item, i) => {
+							(cart.length && Object.keys(cart[0]).length) ? cart.map((item, i) => {
 								return (<li key={i} className='pr-2 py-4 flex border-b'>
 									<img
-										src={'/products/' + item.image_id + '.jpg'}
+										src={imageSrc(base64Images[item.base64Images_idx])}
 										alt='商品画像'
 										className='w-16 h-16 aspect-square object-cover rounded' />
 									<div className='w-full pl-4 items-center'>
@@ -127,7 +134,7 @@ const OrderForm = () => {
 										</div>
 									</div>
 								</li>);
-							}) : ''
+							}):''
 						}</ul>
 						<div className='mt-6 px-2 font-mono'>
 							<div className='flex'>

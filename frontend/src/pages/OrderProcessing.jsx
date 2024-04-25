@@ -10,12 +10,12 @@ const OrderProcessing = () => {
 
 	useEffect(() => {
 		const process = async () => {
-			console.log("OrderProcessingPage");
-			console.log("checkout_session_id: " + checkout_session_id);
+			// console.log("OrderProcessingPage");
+			// console.log("checkout_session_id: " + checkout_session_id);
 			await axios.post('/backend/order-process', {checkout_session_id})
 			.then((res) => res.data)
 			.then((data) => {
-				console.log(data.status);
+				// console.log(data.status);
 				if (data.status === 'complete') {
 					navigate(`/order-completed?order_id=${data.order_id}`);
 				} else {

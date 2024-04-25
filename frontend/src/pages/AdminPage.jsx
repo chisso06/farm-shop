@@ -78,13 +78,13 @@ const AdminPage = () => {
 	};
 
 	useEffect(() => {
-		console.log('sessionStorage: ', sessionStorage.getItem('session'));
-		console.log('REACT_APP_ADMIN_PASSWORD: ', process.env.REACT_APP_ADMIN_PASSWORD);
+		// console.log('sessionStorage: ', sessionStorage.getItem('session'));
+		// console.log('REACT_APP_ADMIN_PASSWORD: ', process.env.REACT_APP_ADMIN_PASSWORD);
 		while (!sessionStorage.getItem('session')) {
 			const password = window.prompt('パスワードを入力してください');
-			console.log('password: ', password);
+			// console.log('password: ', password);
 			if (password === process.env.REACT_APP_ADMIN_PASSWORD) {
-				console.log('access: success');
+				// console.log('access: success');
 				sessionStorage.setItem('session', true);
 			}
 		}
@@ -106,13 +106,13 @@ const AdminPage = () => {
 
 	return (
 		<div className='mt-16'> {
-			width >= 960 && sessionStorage.getItem('session') ?
+			(width >= 960 && sessionStorage.getItem('session')) ?
 			<div className='flex'>
-				<div className='min-h-screen w-1/4 border-r bg-stone-100'>
+				<div className='min-h-screen w-1/5 border-r bg-stone-100'>
 					<p className='w-full px-4 py-8 text-left border-b bg-white font-bold'>管理画面</p>
 					<AdminMenu />
 				</div>
-				<div className='h-full w-3/4'>
+				<div className='h-full w-4/5'>
 					<AdminContent />
 				</div>
 			</div>

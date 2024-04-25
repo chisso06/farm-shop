@@ -34,22 +34,22 @@ const AboutContents = () => {
 
 	return (
 		<div className='bg-stone-100'>{
-			contents.map((content, i) => {
+			contents.length ? contents.map((content, i) => {
 				return (
 					<div key={i} className='sm:h-80 sm:grid sm:grid-cols-2'>
-						{(Boolean)(!(i % 2) || window.matchMedia('(max-width: 640px)').matches) &&
-							<Image i={i} />
+						{(Boolean)(!(i % 2) || window.matchMedia('(max-width: 640px)').matches) ?
+							<Image i={i} /> : ''
 						}
 						<div className='p-10'>
 							<p className='mb-10 text-center text-xl'>{content.title}</p>
 							<p>{content.text}</p>
 						</div>
-						{(Boolean)((i % 2) && !window.matchMedia('(max-width: 640px)').matches) &&
-							<Image i={i} />
+						{(Boolean)((i % 2) && !window.matchMedia('(max-width: 640px)').matches) ?
+							<Image i={i} /> : ''
 						}
 					</div>
 				)
-			})
+			}):''
 		}</div>
 	);
 }

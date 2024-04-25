@@ -2,13 +2,14 @@ import axios from 'axios';
 import { React, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Toast } from '../components';
-import { updateCartStorage } from '../functions';
+import { getBase64Images, getImages, getProduct, imageSrc, updateCartStorage } from '../functions';
 
 const Product = () => {
 	const params = useParams();
 	const productId = Number(params.product_id);
 	const [product, setProduct] = useState({});
 	const [images, setImages] = useState([]);
+	const [base64Images, setBase64Images] = useState([]);
 	const [shippingMethod, setShippingMethod] = useState([]);
 	const [item, setItem] = useState({
 		product_id: productId,
@@ -46,29 +47,25 @@ const Product = () => {
 	};
 
 	useEffect(() => {
-		const getProduct = async () => {
-			await axios.get(`/backend/products/${productId}`)
-			.then((res) => {
-				console.log('product:', res.data);
-				setProduct(res.data);
-			});
+		const getData = async () => {
+			const productData = await getProduct(productId);
+			if (productData) {
+				const imagesData = await getImages(productId);
+				const base64ImagesData = await getBase64Images(imagesData);
+				setProduct(productData);
+				setImages(imagesData);
+				setBase64Images(base64ImagesData);
+			}
 		}
-		const getImages = async () => {
-			await axios.get(`/backend/products/${productId}/images`)
-			.then((res) => {
-				console.log('images:', res.data);
-				setImages(res.data);
-			});
-		}
-		getProduct();
-		getImages();
+		if (productId)
+			getData();
 	}, [productId]);
 
 	useEffect(() => {
 		const getShippingMethod = async () => {
 			await axios.get(`/backend/shipping/${product.shipping_method}`)
 			.then((res) => {
-				console.log('shippingMethod:', res.data);
+				// console.log('shippingMethod:', res.data);
 				setShippingMethod(res.data);
 			});
 		}
@@ -150,10 +147,15 @@ const Product = () => {
 			</p>
 			<div className='sm:flex gap-4'>
 				<div className='sm:w-2/3'>
-					<img
-						src={'/products/' + (images[0] ? images[0].id : 0) + '.jpg'}
-						alt='商品画像'
-						className='w-full aspect-[3/2] object-contain bg-stone-200' />
+					{images ? images.map((image, i) => {return (
+						image.order_of_images === 1 ? 
+						<img
+							key={i}
+							src={imageSrc(base64Images[image.base64Images_idx])}
+							alt='商品画像'
+							className='w-full aspect-[3/2] object-contain bg-stone-200' />
+						:'')
+					}):''}
 					<div className='my-10'>
 						<p className='mb-4 text-2xl font-bold font-mono'>商品について</p>
 						<p className='whitespace-pre-line'>{product.description}</p>
