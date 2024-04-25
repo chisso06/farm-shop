@@ -53,7 +53,7 @@ const Header = ({pathname}) => {
 				</div>
 			</div>
 		</div>
-			{open && 
+			{open ? 
 				<div className="sm:hidden bg-white" id="mobile-menu">
 					<div className="space-y-1 px-2 pb-3 pt-2">
 						<a href="/" className={className + 'text-base block'}>HOME</a>
@@ -64,6 +64,7 @@ const Header = ({pathname}) => {
 						<a href="/faq" className={className + 'text-base block'}>よくあるご質問</a>
 					</div>
 				</div>
+				:''
 			}
 		</nav>
 	);

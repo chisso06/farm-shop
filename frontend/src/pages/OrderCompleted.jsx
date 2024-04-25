@@ -14,7 +14,7 @@ const OrderCompleted = () => {
 		const orderCheck = async () => {
 			const res = await axios.get(`/backend/orders/${orderId}`)
 				.catch((err) => console.log(err));
-			console.log(res.data)
+			// console.log(res.data)
 			if (res.data.status === 'pending-payment')
 				navigate('/');
 		}

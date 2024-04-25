@@ -1,6 +1,7 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminOrders from './admin/AdminOrders';
+import AdminProducts from './admin/AdminProducts';
 
 const AdminPage = () => {
 	const [width, setWidth] = useState(960);
@@ -58,9 +59,7 @@ const AdminPage = () => {
 			case 'admin-orders': 
 				return <AdminOrders />
 			case 'admin-products': 
-				return (<div>
-
-				</div>);
+				return <AdminProducts />;
 			case 'admin-shipping': 
 				return (<div>
 
@@ -79,13 +78,13 @@ const AdminPage = () => {
 	};
 
 	useEffect(() => {
-		console.log('sessionStorage: ', sessionStorage.getItem('session'));
-		console.log('REACT_APP_ADMIN_PASSWORD: ', process.env.REACT_APP_ADMIN_PASSWORD);
+		// console.log('sessionStorage: ', sessionStorage.getItem('session'));
+		// console.log('REACT_APP_ADMIN_PASSWORD: ', process.env.REACT_APP_ADMIN_PASSWORD);
 		while (!sessionStorage.getItem('session')) {
 			const password = window.prompt('パスワードを入力してください');
-			console.log('password: ', password);
+			// console.log('password: ', password);
 			if (password === process.env.REACT_APP_ADMIN_PASSWORD) {
-				console.log('access: success');
+				// console.log('access: success');
 				sessionStorage.setItem('session', true);
 			}
 		}
@@ -100,20 +99,20 @@ const AdminPage = () => {
 	useEffect(() => {
 		if (width < 960) {
 			window.confirm('画面が小さすぎます。幅が960px以上のpcでアクセスしてください。');
-		} else {
+		} else if (!adminPage) {
 			setAdminPage('admin-orders');
 		}
 	}, [width]);
 
 	return (
 		<div className='mt-16'> {
-			width >= 960 && sessionStorage.getItem('session') ?
+			(width >= 960 && sessionStorage.getItem('session')) ?
 			<div className='flex'>
-				<div className='min-h-screen w-1/4 border-r bg-stone-100'>
+				<div className='min-h-screen w-1/5 border-r bg-stone-100'>
 					<p className='w-full px-4 py-8 text-left border-b bg-white font-bold'>管理画面</p>
 					<AdminMenu />
 				</div>
-				<div className='h-full w-3/4'>
+				<div className='h-full w-4/5'>
 					<AdminContent />
 				</div>
 			</div>

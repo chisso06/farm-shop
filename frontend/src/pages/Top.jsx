@@ -9,7 +9,7 @@ const News = () => {
 		const getNews = async () => {
 			await axios.get('/backend/news')
 			.then((res) => {
-				console.log(res.data);
+				// console.log(res.data);
 				setNews(res.data);
 			});
 		}
@@ -20,9 +20,9 @@ const News = () => {
 		<div className='my-20 w-3/4 mx-auto'>
 			<p className='mb-20 text-center text-4xl text-black'>お知らせ</p>
 			<ul>{
-				news.map((n, i) => {
+				news.length ? news.map((n, i) => {
 					return (<li key={i} className='py-5 border-b' >{n.date} {n.content}</li>);
-				})
+				}):''
 			}
 			</ul>
 		</div>

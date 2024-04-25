@@ -54,7 +54,7 @@ const AdminOrders = () => {
 				const orderStatus = orderStatusList.find((orderStatus) =>
 					orderStatus.name === res.data.status)
 				res.data.statusTitle = orderStatus.title;
-				console.log(res.data);
+				// console.log(res.data);
 				setOrder(res.data);
 			});
 		};
@@ -86,7 +86,7 @@ const AdminOrders = () => {
 	}, [orderId]);
 
 	return (
-		orderId && order && order.id && orderedProducts.length ? 
+		(orderId && order && order.id && orderedProducts.length) ? 
 			<div className='p-4'>
 				<button onClick={() => handleClick('')}>
 					&lt; <span className='text-sm hover:underline'>注文一覧に戻る</span>
@@ -99,8 +99,7 @@ const AdminOrders = () => {
 					</li>
 					<li className='py-2 flex border-b'>
 						<p className='w-36 font-mono font-bold'>ステータス</p>
-						{
-							order.status === 'pending-shipping' ?
+						{order.status === 'pending-shipping' ?
 								<div className='flex'>
 									<p>発送待ち</p>
 									<button
@@ -164,7 +163,7 @@ const AdminOrders = () => {
 					<li className='py-2'>
 						<p className='pb-2 font-mono font-bold'>購入された商品</p>
 						<ul className='p-2 bg-stone-100'>
-							{orderedProducts.map((p, i) => {
+							{orderedProducts.length ? orderedProducts.map((p, i) => {
 								return (
 									<li key={i} className='py-1 flex font-mono'>
 										<p className='w-1/2'>{p.name}</p>
@@ -172,7 +171,7 @@ const AdminOrders = () => {
 										<p className='w-20'>× {p.number} 個</p>
 									</li>
 								)
-							})}
+							}):''}
 						</ul>
 					</li>
 				</ul>
@@ -189,10 +188,10 @@ const AdminOrders = () => {
 							<th className='py-2 text-left'>ステータス</th>
 						</tr>
 					</thead>
-					<tbody>{
-						orders.length ? orders.map((o, i) => {
+					<tbody>
+						{orders.length ? orders.map((o, i) => {
 							return(
-								<tr onClick={() => handleClick(o.id)} className='border-b  hover:cursor-pointer hover:bg-amber-100'>
+								<tr onClick={() => handleClick(o.id)} key={i} className='border-b  hover:cursor-pointer hover:bg-amber-100'>
 									<td className='pl-4 font-mono'>{o.id}</td>
 									<td className='py-2'>{o.ordered_at}</td>
 									<td className='py-2'>
@@ -203,8 +202,8 @@ const AdminOrders = () => {
 									<td className='py-2'>{o.statusTitle}</td>
 								</tr>
 							)
-						}) : <div />
-					}</tbody>
+						}):''}
+					</tbody>
 				</table>
 			</div>
 	);
