@@ -112,7 +112,6 @@ const AdminProductForm = ({productId, setProductId}) => {
 						base64Images_idx: image.base64Images_idx
 					}
 				});
-				console.log(res.data.product);
 				setProductId(res.data.product.id);
 				setImages(newImages);
 				setImageFiles([]);
@@ -238,7 +237,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 						value={product.category ? product.category : ''}
 						required>
 						<option value=''>選択してください</option>
-						{ categoryList.map((c, i) => {
+						{categoryList.map((c, i) => {
 							return <option key={i} value={c}>{c}</option>
 						})}
 					</select>
@@ -252,7 +251,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 						value={product.shipping_method ? product.shipping_method : ''}
 						required>
 						<option value=''>選択してください</option>
-						{ shippingMethods.length ? shippingMethods.map((s, i) => {
+						{shippingMethods.length ? shippingMethods.map((s, i) => {
 							return <option key={i} value={s.id}>{s.name}</option>
 						}) : ''}
 					</select>

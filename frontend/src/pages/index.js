@@ -8,5 +8,6 @@ export { default as OrderProcessing } from './OrderProcessing';
 export { default as Product } from './Product';
 export { default as Products } from './Products';
 export { default as Top } from './Top';
+export { default as AdminNews } from './admin/AdminNews';
 export { default as AdminOrders } from './admin/AdminOrders';
 export { default as AdminProducts } from './admin/AdminProducts';

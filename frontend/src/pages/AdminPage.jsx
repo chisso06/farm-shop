@@ -1,5 +1,6 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import AdminNews from './admin/AdminNews';
 import AdminOrders from './admin/AdminOrders';
 import AdminProducts from './admin/AdminProducts';
 
@@ -66,9 +67,7 @@ const AdminPage = () => {
 
 				</div>);
 			case 'admin-news': 
-				return (<div>
-
-				</div>);
+				return <AdminNews />;
 			default: 
 				return <AdminOrders />;
 		}
