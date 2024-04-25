@@ -1,11 +1,12 @@
 import { React, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import AdminOrders from './admin/AdminOrders';
 import AdminProducts from './admin/AdminProducts';
 
 const AdminPage = () => {
+	const params = useParams();
 	const [width, setWidth] = useState(960);
-	const [adminPage, setAdminPage] = useState('');
+	const adminPage = params.page;
 	const adminPages = [
 		{
 			name: 'admin-orders',
@@ -30,24 +31,20 @@ const AdminPage = () => {
 	];
 	const navigate = useNavigate();
 
-	const handleClick = (name) => {
-		setAdminPage(name);
-	}
-
 	const AdminMenu = () => {
 		return (
 			<div className=''>{
 				adminPages.map((p, i) => {
-					var className = 'w-full p-4 text-left border-b hover:bg-stone-300';
+					var className = 'w-full p-4 block text-left border-b hover:bg-stone-300';
 					if (p.name === adminPage)
 						className += ' bg-stone-300';
 					return (
-						<button
-							onClick={() => handleClick(p.name)}
+						<a
+							href={'/admin/' + p.name}
 							key={i}
 							className={className}>
 							{p.title}
-						</button>
+						</a>
 					);
 				})
 			}</div>
@@ -78,13 +75,9 @@ const AdminPage = () => {
 	};
 
 	useEffect(() => {
-		// console.log('sessionStorage: ', sessionStorage.getItem('session'));
-		// console.log('REACT_APP_ADMIN_PASSWORD: ', process.env.REACT_APP_ADMIN_PASSWORD);
 		while (!sessionStorage.getItem('session')) {
 			const password = window.prompt('パスワードを入力してください');
-			// console.log('password: ', password);
 			if (password === process.env.REACT_APP_ADMIN_PASSWORD) {
-				// console.log('access: success');
 				sessionStorage.setItem('session', true);
 			}
 		}
@@ -93,16 +86,16 @@ const AdminPage = () => {
 		}
 		window.addEventListener('resize', checkSize);
 		checkSize();
-		return () => window.removeEventListener('resize',	checkSize);
-	}, [navigate]);
+		return () => window.removeEventListener('resize', checkSize);
+	}, []);
 
 	useEffect(() => {
 		if (width < 960) {
 			window.confirm('画面が小さすぎます。幅が960px以上のpcでアクセスしてください。');
 		} else if (!adminPage) {
-			setAdminPage('admin-orders');
+			navigate('/admin/admin-orders');
 		}
-	}, [width]);
+	}, [width, navigate, adminPage]);
 
 	return (
 		<div className='mt-16'> {

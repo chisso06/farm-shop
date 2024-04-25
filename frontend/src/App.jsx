@@ -34,7 +34,8 @@ const router = createBrowserRouter([
   { path: '/order-form', element: <OrderForm />},
   { path: '/order-completed', element: <OrderCompleted />},
   // { path: '/order-processing', element: <OrderProcessing />},
-  { path: '/admin', element: <AdminPage />}
+  { path: '/admin/', element: <AdminPage />},
+  { path: '/admin/:page', element: <AdminPage />}
 ]);
 
 function App() {
