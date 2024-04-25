@@ -136,8 +136,8 @@ app.get('/products/:id', (req, res) => {
 
 app.post('/products/:id', async (req, res) => {
 	// req.params.id は不使用
-	if (Number(req.params.id) <= 0)
-		return res.json({status: 'failure'});
+	// if (Number(req.params.id) < 0)
+	// 	return res.json({status: 'failure'});
 
 	const productData = req.body.product;
 	const imagesData = req.body.images;
@@ -308,6 +308,39 @@ app.get('/news', (req, res) => {
 		}
 		res.json(results);
 	});
+});
+
+app.post('/news', (req, res) => {
+	const news = req.body;
+
+	connection.query(
+		`INSERT INTO news SET ?`,
+		news,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			// res.json(results);
+			res.json({status: 'success', message: 'added new news'});
+		});
+});
+
+app.delete('/news/:id', (req, res) => {
+	const newsId = Number(req.params.id);
+
+	if (isNaN(newsId) || newsId <= 0)
+		return res.json({status: 'error', message: 'invalid news_id'});
+	connection.query(
+		`DELETE FROM news WHERE id=${newsId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			// res.json(results);
+			res.json({status: 'success', message: `deleted news id:${newsId}`});
+		});
 });
 
 app.get('/shipping', (req, res) => {
