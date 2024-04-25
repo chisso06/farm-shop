@@ -95,7 +95,50 @@ app.get('/products', (req, res) => {
   );
 });
 
-app.post('/products', async (req, res) => {
+// app.get('/products/images', (req, res) => {
+// 	const sql_prompt = `
+// 		SELECT * FROM images
+// 		WHERE order_of_images=1
+// 	`;
+
+//   connection.query(
+// 		sql_prompt,
+//     (err, results, fields) => {
+//       if (err) {
+//         console.log('connection error');
+//         throw err;
+//       }
+// 			res.json(results);
+//     }
+//   );
+// });
+
+app.get('/products/:id', (req, res) => {
+	const productId = Number(req.params.id);
+
+	if (productId <= 0)
+		return res.json({message: 'error'});
+
+  connection.query(
+    `SELECT products.*, images.id AS image_id
+		FROM products
+		LEFT JOIN images ON products.id=images.product_id
+		WHERE products.id=${productId} AND (images.id IS NULL OR order_of_images=1)`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json(results[0]);
+		}
+  );
+});
+
+app.post('/products/:id', async (req, res) => {
+	// req.params.id は不使用
+	if (Number(req.params.id) <= 0)
+		return res.json({status: 'failure'});
+
 	const productData = req.body.product;
 	const imagesData = req.body.images;
 	const product = {
@@ -129,7 +172,6 @@ app.post('/products', async (req, res) => {
 			}
 		);
 	});
-	console.log('productId', productId);
 	await new Promise((resolve) => {
 		connection.query(
 			`DELETE FROM images WHERE product_id=${productId}`,
@@ -140,7 +182,7 @@ app.post('/products', async (req, res) => {
 				}
 				resolve(results);
 			}
-		)
+		);
 	});
 	const images = await Promise.all(imagesData.map(async (data) => {
 		if (data.deleted) {
@@ -182,49 +224,45 @@ app.post('/products', async (req, res) => {
 	});
 });
 
-// app.get('/products/images', (req, res) => {
-// 	const sql_prompt = `
-// 		SELECT * FROM images
-// 		WHERE order_of_images=1
-// 	`;
-
-//   connection.query(
-// 		sql_prompt,
-//     (err, results, fields) => {
-//       if (err) {
-//         console.log('connection error');
-//         throw err;
-//       }
-// 			res.json(results);
-//     }
-//   );
-// });
-
-app.get('/products/:id', (req, res) => {
+app.delete('/products/:id', async (req, res) => {
 	const productId = Number(req.params.id);
 
-	if (!productId)
-		return res.json({message: 'error'});
+	if (productId <= 0)
+		return res.json({status: 'failure'});
 
-  connection.query(
-    `SELECT products.*, images.id AS image_id
-		FROM products
-		LEFT JOIN images ON products.id=images.product_id
-		WHERE products.id=${productId} AND (images.id IS NULL OR order_of_images=1)`,
+	// 画像を削除
+	await new Promise((resolve) => {
+		connection.query(
+			`SELECT * FROM images WHERE product_id=${productId}`,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				results.map((image) => {
+					fs.unlink(`backend/public/products/${image.id}.jpg`, (err) => {});
+				});
+				resolve(results);
+			}
+		)
+	});
+	// products(db)を削除
+	connection.query(
+		`DELETE FROM products WHERE id=${productId}`,
 		(err, results, fields) => {
 			if (err) {
 				console.log('connection error');
 				throw err;
 			}
-			res.json(results[0]);
+			res.json({status: 'success'});
 		}
-  );
+	);
 });
 
 app.get('/products/:id/images', (req, res) => {
 	const productId = Number(req.params.id);
 
-	if (!productId)
+	if (productId <= 0)
 		return res.json({message: 'error'});
 	const sql_prompt = `
 		SELECT * FROM images
@@ -247,7 +285,7 @@ app.get('/products/:id/images', (req, res) => {
 app.get('/images/:id', (req, res) => {
 	const imageId = Number(req.params.id);
 
-	if (!imageId)
+	if (imageId <= 0)
 		return res.json({});
 	fs.readFile(
 		`backend/public/products/${imageId}.jpg`,
@@ -284,7 +322,7 @@ app.get('/shipping', (req, res) => {
 app.get('/shipping/:id', (req, res) => {
 	const methodId = Number(req.params.id);
 
-	if (!methodId)
+	if (methodId <= 0)
 		return res.json({});
 	connection.query(`
 		SELECT
@@ -330,7 +368,7 @@ app.get('/orders', (req, res) => {
 app.get('/orders/:id', (req, res) => {
 	const orderId = Number(req.params.id);
 
-	if (!orderId)
+	if (orderId <= 0)
 		return res.json({message: 'error'});
   connection.query(
     `SELECT
@@ -357,7 +395,7 @@ app.post('/orders/:id', (req, res) => {
 	const status = req.body.status;
 	const orderId = Number(req.params.id);
 
-	if (!orderId)
+	if (orderId <= 0)
 		return res.json({message: 'error'});
 	connection.query(`
 		UPDATE orders
@@ -376,7 +414,7 @@ app.post('/orders/:id', (req, res) => {
 app.get('/ordered_products/:order_id', (req, res) => {
 	const orderId = Number(req.params.order_id);
 
-	if (!orderId)
+	if (orderId <= 0)
 		return res.json({message: 'error'});
   connection.query(
     `SELECT * FROM ordered_products WHERE order_id='${orderId}'`,

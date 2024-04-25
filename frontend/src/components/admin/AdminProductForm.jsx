@@ -1,6 +1,13 @@
 import axios from 'axios';
 import { React, useEffect, useRef, useState } from 'react';
-import { getBase64Images, getImages, getProduct, getShippingMethods, imageSrc } from '../../functions';
+import {
+	deleteProduct,
+	getBase64Images,
+	getImages,
+	getProduct,
+	getShippingMethods,
+	imageSrc
+} from '../../functions';
 
 const AdminProductForm = ({productId, setProductId}) => {
 	const [product, setProduct] = useState({});
@@ -72,7 +79,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		await axios.post('/backend/products', {product, images})
+		await axios.post(`/backend/products/${productId}`, {product, images})
 			.then(async (res) => {
 				const imagesData = res.data.images;
 				if (imageFiles.length) {
@@ -106,6 +113,13 @@ const AdminProductForm = ({productId, setProductId}) => {
 				setImageFiles([]);
 			});
 	};
+
+	const handleDelete = async () => {
+		if (window.confirm('この商品を削除しますか？')) {
+			await deleteProduct(productId);
+			setProductId(-1);
+		}
+	}
 
 	useEffect(() => {
 		const newProduct = {
@@ -267,11 +281,17 @@ const AdminProductForm = ({productId, setProductId}) => {
 						className='w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500 focus:ring-2 before:text-amber-200'
 						checked={product.popular_status} />
 				</div>
-				<div className='flex justify-center'>
+				<div className='px-40 my-16 justify-center'>
 					<button
 						type='submit'
-						className='w-3/5 my-12 p-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
+						className='w-full mb-6 p-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
 						保存
+					</button>
+					<button
+						type='button'
+						onClick={handleDelete}
+						className='w-full p-2 text-center text-white bg-stone-300 hover:bg-stone-400 rounded'>
+						この商品を削除する
 					</button>
 				</div>
 			</form>
