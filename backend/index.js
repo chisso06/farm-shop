@@ -399,9 +399,9 @@ app.get('/orders', (req, res) => {
 });
 
 app.get('/orders/:id', (req, res) => {
-	const orderId = Number(req.params.id);
+	const orderId = req.params.id;
 
-	if (orderId <= 0)
+	if (!orderId)
 		return res.json({message: 'error'});
   connection.query(
     `SELECT
@@ -426,9 +426,9 @@ app.get('/orders/:id', (req, res) => {
 
 app.post('/orders/:id', (req, res) => {
 	const status = req.body.status;
-	const orderId = Number(req.params.id);
+	const orderId = req.params.id;
 
-	if (orderId <= 0)
+	if (!orderId)
 		return res.json({message: 'error'});
 	connection.query(`
 		UPDATE orders
@@ -445,9 +445,9 @@ app.post('/orders/:id', (req, res) => {
 });
 
 app.get('/ordered_products/:order_id', (req, res) => {
-	const orderId = Number(req.params.order_id);
+	const orderId = req.params.order_id;
 
-	if (orderId <= 0)
+	if (!orderId)
 		return res.json({message: 'error'});
   connection.query(
     `SELECT * FROM ordered_products WHERE order_id='${orderId}'`,
