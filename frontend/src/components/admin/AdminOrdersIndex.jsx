@@ -43,7 +43,7 @@ const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 								<td className='pl-4 font-mono'>{o.id}</td>
 								<td className='py-2'>{o.ordered_at}</td>
 								<td className='py-2'>
-									<p>{o.customer.name}</p>
+									<p>{o.customer.name.length <= 20 ? o.customer.name : o.customer.name.substring(0, 20) + '...'}</p>
 									<p>{o.customer.email.length <= 20 ? o.customer.email : o.customer.email.substring(0, 20) + '...'}</p>
 								</td>
 								<td className='py-2'>¥{o.total_amount}</td>
