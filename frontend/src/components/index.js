@@ -6,3 +6,5 @@ export { default as AdminOrderDetails } from './admin/AdminOrderDetails';
 export { default as AdminOrdersIndex } from './admin/AdminOrdersIndex';
 export { default as AdminProductForm } from './admin/AdminProductForm';
 export { default as AdminProductsIndex } from './admin/AdminProductsIndex';
+export { default as AdminShippingForm } from './admin/AdminShippingForm';
+export { default as AdminShippingIndex } from './admin/AdminShippingIndex';

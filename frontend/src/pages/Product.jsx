@@ -1,8 +1,7 @@
-import axios from 'axios';
 import { React, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Toast } from '../components';
-import { getBase64Images, getImages, getProduct, imageSrc, updateCartStorage } from '../functions';
+import { getBase64Images, getImages, getProduct, getShippingFees, getShippingMethod, imageSrc, updateCartStorage } from '../functions';
 
 const Product = () => {
 	const params = useParams();
@@ -10,7 +9,8 @@ const Product = () => {
 	const [product, setProduct] = useState({});
 	const [images, setImages] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
-	const [shippingMethod, setShippingMethod] = useState([]);
+	const [shippingMethod, setShippingMethod] = useState({});
+	const [shippingFees, setShippingFees] = useState([]);
 	const [item, setItem] = useState({
 		product_id: productId,
 		number: 0,
@@ -62,15 +62,14 @@ const Product = () => {
 	}, [productId]);
 
 	useEffect(() => {
-		const getShippingMethod = async () => {
-			await axios.get(`/backend/shipping/${product.shipping_method}`)
-			.then((res) => {
-				// console.log('shippingMethod:', res.data);
-				setShippingMethod(res.data);
-			});
+		const getData = async () => {
+			const shippingMethodData = await getShippingMethod(product.shipping_method);
+			const shippingFeesData = await getShippingFees(product.shipping_method);
+			setShippingMethod(shippingMethodData);
+			setShippingFees(shippingFeesData);
 		}
 		if (product.shipping_method)
-			getShippingMethod();
+			getData();
 	}, [product]);
 
 	useEffect(() => {
@@ -82,18 +81,18 @@ const Product = () => {
 	const ShippingModal = () => {
 		const areaList = [
 			{method_name: 'Hokkaido', name: '北海道', prefectures: '北海道'},
-			{method_name: 'Hokkaido', name: '東北', prefectures: '青森県, 岩手県, 宮城県, 秋田県, 山形県, 福島県'},
-			{method_name: 'Hokkaido', name: '関東', prefectures: '茨城県, 栃木県, 群馬県, 埼玉県, 千葉県, 東京都, 神奈川県, 山梨県'},
-			{method_name: 'Hokkaido', name: '信越', prefectures: '新潟県, 長野県'},
-			{method_name: 'Hokkaido', name: '北陸', prefectures: '富山県, 石川県, 福井県'},
-			{method_name: 'Hokkaido', name: '東海', prefectures: '岐阜県, 静岡県, 愛知県, 三重県'},
-			{method_name: 'Hokkaido', name: '近畿', prefectures: '滋賀県, 京都府, 大阪府, 兵庫県, 奈良県, 和歌山県'},
-			{method_name: 'Hokkaido', name: '中国', prefectures: '鳥取県, 島根県, 岡山県, 広島県, 山口県'},
-			{method_name: 'Hokkaido', name: '四国', prefectures: '徳島県, 香川県, 愛媛県, 高知県'},
-			{method_name: 'Hokkaido', name: '九州', prefectures: '福岡県, 佐賀県, 長崎県, 熊本県, 大分県, 宮崎県, 鹿児島県'},
-			{method_name: 'Hokkaido', name: '沖縄', prefectures: '沖縄県'},
+			{method_name: 'Tohoku', name: '東北', prefectures: '青森県, 岩手県, 宮城県, 秋田県, 山形県, 福島県'},
+			{method_name: 'Kanto', name: '関東', prefectures: '茨城県, 栃木県, 群馬県, 埼玉県, 千葉県, 東京都, 神奈川県, 山梨県'},
+			{method_name: 'Sinetsu', name: '信越', prefectures: '新潟県, 長野県'},
+			{method_name: 'Hokuriku', name: '北陸', prefectures: '富山県, 石川県, 福井県'},
+			{method_name: 'Tokai', name: '東海', prefectures: '岐阜県, 静岡県, 愛知県, 三重県'},
+			{method_name: 'Kinki', name: '近畿', prefectures: '滋賀県, 京都府, 大阪府, 兵庫県, 奈良県, 和歌山県'},
+			{method_name: 'Chugoku', name: '中国', prefectures: '鳥取県, 島根県, 岡山県, 広島県, 山口県'},
+			{method_name: 'Shikoku', name: '四国', prefectures: '徳島県, 香川県, 愛媛県, 高知県'},
+			{method_name: 'Kyusyu', name: '九州', prefectures: '福岡県, 佐賀県, 長崎県, 熊本県, 大分県, 宮崎県, 鹿児島県'},
+			{method_name: 'Okinawa', name: '沖縄', prefectures: '沖縄県'},
 		];
-		if (shippingMethod.length) {
+		if (shippingFees.length) {
 			return (
 				<dialog id="modal" className="modal modal-bottom sm:modal-middle p-4 rounded-md">
 					<div className="modal-box">
@@ -101,12 +100,12 @@ const Product = () => {
 							<button className="btn btn-sm btn-ghost absolute right-4 top-4">✕</button>
 						</form>
 						<h3 className="font-bold text-lg">送料・配送方法について</h3>
-						<p className="py-4">{shippingMethod[0].name}</p>
+						<p className="py-4">{shippingMethod.name}</p>
 						<table className='text-sm'>
 							<thead>
 								<tr className='bg-stone-100 border'>
 									<th>地域</th>
-									{ shippingMethod.map((m, i) => {
+									{ shippingFees.map((m, i) => {
 										return (<th key={i} className='px-2 text-center'>{m.size}</th>);
 									})}
 								</tr>
@@ -119,7 +118,7 @@ const Product = () => {
 												<p>{area.name}</p>
 												<p className='text-xs'>{area.prefectures}</p>
 											</td>
-											{ shippingMethod.map((m, i) => {
+											{shippingFees.map((m, i) => {
 												return (<td key={i} className='px-2 text-center'>¥{m[area.method_name]}</td>);
 											})}
 										</tr>
