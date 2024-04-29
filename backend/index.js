@@ -353,19 +353,142 @@ app.get('/shipping', (req, res) => {
 });
 
 app.get('/shipping/:id', (req, res) => {
+	var methodId = Number(req.params.id);
+
+	if (!methodId)
+		return res.json({status: 'fatal', message: 'invalid method id.'});
+	connection.query(
+		`SELECT * FROM shipping_methods WHERE id=${methodId}`,
+		(err, results, fields) => {
+			if (err) { throw err }
+			res.json(results[0]);
+		});
+});
+
+app.post('/shipping/:id', async (req, res) => {
+	var methodId = Number(req.params.id);
+	const feesData = req.body.fees;
+
+	if (isNaN(methodId) || methodId != req.body.method.id)
+		return res.json({status: 'fatal', message: 'invalid method id.'});
+
+	const method = {
+		id: req.body.method.id,
+		name: req.body.method.name,
+	};
+	if (!method.id)
+		delete method.id;
+
+	console.log('method: ', method);
+	console.log('feesData: ', feesData);
+
+	const sql_prompt = `
+		INSERT INTO shipping_methods (??) VALUES (?)
+		ON DUPLICATE KEY UPDATE `
+		+ Object.entries(method).map((field) => `${field[0]}='${field[1]}'`).join();
+	methodId = await new Promise((resolve) => {
+		connection.query(
+			sql_prompt,
+			[Object.keys(method), Object.values(method)],
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				method.id = (method.id ? method.id : results.insertId);
+				resolve(method.id ? method.id : results.insertId);
+			}
+		);
+	});
+	if (!methodId)
+		return res.json({status: 'fatal', message: 'error'});
+	await new Promise((resolve) => {
+		connection.query(
+			`DELETE FROM shipping_fees WHERE method_id=${methodId}`,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				resolve(results);
+			}
+		);
+	});
+	const fees = await Promise.all(feesData.map(async (data) => {
+		const fee = {
+			id: data.id,
+			size: data.size,
+			min_n: data.min_n,
+			max_n: data.max_n,
+			Hokkaido: data.Hokkaido,
+			Tohoku: data.Tohoku,
+			Kanto: data.Kanto,
+			Sinetsu: data.Sinetsu,
+			Hokuriku: data.Hokuriku,
+			Tokai: data.Tokai,
+			Kinki: data.Kinki,
+			Chugoku: data.Chugoku,
+			Shikoku: data.Shikoku,
+			Kyusyu: data.Kyusyu,
+			Okinawa: data.Okinawa,
+			method_id: methodId,
+		};
+		if (!fee.id)
+			delete fee.id;
+		const sql_prompt2 = `
+			INSERT INTO shipping_fees (??) VALUES (?)
+			ON DUPLICATE KEY UPDATE `
+			+ Object.entries(fee).map((field) => `${field[0]}='${field[1]}'`).join();
+		return new Promise((resolve) => {
+			connection.query(
+				sql_prompt2,
+				[Object.keys(fee), Object.values(fee)],
+				(err, results, fields) => {
+					if (err) {
+						console.log(err);
+						throw err;
+					}
+					if (!data.id)
+						data.id = results.insertId;
+					resolve(data);
+				}
+			);
+		});
+	}));
+	return res.json({
+		status: 'success',
+		message: '配送方法を保存しました',
+		method,
+		fees,
+	});
+})
+
+app.delete('/shipping/:id', (req, res) => {
+	const shippingId = Number(req.params.id);
+
+	if (isNaN(shippingId) || shippingId <= 0)
+	return res.json({status: 'error', message: 'invalid shipping_id'});
+	connection.query(
+		`DELETE FROM shipping_methods WHERE id=${req.params.id}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json({
+				status: 'success'
+			});
+		}
+	);
+});
+
+app.get('/shipping/:id/fee', (req, res) => {
 	const methodId = Number(req.params.id);
 
 	if (methodId <= 0)
 		return res.json({});
 	connection.query(`
-		SELECT
-			method_id,
-			name,
-			size,
-			min_n, max_n,
-			Hokkaido, Tohoku, Kanto, Sinetsu, Hokuriku, Tokai, Kinki, Chugoku, Shikoku, Kyusyu, Okinawa
-		FROM shipping_methods
-		INNER JOIN shipping_fees ON shipping_methods.id=shipping_fees.method_id
+		SELECT * FROM shipping_fees
 		WHERE method_id=${methodId}
 		ORDER BY min_n`,
 	(err, results, fields) => {

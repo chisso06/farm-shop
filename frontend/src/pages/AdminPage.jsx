@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AdminNews from './admin/AdminNews';
 import AdminOrders from './admin/AdminOrders';
 import AdminProducts from './admin/AdminProducts';
+import AdminShipping from './admin/AdminShipping';
 
 const AdminPage = () => {
 	const params = useParams();
@@ -59,9 +60,7 @@ const AdminPage = () => {
 			case 'admin-products': 
 				return <AdminProducts />;
 			case 'admin-shipping': 
-				return (<div>
-
-				</div>);
+				return <AdminShipping />;
 			case 'admin-blog': 
 				return (<div>
 
