@@ -23,10 +23,6 @@ const AdminPage = () => {
 			title: '送料管理'
 		},
 		{
-			name: 'admin-blog',
-			title: 'ブログ管理'
-		},
-		{
 			name: 'admin-news',
 			title: 'お知らせ管理'
 		},
@@ -61,10 +57,6 @@ const AdminPage = () => {
 				return <AdminProducts />;
 			case 'admin-shipping': 
 				return <AdminShipping />;
-			case 'admin-blog': 
-				return (<div>
-
-				</div>);
 			case 'admin-news': 
 				return <AdminNews />;
 			default: 
@@ -100,7 +92,7 @@ const AdminPage = () => {
 			(width >= 960 && sessionStorage.getItem('session')) ?
 			<div className='flex'>
 				<div className='min-h-screen w-1/5 border-r bg-stone-100'>
-					<p className='w-full px-4 py-8 text-left border-b bg-white font-bold'>管理画面</p>
+					<p className='w-full px-4 py-8 text-left border-b bg-white font-bold font-mono text-lg'>管理画面</p>
 					<AdminMenu />
 				</div>
 				<div className='h-full w-4/5'>

@@ -110,21 +110,19 @@ const Product = () => {
 									})}
 								</tr>
 							</thead>
-							<tbody>{
-								areaList.map((area, i) => {
-									return (
-										<tr key={i} className='border'>
-											<td>
-												<p>{area.name}</p>
-												<p className='text-xs'>{area.prefectures}</p>
-											</td>
-											{shippingFees.map((m, i) => {
-												return (<td key={i} className='px-2 text-center'>¥{m[area.method_name]}</td>);
-											})}
-										</tr>
-									);
-								})
-							}</tbody>
+							<tbody>
+								{areaList.map((area, i) => {return (
+									<tr key={i} className='border'>
+										<td>
+											<p>{area.name}</p>
+											<p className='text-xs'>{area.prefectures}</p>
+										</td>
+										{ shippingFees.map((m, i) => {
+											return (<td key={i} className='px-2 text-center'>¥{m[area.method_name]}</td>);
+										})}
+									</tr>
+								)})}
+							</tbody>
 						</table>
 					</div>
 				</dialog>
