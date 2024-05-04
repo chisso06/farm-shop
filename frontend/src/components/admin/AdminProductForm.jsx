@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { React, useEffect, useRef, useState } from 'react';
+import { React, useContext, useEffect, useRef, useState } from 'react';
 import {
 	deleteProduct,
 	getBase64Images,
@@ -8,6 +8,7 @@ import {
 	getShippingMethods,
 	imageSrc
 } from '../../functions';
+import { AdminToastContext } from '../../functions/ToastFunc';
 
 const AdminProductForm = ({productId, setProductId}) => {
 	const [product, setProduct] = useState({});
@@ -16,6 +17,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 	const [base64Images, setBase64Images] = useState([]);
 	const [imageFiles, setImageFiles] = useState([]);
 	const inputRef = useRef(null);
+	const context = useContext(AdminToastContext);
 	const categoryList = ['フィナンシェ', 'ケーキ', 'その他'];
 
 	const handleInputChange = (e) => {
@@ -112,6 +114,10 @@ const AdminProductForm = ({productId, setProductId}) => {
 						base64Images_idx: image.base64Images_idx
 					}
 				});
+				if (productId)
+					context.setMessage('商品を更新しました');
+				else
+					context.setMessage('商品を追加しました');
 				setProductId(res.data.product.id);
 				setImages(newImages);
 				setImageFiles([]);
@@ -121,6 +127,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 	const handleDelete = async () => {
 		if (window.confirm('この商品を削除しますか？')) {
 			await deleteProduct(productId);
+			context.setMessage('商品を削除しました');
 			setProductId(-1);
 		}
 	}
@@ -151,7 +158,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 	}, [productId]);
 
 	return (
-		<div className='p-4'>
+		<div className='px-4'>
 			<button onClick={() => setProductId(-1)}>
 				&lt; <span className='text-sm hover:underline'>商品一覧に戻る</span>
 			</button>
@@ -291,12 +298,14 @@ const AdminProductForm = ({productId, setProductId}) => {
 						className='w-full mb-6 p-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
 						保存
 					</button>
-					<button
-						type='button'
-						onClick={handleDelete}
-						className='w-full p-2 text-center text-white bg-stone-300 hover:bg-stone-400 rounded'>
-						この商品を削除する
-					</button>
+					{productId ?
+						<button
+							type='button'
+							onClick={handleDelete}
+							className='w-full p-2 text-center text-white bg-stone-300 hover:bg-stone-400 rounded'>
+							この商品を削除する
+						</button>
+					:''}
 				</div>
 			</form>
 		</div>

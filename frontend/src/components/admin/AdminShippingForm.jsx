@@ -1,11 +1,13 @@
 import axios from 'axios';
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { deleteShippingMethod, getShippingFees, getShippingMethod } from '../../functions';
+import { AdminToastContext } from '../../functions/ToastFunc';
 
 const AdminProductForm = ({shippingId, setShippingId}) => {
 	const [shippingMethod, setShippingMethod] = useState({});
 	const [shippingFees, setShippingFees] = useState([]);
 	const [shippingFeeIdx, setShippingFeeIdx] = useState(0);
+	const context = useContext(AdminToastContext);
 	const areaList = [
 		{method_name: 'Hokkaido', name: '北海道', prefectures: '北海道'},
 		{method_name: 'Tohoku', name: '東北', prefectures: '青森県, 岩手県, 宮城県, 秋田県, 山形県, 福島県'},
@@ -81,6 +83,10 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			})
 			.then(async (res) => {
 				console.log(res.data);
+				if (shippingId)
+					context.setMessage('配送方法を追加しました');
+				else
+					context.setMessage('配送方法を更新しました');
 				if (res.data.status === 'success')
 					setShippingId(res.data.method.id);
 			});
@@ -89,6 +95,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	const handleDelete = async () => {
 		if (window.confirm('この配送方法を削除しますか？')) {
 			await deleteShippingMethod(shippingId);
+			context.setMessage('配送方法を削除しました');
 			setShippingId(-1);
 		}
 	};
@@ -129,7 +136,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	}, [shippingId]);
 
 	return (
-		<div className='p-4'>
+		<div className='px-4'>
 			<button onClick={() => setShippingId(-1)}>
 				&lt; <span className='text-sm hover:underline'>配送方法一覧に戻る</span>
 			</button>
@@ -233,12 +240,14 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 						className='w-full mb-6 p-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
 						保存
 					</button>
-					<button
-						type='button'
-						onClick={handleDelete}
-						className='w-full p-2 text-center text-white bg-stone-300 hover:bg-stone-400 rounded'>
-						この配送方法を削除する
-					</button>
+					{shippingId ?
+						<button
+							type='button'
+							onClick={handleDelete}
+							className='w-full p-2 text-center text-white bg-stone-300 hover:bg-stone-400 rounded'>
+							この配送方法を削除する
+						</button>
+					:''}
 				</div>
 			</form>
 		</div>

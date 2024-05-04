@@ -1,6 +1,5 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Toast } from '../components';
 import { createCart, getIndexBase64Images, getShippingFees, imageSrc } from '../functions';
 
 const OrderForm = () => {
@@ -19,7 +18,6 @@ const OrderForm = () => {
 		memo: ''
 	});
 	const [base64Images, setBase64Images] = useState([]);
-	const [isVisible, setIsVisible] = useState(false);
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
@@ -98,10 +96,6 @@ const OrderForm = () => {
 
 	return (
 		<div className='mt-32 mb-10 sm:mt-40 sm:mb-20'>
-			<Toast
-				isVisible={isVisible}
-				setIsVisible={setIsVisible}
-				message={'在庫の上限を超えている商品があります。'} />
 			<div className='w-3/4 mx-auto sm:flex sm:gap-2'>
 				<div className='w-full sm:w-2/5 mb-10'>
 					<div className='p-2 border rounded'>

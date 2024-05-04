@@ -17,12 +17,15 @@ const AdminProductsIndex = ({setProductId}) => {
 
 	return (
 		<div>
-			<div className='p-4 flex justify-end'>
-				<button
-					onClick={() => setProductId(0)}
-					className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
-					+商品を作成する
-				</button>
+			<div className='px-4 pb-4 flex items-center'>
+				<p className='w-1/2 font-mono text-2xl font-bold'>商品管理</p>
+				<div className='w-1/2 flex justify-end'>
+					<button
+						onClick={() => setProductId(0)}
+						className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
+						+商品を作成する
+					</button>
+				</div>
 			</div>
 			<table className='w-full'>
 				<thead>

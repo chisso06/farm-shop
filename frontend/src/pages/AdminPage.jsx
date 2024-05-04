@@ -1,5 +1,7 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { AdminToast } from '../components';
+import { AdminToastContext, useAdminToast } from '../functions/ToastFunc';
 import AdminNews from './admin/AdminNews';
 import AdminOrders from './admin/AdminOrders';
 import AdminProducts from './admin/AdminProducts';
@@ -88,21 +90,21 @@ const AdminPage = () => {
 	}, [width, navigate, adminPage]);
 
 	return (
-		<div className='mt-16'> {
+		<AdminToastContext.Provider value={useAdminToast()}>{
 			(width >= 960 && sessionStorage.getItem('session')) ?
-			<div className='flex'>
+			<div className='mt-16 flex'>
 				<div className='min-h-screen w-1/5 border-r bg-stone-100'>
 					<p className='w-full px-4 py-8 text-left border-b bg-white font-bold font-mono text-lg'>管理画面</p>
 					<AdminMenu />
 				</div>
-				<div className='h-full w-4/5'>
+				<div className='h-full w-4/5 mt-14'>
+					<AdminToast />
 					<AdminContent />
 				</div>
 			</div>
 			:
 			<div />
-		}
-		</div>
+		}</AdminToastContext.Provider>
 	)
 }
 

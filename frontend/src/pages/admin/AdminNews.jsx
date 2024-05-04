@@ -1,9 +1,11 @@
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { React, useEffect, useState } from "react";
+import { React, useContext, useEffect, useState } from "react";
 import { createNews, deleteNews, getNews } from '../../functions';
+import { AdminToastContext } from '../../functions/ToastFunc';
 
 const AdminNews = () => {
+	const context = useContext(AdminToastContext);
 	const [news, setNews] = useState([]);
 
 	const handleSubmit = async (e) => {
@@ -13,10 +15,12 @@ const AdminNews = () => {
 		await createNews(newsObj);
 		const newsData = await getNews();
 		setNews(newsData);
+		context.setMessage('新しいお知らせを追加しました');
 };
 
 	const handleTrash = async (newsId) => {
 		await deleteNews(newsId);
+		context.setMessage('お知らせを削除しました');
 		setNews(news.filter((n) => n.id !== newsId));
 	};
 
@@ -29,27 +33,30 @@ const AdminNews = () => {
 	}, []);
 
 	return (
-		<div className='my-20 w-4/5 mx-auto'>
-			<form onSubmit={handleSubmit} className="w-full mb-4 flex gap-2">
-				<input name='date' type="date" className="h-10 w-1/5 px-2 justify-center border rounded" required />
-				<input name='content' type="text" className="h-10 w-2/3 px-2 border rounded" required />
-				<button
-					type="submit"
-					className="h-10 w-10 rounded-full font-bold text-stone-400 bg-stone-200 hover:bg-stone-300">
-					<FontAwesomeIcon icon={faPlus} />
-				</button>
-			</form>
-			<ul>
-				{news.length ? news.map((n, i) => {return (
-					<li key={i} className='pr-4 py-5 flex items-center border-b'>
-						<p className='w-full'>{n.date} {n.content}</p>
-						<FontAwesomeIcon
-							onClick={() => {handleTrash(n.id)}}
-							icon={faTrash}
-							className='text-stone-300 hover:text-stone-400 cursor-pointer' />
-					</li>);
-				}):''}
-			</ul>
+		<div>
+			<p className='w-1/2 px-4 pb-4 font-mono text-2xl font-bold'>お知らせ管理</p>
+			<div className='px-6 mx-auto'>
+				<form onSubmit={handleSubmit} className="w-full mb-4 flex gap-2 justify-center">
+					<input name='date' type="date" className="h-10 w-44 px-2 justify-center border rounded" required />
+					<input name='content' type="text" className="h-10 w-full px-2 border rounded" required />
+					<button
+						type="submit"
+						className="h-10 w-12 rounded-full font-bold text-stone-400 bg-stone-200 hover:bg-stone-300">
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</form>
+				<ul>
+					{news.length ? news.map((n, i) => {return (
+						<li key={i} className='pr-4 py-5 flex items-center border-b'>
+							<p className='w-full'>{n.date} {n.content}</p>
+							<FontAwesomeIcon
+								onClick={() => {handleTrash(n.id)}}
+								icon={faTrash}
+								className='text-stone-300 hover:text-stone-400 cursor-pointer' />
+						</li>);
+					}):''}
+				</ul>
+			</div>
 		</div>
 	);
 };

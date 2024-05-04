@@ -1,18 +1,18 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Toast } from '../components';
 import { createCart, getIndexBase64Images, imageSrc, updateCartStorage } from '../functions';
+import { ToastContext } from '../functions/ToastFunc';
 
 const Cart = () => {
 	const search = useLocation().search;
 	const query = new URLSearchParams(search);
 	const message = query.get('message');
+	const context = useContext(ToastContext);
   const [sum, setSum] = useState(0);
   const [cart, setCart] = useState([]);
   const [base64Images, setBase64Images] = useState([]);
-	const [isVisible, setIsVisible] = useState(false);
 
 	const handleChange = (e, i) => {
 		var value = Number(e.target.value);
@@ -39,9 +39,10 @@ const Cart = () => {
 	}, []);
 
 	useEffect(() => {
-		if (message)
-			setIsVisible(true);
-	}, [message]);
+		if (message) {
+			context.setMessage(message);
+		}
+	}, [message, context]);
 
 	useEffect(() => {
 		var calcSum = 0;
@@ -59,7 +60,6 @@ const Cart = () => {
 
 	return (
 		<div className='w-3/4 my-16 mx-auto'>
-			<Toast isVisible={isVisible} setIsVisible={setIsVisible} message={message} />
 			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
 				カートに入っている商品
 			</p>

@@ -1,11 +1,12 @@
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Toast } from '../components';
 import { getBase64Images, getImages, getProduct, getShippingFees, getShippingMethod, imageSrc, updateCartStorage } from '../functions';
+import { ToastContext } from '../functions/ToastFunc';
 
 const Product = () => {
 	const params = useParams();
 	const productId = Number(params.product_id);
+	const context = useContext(ToastContext);
 	const [product, setProduct] = useState({});
 	const [images, setImages] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
@@ -15,7 +16,6 @@ const Product = () => {
 		product_id: productId,
 		number: 0,
 	});
-	const [isVisible, setIsVisible] = useState(false);
 
 	const handleChange = (e) => {
 		const {name, value} = e.target;
@@ -42,7 +42,7 @@ const Product = () => {
 			else
 				cart[i].number += item.number;
 			updateCartStorage(cart);
-			setIsVisible(true);
+			context.setMessage('商品を買い物かごに追加しました');
 		}
 	};
 
@@ -135,10 +135,6 @@ const Product = () => {
 	return (
 		<div className='w-3/4 my-16 mx-auto'>
 			<ShippingModal />
-			<Toast
-				isVisible={isVisible}
-				setIsVisible={setIsVisible}
-				message={'商品をカートに追加しました'} />
 			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
 				{product.name}
 			</p>

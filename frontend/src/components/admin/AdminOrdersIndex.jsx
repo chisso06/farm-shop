@@ -26,6 +26,7 @@ const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 
 	return (
 		<div>
+			<p className='ml-4 pb-4 font-mono text-2xl font-bold'>注文管理</p>
 			<table className='w-full'>
 				<thead>
 					<tr className='border-b font-mono'>

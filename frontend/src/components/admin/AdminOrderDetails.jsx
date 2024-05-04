@@ -1,7 +1,9 @@
 import axios from 'axios';
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
+import { AdminToastContext } from '../../functions/ToastFunc';
 
 const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
+	const context = useContext(AdminToastContext);
 	const [order, setOrder] = useState({});
 	const [orderedProducts, setOrderedProducts] = useState([]);
 
@@ -35,6 +37,7 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 		}).then((res) => {
 			// console.log(res.data);
 			setOrder({...order, status: orderStatus});
+			context.setMessage('ステータスを変更しました');
 		});
 	};
 
@@ -85,7 +88,7 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 
 	return (
 		(order.id) ? 
-		<div className='p-4'>
+		<div className='px-4'>
 			<Modal />
 			<button onClick={() => handleClick('')}>
 				&lt; <span className='text-sm hover:underline'>注文一覧に戻る</span>
@@ -134,7 +137,7 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 				</li>
 				<li className='py-2 flex border-b'>
 					<p className='w-36 font-mono font-bold'>支払ID</p>
-					<p className='font-mono'>{order.checkout_session_id}</p>
+					<p className='font-mono text-sm'>{order.checkout_session_id}</p>
 				</li>
 				<li className='py-2 border-b'>
 					<div className='pb-2 flex font-mono'>

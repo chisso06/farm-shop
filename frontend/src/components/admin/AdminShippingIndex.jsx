@@ -14,12 +14,15 @@ const AdminProductsIndex = ({setShippingId}) => {
 
 	return (
 		<div>
-			<div className='p-4 flex justify-end'>
-				<button
-					onClick={() => setShippingId(0)}
-					className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
-					+配送方法を追加
-				</button>
+			<div className='px-4 pb-4 flex'>
+				<p className='w-1/2 font-mono text-2xl font-bold'>送料管理</p>
+				<div className='w-1/2 flex justify-end'>
+					<button
+						onClick={() => setShippingId(0)}
+						className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
+						+配送方法を追加
+					</button>
+				</div>
 			</div>
 			<table className='w-full'>
 				<thead>
