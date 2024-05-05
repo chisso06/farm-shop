@@ -16,7 +16,6 @@ CREATE TABLE products (
   INDEX shipping_index (shipping_method),
 	FOREIGN KEY (shipping_method)
 		REFERENCES shipping_methods(id)
-		ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 INSERT into products(

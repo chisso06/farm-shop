@@ -2,7 +2,7 @@ USE farm_shop;
 
 CREATE TABLE shipping_methods (
 	id INT PRIMARY KEY AUTO_INCREMENT,
-	name VARCHAR(10) NOT NULL UNIQUE
+	name VARCHAR(10) NOT NULL
 );
 
 CREATE TABLE shipping_fees (
@@ -29,6 +29,13 @@ CREATE TABLE shipping_fees (
 		ON UPDATE CASCADE ON DELETE CASCADE,
 	UNIQUE order_product_index (size, method_id)
 ) ENGINE=INNODB;
+
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+INSERT INTO shipping_methods (
+	name
+) VALUES (
+	"なし"
+);
 
 -- /*
 INSERT INTO shipping_methods (

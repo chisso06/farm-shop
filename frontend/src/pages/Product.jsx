@@ -134,7 +134,7 @@ const Product = () => {
 
 	return (
 		<div className='w-3/4 my-16 mx-auto'>
-			<ShippingModal />
+			{product.shipping_method ? <ShippingModal /> : ''}
 			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
 				{product.name}
 			</p>
@@ -142,13 +142,13 @@ const Product = () => {
 				<div className='sm:w-2/3'>
 					{images ? images.map((image, i) => {return (
 						image.order_of_images === 1 ? 
-						<img
-							key={i}
-							src={imageSrc(base64Images[image.base64Images_idx])}
-							alt='商品画像'
-							className='w-full aspect-[3/2] object-contain bg-stone-200' />
-						:'')
-					}):''}
+							<img
+								key={i}
+								src={imageSrc(base64Images[image.base64Images_idx])}
+								alt='商品画像'
+								className='w-full aspect-[3/2] object-contain bg-stone-200' />
+						:''
+					)}):''}
 					<div className='my-10'>
 						<p className='mb-4 text-2xl font-bold font-mono'>商品について</p>
 						<p className='whitespace-pre-line'>{product.description}</p>
@@ -158,11 +158,15 @@ const Product = () => {
 					<div className='p-4 font-mono border rounded'>
 						<p>通常価格（税込）</p>
 						<p className='text-3xl text-amber-600 font-bold'>¥{product.price}</p>
-						<button
-							onClick={()=>document.getElementById('modal').showModal()}
-							className="btn text-stone-500 text-sm">
-							ⓘ<span className='hover:underline'>送料について</span>
-						</button>
+						{product.shipping_method ? 
+							<button
+								onClick={()=>document.getElementById('modal').showModal()}
+								className="btn text-stone-500 text-sm">
+								ⓘ<span className='hover:underline'>送料について</span>
+							</button>
+							:
+							<p className='text-stone-500 text-sm'>送料なし</p>
+						}
 						<p className='text-sm'>在庫：{product.stock}</p>
 						<div className='pt-10 flex items-center'>
 							<p className='pr-4'>数量</p>

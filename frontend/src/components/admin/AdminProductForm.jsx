@@ -1,12 +1,13 @@
-import axios from 'axios';
 import { React, useContext, useEffect, useRef, useState } from 'react';
 import {
+	createProduct,
 	deleteProduct,
 	getBase64Images,
 	getImages,
 	getProduct,
 	getShippingMethods,
-	imageSrc
+	imageSrc,
+	updateProduct
 } from '../../functions';
 import { AdminToastContext } from '../../functions/ToastFunc';
 
@@ -86,42 +87,26 @@ const AdminProductForm = ({productId, setProductId}) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		await axios.post(`/backend/products/${productId}`, {product, images})
-			.then(async (res) => {
-				const imagesData = res.data.images;
-				if (imageFiles.length) {
-					const formData = new FormData();
-					imageFiles.map((file, i) => {
-						const image = imagesData.find((data) => data.imageFiles_idx === i);
-						const blob = file.slice(0, file.size, file.type);
-						const renamedFile = new File([blob], image.id +'.jpg', {type: file.type});
-						formData.append('files[]', renamedFile);
-					});
-					await axios.post(
-						`/backend/upload/products`,
-						formData,
-						{headers: {'content-type': 'multipart/form-data'}})
-						.then((res2) => {
-							// console.log(res2.data);
-						});
-				}
-				const imagesData2 = imagesData.filter(image => !image.deleted);
-				const newImages = imagesData2.map((image) => {
-					return {
-						id: image.id,
-						product_id: image.product_id,
-						order_of_images: image.order_of_images,
-						base64Images_idx: image.base64Images_idx
-					}
-				});
-				if (productId)
-					context.setMessage('商品を更新しました');
-				else
-					context.setMessage('商品を追加しました');
-				setProductId(res.data.product.id);
-				setImages(newImages);
-				setImageFiles([]);
-			});
+		var res;
+		if (productId) {
+			res = await updateProduct({product, images, imageFiles});
+			context.setMessage('商品を更新しました');
+		} else {
+			res = await createProduct({product, images, imageFiles});
+			setProductId(res.product.id);
+			context.setMessage('商品を追加しました');
+		}
+		const imagesData = res.images.filter(image => !image.deleted);
+		const newImages = imagesData.map((image) => {
+			return {
+				id: image.id,
+				product_id: image.product_id,
+				order_of_images: image.order_of_images,
+				base64Images_idx: image.base64Images_idx
+			}
+		});
+		setImages(newImages);
+		setImageFiles([]);
 	};
 
 	const handleDelete = async () => {
@@ -140,7 +125,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 			price: 0,
 			stock: 0,
 			category: '',
-			shipping_method: 0,
+			shipping_method: '',
 			public_status: 0,
 			popular_status: 0
 		};	
@@ -255,7 +240,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 						onChange={handleInputChange}
 						name='shipping_method'
 						className='p-2 w-1/2 h-10 border rounded invalid:border-amber-600'
-						value={product.shipping_method ? product.shipping_method : ''}
+						value={product.shipping_method}
 						required>
 						<option value=''>選択してください</option>
 						{shippingMethods.length ? shippingMethods.map((s, i) => {

@@ -1,6 +1,5 @@
-import axios from 'axios';
 import { React, useContext, useEffect, useState } from 'react';
-import { deleteShippingMethod, getShippingFees, getShippingMethod } from '../../functions';
+import { createShipping, deleteShippingMethod, getShippingFees, getShippingMethod, updateShipping } from '../../functions';
 import { AdminToastContext } from '../../functions/ToastFunc';
 
 const AdminProductForm = ({shippingId, setShippingId}) => {
@@ -41,7 +40,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			min_n: 0,
 			max_n: 0,
 		}
-		areaList.map((area) => newFee[area.method_name] = '');
+		areaList.map((area) => newFee[area.method_name]);
 		setShippingFeeIdx(shippingFees.length);
 		setShippingFees([...shippingFees, newFee]);
 	}
@@ -65,7 +64,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 							&& value <= shippingFees[shippingFeeIdx - 1].max_n)
 						|| (name === 'max_n' && i < shippingFees.length - 1
 							&& value >= shippingFees[shippingFeeIdx + 1].min_n)) {
-					window.alert('下のサイズの最大値が上のサイズの最小値よりも小さくなるように設定してください。');
+					window.alert('下のサイズの最大値が上のサイズの最小値よりも小さくなるように設定してください');
 				} else {
 					fee[name] = value;
 				}
@@ -77,23 +76,27 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		await axios.post(`/backend/shipping/${shippingId}`, {
-				method: shippingMethod,
-				fees: shippingFees,
-			})
-			.then(async (res) => {
-				console.log(res.data);
-				if (shippingId)
-					context.setMessage('配送方法を追加しました');
-				else
+		if (shippingId) {
+			await updateShipping({method: shippingMethod, fees: shippingFees})
+			.then((res) => {
+				if (res.status === 'success') {
 					context.setMessage('配送方法を更新しました');
-				if (res.data.status === 'success')
-					setShippingId(res.data.method.id);
+				}
 			});
+		} else {
+			await createShipping({method: shippingMethod, fees: shippingFees})
+			.then((res) => {
+				console.log(res);
+				if (res.status === 'success') {
+					setShippingId(res.method.id);
+					context.setMessage('配送方法を追加しました');
+				}
+			});
+		}
 	};
 
 	const handleDelete = async () => {
-		if (window.confirm('この配送方法を削除しますか？')) {
+		if (window.confirm('この配送方法を削除しますか？\n※この配送方法が設定されている商品の配送方法は「なし」に設定されます')) {
 			await deleteShippingMethod(shippingId);
 			context.setMessage('配送方法を削除しました');
 			setShippingId(-1);

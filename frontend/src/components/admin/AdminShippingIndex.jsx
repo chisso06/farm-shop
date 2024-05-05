@@ -31,11 +31,13 @@ const AdminProductsIndex = ({setShippingId}) => {
 					</tr>
 				</thead>
 				<tbody>
-					{shippingMethods ? shippingMethods.map((shipping, i) => {return (
-						<tr onClick={() => {setShippingId(shipping.id)}} key={i} className='border-b hover:cursor-pointer hover:bg-amber-100'>
-							<td className='pl-4 py-1 text-left'>{shipping.name}</td>
-						</tr>
-					)}):''}
+					{shippingMethods ? shippingMethods.map((shipping, i) => {
+						return shipping.id ? 
+							<tr onClick={() => {setShippingId(shipping.id)}} key={i} className='border-b hover:cursor-pointer hover:bg-amber-100'>
+								<td className='pl-4 py-1 text-left'>{shipping.name}</td>
+							</tr>
+							:''
+					}):''}
 				</tbody>
 			</table>
 		</div>
