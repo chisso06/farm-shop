@@ -1,5 +1,5 @@
 import axios from 'axios';
-import uploadImages from './uploadImages';
+import uploadImages from '../images/uploadImages';
 
 const createProduct = async ({product, images, imageFiles}) => {
 	return await axios.post(`/backend/products`, {product, images})

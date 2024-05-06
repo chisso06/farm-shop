@@ -1,8 +1,7 @@
-import axios from 'axios';
 import { React, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PopularItems } from '../components';
-import { updateCartStorage } from '../functions';
+import { getOrder, updateCartStorage } from '../functions';
 
 const OrderCompleted = () => {
 	const search = useLocation().search;
@@ -12,10 +11,8 @@ const OrderCompleted = () => {
 
 	useEffect(() => {
 		const orderCheck = async () => {
-			const res = await axios.get(`/backend/orders/${orderId}`)
-				.catch((err) => console.log(err));
-			// console.log(res.data)
-			if (res.data.status === 'pending-payment')
+			const res = await getOrder(orderId);
+			if (res.status === 'pending-payment')
 				navigate('/');
 		}
 		orderCheck();

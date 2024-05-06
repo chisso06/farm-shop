@@ -1,5 +1,6 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { areaList, prefectureList } from '../data';
 import { createCart, getIndexBase64Images, getShippingFees, imageSrc } from '../functions';
 
 const OrderForm = () => {
@@ -25,19 +26,6 @@ const OrderForm = () => {
 	};
 
 	const handleAreaChange = async (e) => {
-		const areaList = [
-			{method_name: 'Hokkaido', name: '北海道', prefectures: '北海道'},
-			{method_name: 'Tohoku', name: '東北', prefectures: '青森県, 岩手県, 宮城県, 秋田県, 山形県, 福島県'},
-			{method_name: 'Kanto', name: '関東', prefectures: '茨城県, 栃木県, 群馬県, 埼玉県, 千葉県, 東京都, 神奈川県, 山梨県'},
-			{method_name: 'Sinetsu', name: '信越', prefectures: '新潟県, 長野県'},
-			{method_name: 'Hokuriku', name: '北陸', prefectures: '富山県, 石川県, 福井県'},
-			{method_name: 'Tokai', name: '東海', prefectures: '岐阜県, 静岡県, 愛知県, 三重県'},
-			{method_name: 'Kinki', name: '近畿', prefectures: '滋賀県, 京都府, 大阪府, 兵庫県, 奈良県, 和歌山県'},
-			{method_name: 'Chugoku', name: '中国', prefectures: '鳥取県, 島根県, 岡山県, 広島県, 山口県'},
-			{method_name: 'Shikoku', name: '四国', prefectures: '徳島県, 香川県, 愛媛県, 高知県'},
-			{method_name: 'Kyusyu', name: '九州', prefectures: '福岡県, 佐賀県, 長崎県, 熊本県, 大分県, 宮崎県, 鹿児島県'},
-			{method_name: 'Okinawa', name: '沖縄', prefectures: '沖縄県'},
-		];
 		var shippingFeeCalc = 0;
 
 		setCustomerData({...customerData, 'prefecture': e.target.value});
@@ -169,53 +157,9 @@ const OrderForm = () => {
 								value={customerData.prefecture}
 								required>
 								<option value="">選択してください</option>
-								<option value="北海道">北海道</option>
-								<option value="青森県">青森県</option>
-								<option value="岩手県">岩手県</option>
-								<option value="宮城県">宮城県</option>
-								<option value="秋田県">秋田県</option>
-								<option value="山形県">山形県</option>
-								<option value="福島県">福島県</option>
-								<option value="茨城県">茨城県</option>
-								<option value="栃木県">栃木県</option>
-								<option value="群馬県">群馬県</option>
-								<option value="埼玉県">埼玉県</option>
-								<option value="千葉県">千葉県</option>
-								<option value="東京都">東京都</option>
-								<option value="神奈川県">神奈川県</option>
-								<option value="新潟県">新潟県</option>
-								<option value="富山県">富山県</option>
-								<option value="石川県">石川県</option>
-								<option value="福井県">福井県</option>
-								<option value="山梨県">山梨県</option>
-								<option value="長野県">長野県</option>
-								<option value="岐阜県">岐阜県</option>
-								<option value="静岡県">静岡県</option>
-								<option value="愛知県">愛知県</option>
-								<option value="三重県">三重県</option>
-								<option value="滋賀県">滋賀県</option>
-								<option value="京都府">京都府</option>
-								<option value="大阪府">大阪府</option>
-								<option value="兵庫県">兵庫県</option>
-								<option value="奈良県">奈良県</option>
-								<option value="和歌山県">和歌山県</option>
-								<option value="鳥取県">鳥取県</option>
-								<option value="島根県">島根県</option>
-								<option value="岡山県">岡山県</option>
-								<option value="広島県">広島県</option>
-								<option value="山口県">山口県</option>
-								<option value="徳島県">徳島県</option>
-								<option value="香川県">香川県</option>
-								<option value="愛媛県">愛媛県</option>
-								<option value="高知県">高知県</option>
-								<option value="福岡県">福岡県</option>
-								<option value="佐賀県">佐賀県</option>
-								<option value="長崎県">長崎県</option>
-								<option value="熊本県">熊本県</option>
-								<option value="大分県">大分県</option>
-								<option value="宮崎県">宮崎県</option>
-								<option value="鹿児島県">鹿児島県</option>
-								<option value="沖縄県">沖縄県</option>
+								{prefectureList.map((p, i) => {
+									return <option key={i} value={p}>{p}</option>
+								})}
 							</select>
 						</div>
 					</div>

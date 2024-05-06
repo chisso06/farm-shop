@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { React, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { createCart, getIndexBase64Images, imageSrc, updateCartStorage } from '../functions';
-import { ToastContext } from '../functions/ToastFunc';
+import { ToastContext } from '../functions/context/ToastFunc';
 
 const Cart = () => {
 	const search = useLocation().search;

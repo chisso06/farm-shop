@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const getImages = async (productId) => {
+const getProductImages = async (productId) => {
 	return await axios.get(`/backend/products/${productId}/images`)
 	.then(async (res) => {
 		// console.log(res.data);
@@ -8,4 +8,4 @@ const getImages = async (productId) => {
 	});
 }
 
-export default getImages;
+export default getProductImages;

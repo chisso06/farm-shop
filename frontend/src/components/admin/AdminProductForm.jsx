@@ -1,15 +1,16 @@
 import { React, useContext, useEffect, useRef, useState } from 'react';
+import { categoryList } from '../../data';
 import {
 	createProduct,
 	deleteProduct,
 	getBase64Images,
-	getImages,
 	getProduct,
+	getProductImages,
 	getShippingMethods,
 	imageSrc,
 	updateProduct
 } from '../../functions';
-import { AdminToastContext } from '../../functions/ToastFunc';
+import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminProductForm = ({productId, setProductId}) => {
 	const [product, setProduct] = useState({});
@@ -19,7 +20,6 @@ const AdminProductForm = ({productId, setProductId}) => {
 	const [imageFiles, setImageFiles] = useState([]);
 	const inputRef = useRef(null);
 	const context = useContext(AdminToastContext);
-	const categoryList = ['フィナンシェ', 'ケーキ', 'その他'];
 
 	const handleInputChange = (e) => {
 		const name =  e.target.name;
@@ -115,7 +115,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 			context.setMessage('商品を削除しました');
 			setProductId(-1);
 		}
-	}
+	};
 
 	useEffect(() => {
 		const newProduct = {
@@ -128,10 +128,10 @@ const AdminProductForm = ({productId, setProductId}) => {
 			shipping_method: '',
 			public_status: 0,
 			popular_status: 0
-		};	
+		};
 		const getData = async () => {
 			const productData = productId ? await getProduct(productId) : newProduct;
-			const imagesData = productId ? await getImages(productId) : [];
+			const imagesData = productId ? await getProductImages(productId) : [];
 			const base64ImagesData = productId ? await getBase64Images(imagesData) : [];
 			const shippingMethodsData = await getShippingMethods();
 			setProduct(productData);

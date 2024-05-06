@@ -6,7 +6,7 @@ import {
 } from 'react-router-dom';
 import './App.css';
 import { Footer, Header, Toast } from './components';
-import { ToastContext, useToast } from './functions/ToastFunc';
+import { ToastContext, useToast } from './functions/context/ToastFunc';
 import {
   About,
   AdminPage,
@@ -47,6 +47,6 @@ function App() {
       <Footer />
     </ToastContext.Provider>
   );
-}
+};
 
 export default App;

@@ -42,6 +42,6 @@ const AdminProductsIndex = ({setShippingId}) => {
 			</table>
 		</div>
 	)
-}
+};
 
 export default AdminProductsIndex;

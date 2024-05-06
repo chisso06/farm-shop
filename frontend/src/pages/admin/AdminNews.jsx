@@ -2,7 +2,7 @@ import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { React, useContext, useEffect, useState } from "react";
 import { createNews, deleteNews, getNews } from '../../functions';
-import { AdminToastContext } from '../../functions/ToastFunc';
+import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminNews = () => {
 	const context = useContext(AdminToastContext);

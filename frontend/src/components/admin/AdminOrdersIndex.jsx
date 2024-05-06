@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { React, useEffect, useState } from 'react';
+import { getOrders } from '../../functions';
 
 const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 	const [orders, setOrders] = useState([]);
@@ -9,19 +9,16 @@ const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 	}
 
 	useEffect(() => {
-		const getOrders = async () => {
-			await axios.get(`/backend/orders`)
-			.then((res) => {
-				// console.log(res.data);
-				res.data.map((o) => {
-					const orderStatus = orderStatusList.find((orderStatus) =>
-						orderStatus.name === o.status)
-					return o.statusTitle = orderStatus.title;
-				})
-				setOrders(res.data);
-			});
+		const getData = async () => {
+			const ordersData = await getOrders();
+			ordersData.map((o) => {
+				const orderStatus = orderStatusList.find((orderStatus) =>
+					orderStatus.name === o.status)
+				return o.statusTitle = orderStatus.title;
+			})
+			setOrders(ordersData);
 		};
-		getOrders();
+		getData();
 	}, [orderStatusList]);
 
 	return (

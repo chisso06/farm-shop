@@ -1,19 +1,16 @@
-import axios from 'axios';
 import { React, useEffect, useState } from 'react';
 import { PopularItems } from '../components';
+import { getNews } from '../functions';
 
 const News = () => {
 	const [news, setNews] = useState([]);
 
 	useEffect(() => {
-		const getNews = async () => {
-			await axios.get('/backend/news')
-			.then((res) => {
-				// console.log(res.data);
-				setNews(res.data);
-			});
+		const getData = async () => {
+			const newsData = await getNews();
+			setNews(newsData);
 		}
-		getNews();
+		getData();
 	}, []);
 
 	return (

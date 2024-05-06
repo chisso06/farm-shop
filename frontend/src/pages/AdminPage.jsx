@@ -1,40 +1,20 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { AdminNews, AdminOrders, AdminProducts, AdminShipping } from '.';
 import { AdminToast } from '../components';
-import { AdminToastContext, useAdminToast } from '../functions/ToastFunc';
-import AdminNews from './admin/AdminNews';
-import AdminOrders from './admin/AdminOrders';
-import AdminProducts from './admin/AdminProducts';
-import AdminShipping from './admin/AdminShipping';
+import { adminPagesList } from '../data';
+import { AdminToastContext, useAdminToast } from '../functions/context/ToastFunc';
 
 const AdminPage = () => {
 	const params = useParams();
 	const [width, setWidth] = useState(960);
 	const adminPage = params.page;
-	const adminPages = [
-		{
-			name: 'admin-orders',
-			title: '注文管理'
-		},
-		{
-			name: 'admin-products',
-			title: '商品管理'
-		},
-		{
-			name: 'admin-shipping',
-			title: '送料管理'
-		},
-		{
-			name: 'admin-news',
-			title: 'お知らせ管理'
-		},
-	];
 	const navigate = useNavigate();
 
 	const AdminMenu = () => {
 		return (
 			<div className=''>{
-				adminPages.map((p, i) => {
+				adminPagesList.map((p, i) => {
 					var className = 'w-full p-4 block text-left border-b hover:bg-stone-300';
 					if (p.name === adminPage)
 						className += ' bg-stone-300';

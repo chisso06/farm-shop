@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { React, useContext, useEffect, useState } from 'react';
-import { AdminToastContext } from '../../functions/ToastFunc';
+import { getOrder, getOrderedProducts, updateOrder } from '../../functions';
+import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	const context = useContext(AdminToastContext);
@@ -32,13 +32,10 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	};
 
 	const updateStatus = async (orderStatus) => {
-		await axios.post(`/backend/orders/${orderId}`, {
-			status: orderStatus
-		}).then((res) => {
-			// console.log(res.data);
-			setOrder({...order, status: orderStatus});
-			context.setMessage('ステータスを変更しました');
-		});
+		const newOrder = {...order, status: orderStatus};
+		await updateOrder(newOrder)
+		setOrder(newOrder);
+		context.setMessage('ステータスを変更しました');
 	};
 
 	const Modal = () => {
@@ -65,25 +62,18 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	};
 
 	useEffect(() => {
-		const getOrder = async () => {
-			await axios.get(`/backend/orders/${orderId}`)
-			.then((res) => {
-				console.log(res.data);
-				const orderStatus = orderStatusList.find((orderStatus) =>
-					orderStatus.name === res.data.status)
-				res.data.statusTitle = orderStatus.title;
-				setOrder(res.data);
-			});
+		const getData = async () => {
+			const orderData = await getOrder(orderId);
+			const orderStatus = orderStatusList.find((orderStatus) =>
+				orderStatus.name === orderData.status
+			);
+			orderData.statusTitle = orderStatus.title;
+			setOrder(orderData);
+
+			const orderedProductsData = await getOrderedProducts(orderId);
+			setOrderedProducts(orderedProductsData);
 		};
-		const getOrderedProducts = async () => {
-			await axios.get(`/backend/ordered_products/${orderId}`)
-			.then((res) => {
-				// console.log(res.data);
-				setOrderedProducts(res.data);
-			});
-		};
-		getOrder();
-		getOrderedProducts();
+		getData();
 	}, [orderId, orderStatusList]);
 
 	return (
