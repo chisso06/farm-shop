@@ -5,14 +5,15 @@ import {
   createBrowserRouter
 } from 'react-router-dom';
 import './App.css';
-import { Footer, Header } from './components';
+import { Footer, Header, Toast } from './components';
+import { ToastContext, useToast } from './functions/ToastFunc';
 import {
   About,
+  AdminPage,
   Cart,
   FAQ,
   OrderCompleted,
   OrderForm,
-  OrderProcessing,
   Product,
   Products,
   Top
@@ -24,25 +25,27 @@ window.onpageshow = function(event) {
 	}
 };
 
-const router = createBrowserRouter([
-  { path: '/', element: <Top /> },
-  { path: '/about', element: <About /> },
-  { path: '/products', element: <Products /> },
-  { path: '/products/:product_id', element: <Product /> },
-  { path: '/cart', element: <Cart /> },
-  { path: '/faq', element: <FAQ /> },
-  { path: '/order-form', element: <OrderForm />},
-  { path: '/order-completed', element: <OrderCompleted />},
-  { path: '/order-processing', element: <OrderProcessing />}
-]);
-
 function App() {
+  const router = createBrowserRouter([
+    { path: '/', element: <Top /> },
+    { path: '/about', element: <About /> },
+    { path: '/products', element: <Products /> },
+    { path: '/products/:product_id', element: <Product /> },
+    { path: '/cart', element: <Cart /> },
+    { path: '/faq', element: <FAQ /> },
+    { path: '/order-form', element: <OrderForm />},
+    { path: '/order-completed', element: <OrderCompleted />},
+    { path: '/admin/', element: <AdminPage />},
+    { path: '/admin/:page', element: <AdminPage />}
+  ]);
+
   return (
-    <div>
+    <ToastContext.Provider value={useToast()}>
       <Header />
+      <Toast />
       <RouterProvider router={router} />
       <Footer />
-    </div>
+    </ToastContext.Provider>
   );
 }
 

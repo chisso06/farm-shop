@@ -30,6 +30,12 @@ const cors = require('cors');
 // crypto
 const crypto = require('crypto');
 
+// fs
+const fs = require('fs');
+
+// multer
+const multer  = require('multer');
+
 // express
 const express = require('express');
 const app = express();
@@ -46,18 +52,31 @@ app.get('/', (req, res) => {
 });
 
 app.get('/test', (req, res) => {
-	res.json({ message: "Hello World!" });
+	res.json({ status: 'success', message: "Hello World!" });
+});
+
+const productsStorage = multer.diskStorage({
+	destination: (req, file, cb) => cb(null, 'backend/public/products'),
+	filename: (req, file, cb) => {cb(null, file.originalname)}
+});
+const uploadProducts = multer({ storage: productsStorage });
+app.post('/upload/products', uploadProducts.array('files[]', 10), (req, res) => {
+	console.log('body:', req.body);
+	console.log('files:', req.files);
+	res.json({status: 'success'});
 });
 
 app.get('/products', (req, res) => {
+	const category = req.query.category;
+	const popular_status = Number(req.query.popular_status);
 	const sql_prompt = `
 		SELECT products.*, images.id AS image_id
 		FROM products
-		INNER JOIN images ON products.id=product_id
+		LEFT JOIN images ON products.id=product_id
 		WHERE
-			${req.query.category ? `category='${req.query.category}' AND` : ''}
-			${req.query.popular_status ? `popular_status=${req.query.popular_status} AND`: ''}
-			order_of_images=1
+			${category ? `category='${category}' AND` : ''}
+			${popular_status ? `popular_status=1 AND`: ''}
+			(images.id IS NULL OR order_of_images=1)
 		`;
 
   connection.query(
@@ -67,17 +86,44 @@ app.get('/products', (req, res) => {
         console.log('connection error');
         throw err;
       }
+			results.map((p) => {
+				if (!p.image_id)
+					p.image_id = 0;
+			})
 			res.json(results);
     }
   );
 });
 
+// app.get('/products/images', (req, res) => {
+// 	const sql_prompt = `
+// 		SELECT * FROM images
+// 		WHERE order_of_images=1
+// 	`;
+
+//   connection.query(
+// 		sql_prompt,
+//     (err, results, fields) => {
+//       if (err) {
+//         console.log('connection error');
+//         throw err;
+//       }
+// 			res.json(results);
+//     }
+//   );
+// });
+
 app.get('/products/:id', (req, res) => {
+	const productId = Number(req.params.id);
+
+	if (productId <= 0)
+		return res.json({status: 'fatal'});
+
   connection.query(
     `SELECT products.*, images.id AS image_id
 		FROM products
-		INNER JOIN images ON products.id=images.product_id
-		WHERE products.id=${req.params.id} AND images.order_of_images=1`,
+		LEFT JOIN images ON products.id=images.product_id
+		WHERE products.id=${productId} AND (images.id IS NULL OR order_of_images=1)`,
 		(err, results, fields) => {
 			if (err) {
 				console.log('connection error');
@@ -88,9 +134,212 @@ app.get('/products/:id', (req, res) => {
   );
 });
 
+app.post('/products', async (req, res) => {
+	const productData = req.body.product;
+	const imagesData = req.body.images;
+	const product = {
+		name: productData.name,
+		description: productData.description,
+		price: productData.price,
+		stock: productData.stock,
+		category: productData.category,
+		shipping_method: productData.shipping_method,
+		public_status: productData.public_status,
+		popular_status: productData.popular_status
+	};
+	const productId = await new Promise((resolve) => {
+		connection.query(
+			`INSERT INTO products SET ?`,
+			product,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				product.id = results.insertId;
+				resolve(results.insertId);
+			}
+		)
+	});
+	await new Promise((resolve) => {
+		connection.query(
+			`DELETE FROM images WHERE product_id=${productId}`,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				resolve(results);
+			}
+		);
+	});
+	const images = await Promise.all(imagesData.map(async (data) => {
+		if (data.deleted) {
+			fs.unlink(`backend/public/products/${data.id}.jpg`, (err) => {});
+			return (data);
+		} else {
+			const image = {
+				id: data.id,
+				order_of_images: data.order_of_images,
+				product_id: productId,
+			};
+			if (!image.id)
+				delete image.id;
+			const sql_prompt2 = `
+				INSERT INTO images (??) VALUES (?)
+				ON DUPLICATE KEY UPDATE `
+				+ Object.entries(image).map((field) => `${field[0]}='${field[1]}'`).join();
+			return new Promise((resolve) => {
+				connection.query(
+					sql_prompt2,
+					[Object.keys(image), Object.values(image)],
+					(err, results, fields) => {
+						if (err) {
+							console.log(err);
+							throw err;
+						}
+						if (results.insertId)
+							data.id = results.insertId;
+						resolve(data);
+					}
+				);
+			});
+		}
+	}));
+	return res.json({
+		status: 'success',
+		product,
+		images
+	});
+});
+
+app.post('/products/:id', async (req, res) => {
+	const productId = Number(req.params.id);
+	const productData = req.body.product;
+	const imagesData = req.body.images;
+	const product = {
+		id: productData.id,
+		name: productData.name,
+		description: productData.description,
+		price: productData.price,
+		stock: productData.stock,
+		category: productData.category,
+		shipping_method: productData.shipping_method,
+		public_status: productData.public_status,
+		popular_status: productData.popular_status,
+	};
+	if (isNaN(productId) || productId !== product.id)
+		return res.json({status: 'fatal', message: 'invalid method id.'});
+
+	await new Promise((resolve) => {
+		connection.query(
+			`UPDATE products SET ?, updated_at=NOW() WHERE id=${product.id}`,
+			product,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				resolve(product.id);
+			}
+		);
+	});
+	await new Promise((resolve) => {
+		connection.query(
+			`DELETE FROM images WHERE product_id=${product.id}`,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				resolve(results);
+			}
+		);
+	});
+	const images = await Promise.all(imagesData.map(async (data) => {
+		if (data.deleted) {
+			fs.unlink(`backend/public/products/${data.id}.jpg`, (err) => {});
+			return (data);
+		} else {
+			const image = {
+				id: data.id,
+				order_of_images: data.order_of_images,
+				product_id: product.id,
+			};
+			if (!image.id)
+				delete image.id;
+			const sql_prompt2 = `
+				INSERT INTO images (??) VALUES (?)
+				ON DUPLICATE KEY UPDATE `
+				+ Object.entries(image).map((field) => `${field[0]}='${field[1]}'`).join();
+			return new Promise((resolve) => {
+				connection.query(
+					sql_prompt2,
+					[Object.keys(image), Object.values(image)],
+					(err, results, fields) => {
+						if (err) {
+							console.log(err);
+							throw err;
+						}
+						if (results.insertId)
+							data.id = results.insertId;
+						resolve(data);
+					}
+				);
+			});
+		}
+	}));
+	return res.json({
+		status: 'success',
+		product,
+		images
+	});
+});
+
+app.delete('/products/:id', async (req, res) => {
+	const productId = Number(req.params.id);
+
+	if (productId <= 0)
+		return res.json({status: 'fatal'});
+
+	// 画像を削除
+	await new Promise((resolve) => {
+		connection.query(
+			`SELECT * FROM images WHERE product_id=${productId}`,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				results.map((image) => {
+					fs.unlink(`backend/public/products/${image.id}.jpg`, (err) => {});
+				});
+				resolve(results);
+			}
+		)
+	});
+	// products(db)を削除
+	connection.query(
+		`DELETE FROM products WHERE id=${productId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json({status: 'success'});
+		}
+	);
+});
+
 app.get('/products/:id/images', (req, res) => {
+	const productId = Number(req.params.id);
+
+	if (productId <= 0)
+		return res.json({status: 'fatal'});
 	const sql_prompt = `
-		SELECT * FROM images WHERE product_id=${req.params.id} ORDER BY order_of_images
+		SELECT * FROM images
+		WHERE product_id=${productId}
+		ORDER BY order_of_images
 	`;
 
   connection.query(
@@ -103,6 +352,22 @@ app.get('/products/:id/images', (req, res) => {
 			res.json(results);
     }
   );
+});
+
+app.get('/images/:id', (req, res) => {
+	const imageId = Number(req.params.id);
+
+	if (imageId <= 0)
+		return res.json({});
+	fs.readFile(
+		`backend/public/products/${imageId}.jpg`,
+		'base64',
+		(err, data) => {
+			// console.log(`${data}`.substr(0, 300) + '...');
+			res.set('Content-Type', 'image/jpeg');
+			res.json(data);
+		}
+	);
 });
 
 app.get('/news', (req, res) => {
@@ -118,17 +383,241 @@ app.get('/news', (req, res) => {
 	});
 });
 
+app.post('/news', (req, res) => {
+	const news = req.body;
+
+	connection.query(
+		`INSERT INTO news SET ?`,
+		news,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			// res.json(results);
+			res.json({status: 'success', message: 'added new news'});
+		});
+});
+
+app.delete('/news/:id', (req, res) => {
+	const newsId = Number(req.params.id);
+
+	if (isNaN(newsId) || newsId <= 0)
+		return res.json({status: 'fatal', message: 'invalid news_id'});
+	connection.query(
+		`DELETE FROM news WHERE id=${newsId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			// res.json(results);
+			res.json({status: 'success', message: `deleted news id:${newsId}`});
+		});
+});
+
+app.get('/shipping', (req, res) => {
+	connection.query(
+		`SELECT * FROM shipping_methods`,
+		(err, results, fields) => {
+			if (err) { throw err; }
+			res.json(results);
+		});
+});
+
 app.get('/shipping/:id', (req, res) => {
+	var methodId = Number(req.params.id);
+
+	if (!methodId)
+		return res.json({status: 'fatal', message: 'invalid method id.'});
+	connection.query(
+		`SELECT * FROM shipping_methods WHERE id=${methodId}`,
+		(err, results, fields) => {
+			if (err) { throw err }
+			res.json(results[0]);
+		}
+	);
+});
+
+app.post('/shipping', async(req, res) => {
+	const method = {name: req.body.method.name};
+	const feesData = req.body.fees;
+
+	const methodId = await new Promise((resolve) => {
+		connection.query(
+			`INSERT INTO shipping_methods SET ?`,
+			method,
+			(err, results, fields) => {
+				if (err) throw err;
+				method.id = results.insertId;
+				resolve(results.insertId);
+			}
+		);
+	});
+	if (!methodId)
+		return res.json({status: 'fatal'});
+
+	const fees = await Promise.all(feesData.map(async (data) => {
+		const fee = {
+			size: data.size,
+			min_n: data.min_n,
+			max_n: data.max_n,
+			Hokkaido: data.Hokkaido,
+			Tohoku: data.Tohoku,
+			Kanto: data.Kanto,
+			Sinetsu: data.Sinetsu,
+			Hokuriku: data.Hokuriku,
+			Tokai: data.Tokai,
+			Kinki: data.Kinki,
+			Chugoku: data.Chugoku,
+			Shikoku: data.Shikoku,
+			Kyusyu: data.Kyusyu,
+			Okinawa: data.Okinawa,
+			method_id: methodId,
+		};
+		return new Promise((resolve) => {
+			connection.query(
+				`INSERT INTO shipping_fees SET ?`,
+				fee,
+				(err, results, fields) => {
+					if (err) throw err;
+					data.id = results.insertId;
+					resolve(data);
+				}
+			);
+		});
+	}));
+	return res.json({
+		status: 'success',
+		message: '配送方法を保存しました',
+		method,
+		fees,
+	});
+});
+
+app.post('/shipping/:id', async (req, res) => {
+	var methodId = Number(req.params.id);
+	const feesData = req.body.fees;
+
+	if (isNaN(methodId) || methodId != req.body.method.id)
+		return res.json({status: 'fatal', message: 'invalid method id.'});
+
+	const method = {
+		id: req.body.method.id,
+		name: req.body.method.name,
+	};
+	
+	methodId = await new Promise((resolve) => {
+		const sql_prompt = `UPDATE shipping_methods SET ? WHERE id=${methodId}`;
+		connection.query(
+			sql_prompt,
+			method,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				method.id = (method.id ? method.id : results.insertId);
+				resolve(method.id ? method.id : results.insertId);
+			}
+		);
+	});
+	if (!methodId)
+		return res.json({status: 'fatal'});
+	await new Promise((resolve) => {
+		connection.query(
+			`DELETE FROM shipping_fees WHERE method_id=${methodId}`,
+			(err, results, fields) => {
+				if (err) {
+					console.log('connection error');
+					throw err;
+				}
+				resolve(results);
+			}
+		);
+	});
+	const fees = await Promise.all(feesData.map(async (data) => {
+		const fee = {
+			id: data.id,
+			size: data.size,
+			min_n: data.min_n,
+			max_n: data.max_n,
+			Hokkaido: data.Hokkaido,
+			Tohoku: data.Tohoku,
+			Kanto: data.Kanto,
+			Sinetsu: data.Sinetsu,
+			Hokuriku: data.Hokuriku,
+			Tokai: data.Tokai,
+			Kinki: data.Kinki,
+			Chugoku: data.Chugoku,
+			Shikoku: data.Shikoku,
+			Kyusyu: data.Kyusyu,
+			Okinawa: data.Okinawa,
+			method_id: methodId,
+		};
+		if (!fee.id)
+			delete fee.id;
+		const sql_prompt = `INSERT INTO shipping_fees SET ?`;
+		return new Promise((resolve) => {
+			connection.query(
+				sql_prompt,
+				fee,
+				(err, results, fields) => {
+					if (err) {
+						console.log(err);
+						throw err;
+					}
+					if (!data.id)
+						data.id = results.insertId;
+					resolve(data);
+				}
+			);
+		});
+	}));
+	return res.json({
+		status: 'success',
+		message: '配送方法を保存しました',
+		method,
+		fees,
+	});
+})
+
+app.delete('/shipping/:id', (req, res) => {
+	const shippingId = Number(req.params.id);
+
+	if (isNaN(shippingId) || shippingId <= 0)
+		return res.json({status: 'fatal', message: 'invalid shipping_id'});
+	connection.query(
+		`UPDATE products SET shipping_method=0 WHERE shipping_method=${shippingId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+		}
+	);
+	connection.query(
+		`DELETE FROM shipping_methods WHERE id=${req.params.id}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json({
+				status: 'success'
+			});
+		}
+	);
+});
+
+app.get('/shipping/:id/fee', (req, res) => {
+	const methodId = Number(req.params.id);
+
+	if (methodId <= 0)
+		return res.json({});
 	connection.query(`
-		SELECT
-			method_id,
-			name,
-			size,
-			min_n, max_n,
-			Hokkaido, Tohoku, Kanto, Sinetsu, Hokuriku, Tokai, Kinki, Chugoku, Shikoku, Kyusyu, Okinawa
-		FROM shipping_methods
-		INNER JOIN shipping_fees ON shipping_methods.id=shipping_fees.method_id
-		WHERE method_id=${req.params.id}
+		SELECT * FROM shipping_fees
+		WHERE method_id=${methodId}
 		ORDER BY min_n`,
 	(err, results, fields) => {
 		if (err) {
@@ -139,15 +628,86 @@ app.get('/shipping/:id', (req, res) => {
 	});
 });
 
-app.get('/orders/:id', (req, res) => {
+app.get('/orders', (req, res) => {
   connection.query(
-    `SELECT * FROM orders WHERE id='${req.params.id}'`,
+    `SELECT
+			id,
+			checkout_session_id,
+			shipping_fee,
+			total_amount,
+			status,
+			DATE_FORMAT(ordered_at, '%Y年%m月%d日 %h:%i') AS ordered_at,
+			customer
+		FROM orders`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json(results);
+		}
+  );
+});
+
+app.get('/orders/:id', (req, res) => {
+	const orderId = req.params.id;
+
+	if (!orderId)
+		return res.json({status: 'fatal'});
+  connection.query(
+    `SELECT
+			id,
+			checkout_session_id,
+			shipping_fee,
+			total_amount,
+			status,
+			DATE_FORMAT(ordered_at, '%Y年%m月%d日 %h:%i') AS ordered_at,
+			customer
+		FROM orders
+		WHERE id='${orderId}'`,
 		(err, results, fields) => {
 			if (err) {
 				console.log('connection error');
 				throw err;
 			}
 			res.json(results[0]);
+		}
+  );
+});
+
+app.post('/orders/:id', (req, res) => {
+	const status = req.body.status;
+	const orderId = req.params.id;
+
+	if (!orderId)
+		return res.json({status: 'fatal'});
+	connection.query(`
+		UPDATE orders
+		SET status='${status}'
+		WHERE id='${orderId}'`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json({status: 'success', message: 'updated order status.'})
+		}
+	);
+});
+
+app.get('/ordered_products/:order_id', (req, res) => {
+	const orderId = req.params.order_id;
+
+	if (!orderId)
+		return res.json({status: 'fatal'});
+  connection.query(
+    `SELECT * FROM ordered_products WHERE order_id='${orderId}'`,
+		(err, results, fields) => {
+			if (err) {
+				console.log('connection error');
+				throw err;
+			}
+			res.json(results);
 		}
   );
 });
@@ -181,10 +741,11 @@ app.post('/create-checkout-session', async (req, res) => {
 	var total_amount = 0;
 	var shipping_fee = 0;
 
-	console.log('orderId: ', orderId);
+	if (!orderId)
+		return res.json({status: 'fatal'});
 
 	// 同一のorderIdで、未完了の支払いがあるかどうかをチェック
-	await connectionPromise.beginTransaction();
+	// await connectionPromise.beginTransaction();
 	const [results] = await connectionPromise.query(
 		`SELECT * FROM orders WHERE id='${orderId}' AND status='pending-payment'`
 	).catch((err) => {
@@ -207,7 +768,7 @@ app.post('/create-checkout-session', async (req, res) => {
 	await Promise.all(cart.map(async (item, i) => {
 		// 在庫確認
 		if (stock_status) {
-			await connectionPromise.beginTransaction();
+			// await connectionPromise.beginTransaction();
 			const [stock_results] = await connectionPromise.query(
 				`SELECT stock FROM products WHERE id=${item.product_id}`
 			).catch((err) => {
@@ -227,7 +788,7 @@ app.post('/create-checkout-session', async (req, res) => {
 	// line_itemsの作成、shippingMethods(配送方法の種類と数)の作成、合計額の計算
 	await Promise.all(cart.map(async (item, i) => {
 		// line_item
-		await connectionPromise.beginTransaction();
+		// await connectionPromise.beginTransaction();
 		const [results] = await connectionPromise.query(
 			`SELECT name, price FROM products WHERE id=${item.product_id}`
 		).catch((err) => {
@@ -260,7 +821,7 @@ app.post('/create-checkout-session', async (req, res) => {
 
 	// 送料計算
 	await Promise.all(shippingMethods.map(async (method) => {
-		await connectionPromise.beginTransaction();
+		// await connectionPromise.beginTransaction();
 		const [results] = await connectionPromise.query(`
 			SELECT
 				method_id,
@@ -304,9 +865,6 @@ app.post('/create-checkout-session', async (req, res) => {
 		success_url: `${FRONTEND_ORIGIN}/order-completed?order_id=${orderId}`,
 		cancel_url: `${FRONTEND_ORIGIN}/cart`,
 	}).catch((err) => {
-		console.log('[stripe]');
-		console.log('error message: ', err.raw.message);
-		console.log('error param: ', err.raw.param);
 		throw (err);
 	});
 
@@ -380,7 +938,7 @@ app.post('/stripe-webhook', async (req, res) => {
   switch (event.type) {
     case 'payment_intent.succeeded':
 			connection.query(`
-				UPDATE orders SET status='pending_shipping' WHERE id='${client_reference_id}'`,
+				UPDATE orders SET status='pending-shipping' WHERE id='${client_reference_id}'`,
 				(err, results, fields) => {
 					if (err) {
 						console.log('connection error');

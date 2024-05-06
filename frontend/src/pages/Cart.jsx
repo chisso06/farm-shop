@@ -1,17 +1,18 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Toast } from '../components';
-import { createCart, updateCartStorage } from '../functions';
+import { createCart, getIndexBase64Images, imageSrc, updateCartStorage } from '../functions';
+import { ToastContext } from '../functions/ToastFunc';
 
 const Cart = () => {
 	const search = useLocation().search;
 	const query = new URLSearchParams(search);
 	const message = query.get('message');
+	const context = useContext(ToastContext);
   const [sum, setSum] = useState(0);
   const [cart, setCart] = useState([]);
-	const [isVisible, setIsVisible] = useState(false);
+  const [base64Images, setBase64Images] = useState([]);
 
 	const handleChange = (e, i) => {
 		var value = Number(e.target.value);
@@ -38,12 +39,18 @@ const Cart = () => {
 	}, []);
 
 	useEffect(() => {
-		if (message)
-			setIsVisible(true);
-	}, [message]);
+		if (message) {
+			context.setMessage(message);
+		}
+	}, [message, context]);
 
 	useEffect(() => {
 		var calcSum = 0;
+		const getData = async () => {
+			const base64ImagesData = await getIndexBase64Images(cart);
+			setBase64Images(base64ImagesData);
+		}
+		getData();
 
 		cart.map((item) => {
 			calcSum += item.price * item.number;
@@ -53,17 +60,16 @@ const Cart = () => {
 
 	return (
 		<div className='w-3/4 my-16 mx-auto'>
-			<Toast isVisible={isVisible} setIsVisible={setIsVisible} message={message} />
 			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
 				カートに入っている商品
 			</p>
 			{ cart.length ?
 				<div className='mx-auto'>
-					{ cart.map((item, i) => {
+					{ cart.length ? cart.map((item, i) => {
 						return (
 							<div key={i} className='pr-2 py-4 flex border-b items-center'>
 								<img
-									src={'/products/' + item.image_id + '.jpg'}
+									src={imageSrc(base64Images[item.base64Images_idx])}
 									alt='商品画像'
 									className='w-16 sm:w-32 aspect-square object-cover' />
 								<div className='w-full sm:flex pl-4 font-mono items-center'>
@@ -96,7 +102,7 @@ const Cart = () => {
 								</div>
 							</div>
 						);
-					})}
+					}):''}
 					<div className='w-60 mx-auto my-10'>
 						<p className='mt-10 text-center text-2xl sm:text-3xl font-mono font-bold'>
 							小計：{sum}円

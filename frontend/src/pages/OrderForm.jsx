@@ -1,8 +1,6 @@
-import axios from 'axios';
 import { React, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Toast } from '../components';
-import { createCart } from '../functions';
+import { createCart, getIndexBase64Images, getShippingFees, imageSrc } from '../functions';
 
 const OrderForm = () => {
 	const [orderId, setOrderId] = useState('');
@@ -19,7 +17,7 @@ const OrderForm = () => {
 		address: '',
 		memo: ''
 	});
-	const [isVisible, setIsVisible] = useState(false);
+	const [base64Images, setBase64Images] = useState([]);
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
@@ -28,31 +26,28 @@ const OrderForm = () => {
 
 	const handleAreaChange = async (e) => {
 		const areaList = [
-			{method_name: 'Hokkaido', name: '北海道', prefectures: ['北海道']},
-			{method_name: 'Hokkaido', name: '東北', prefectures: ['青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県']},
-			{method_name: 'Hokkaido', name: '関東', prefectures: ['茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県', '山梨県']},
-			{method_name: 'Hokkaido', name: '信越', prefectures: ['新潟県', '長野県']},
-			{method_name: 'Hokkaido', name: '北陸', prefectures: ['富山県', '石川県', '福井県']},
-			{method_name: 'Hokkaido', name: '東海', prefectures: ['岐阜県', '静岡県', '愛知県', '三重県']},
-			{method_name: 'Hokkaido', name: '近畿', prefectures: ['滋賀県', '京都府', '大阪府', '兵庫県', '奈良県', '和歌山県']},
-			{method_name: 'Hokkaido', name: '中国', prefectures: ['鳥取県', '島根県', '岡山県', '広島県', '山口県']},
-			{method_name: 'Hokkaido', name: '四国', prefectures: ['徳島県', '香川県', '愛媛県', '高知県']},
-			{method_name: 'Hokkaido', name: '九州', prefectures: ['福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県']},
-			{method_name: 'Hokkaido', name: '沖縄', prefectures: ['沖縄県']},
+			{method_name: 'Hokkaido', name: '北海道', prefectures: '北海道'},
+			{method_name: 'Tohoku', name: '東北', prefectures: '青森県, 岩手県, 宮城県, 秋田県, 山形県, 福島県'},
+			{method_name: 'Kanto', name: '関東', prefectures: '茨城県, 栃木県, 群馬県, 埼玉県, 千葉県, 東京都, 神奈川県, 山梨県'},
+			{method_name: 'Sinetsu', name: '信越', prefectures: '新潟県, 長野県'},
+			{method_name: 'Hokuriku', name: '北陸', prefectures: '富山県, 石川県, 福井県'},
+			{method_name: 'Tokai', name: '東海', prefectures: '岐阜県, 静岡県, 愛知県, 三重県'},
+			{method_name: 'Kinki', name: '近畿', prefectures: '滋賀県, 京都府, 大阪府, 兵庫県, 奈良県, 和歌山県'},
+			{method_name: 'Chugoku', name: '中国', prefectures: '鳥取県, 島根県, 岡山県, 広島県, 山口県'},
+			{method_name: 'Shikoku', name: '四国', prefectures: '徳島県, 香川県, 愛媛県, 高知県'},
+			{method_name: 'Kyusyu', name: '九州', prefectures: '福岡県, 佐賀県, 長崎県, 熊本県, 大分県, 宮崎県, 鹿児島県'},
+			{method_name: 'Okinawa', name: '沖縄', prefectures: '沖縄県'},
 		];
 		var shippingFeeCalc = 0;
 
 		setCustomerData({...customerData, 'prefecture': e.target.value});
+
 		await Promise.all(shippingMethods.map(async (method) => {
-			await axios.get(`/backend/shipping/${method.method_id}`)
-				.then((res) => {
-					var i = 0;
-					while (i < res.data.length - 1 && (method.number < res.data[i].min_n || res.data[i].max_n < method.number))
-						i ++;
-					const area = areaList.find((area) => area.prefectures.find((p) => p === e.target.value));
-					shippingFeeCalc += res.data[i][area.method_name];
-				})
-				.catch((err) => console.log(err));
+			const shippingFeesData = await getShippingFees(method.method_id);
+			for (let i = 0; i < shippingFeesData.length - 1 && (method.number < shippingFeesData[i].min_n || shippingFeesData[i].max_n < method.number); i ++) {
+				const area = areaList.find((area) => area.prefectures.find((p) => p === e.target.value));
+				shippingFeeCalc += shippingFeesData[i][area.method_name];
+			}
 		}))
 		setShippingFee(shippingFeeCalc);
 	};
@@ -85,6 +80,12 @@ const OrderForm = () => {
 			})
 			setSum(sum_calc);
 			setShippingMethods(shippingMethodList);
+
+			const getData = async () => {
+				const base64ImagesData = await getIndexBase64Images(cart);
+				setBase64Images(base64ImagesData);
+			}
+			getData();
 		}
 	}, [cart]);
 
@@ -95,19 +96,15 @@ const OrderForm = () => {
 
 	return (
 		<div className='mt-32 mb-10 sm:mt-40 sm:mb-20'>
-			<Toast
-				isVisible={isVisible}
-				setIsVisible={setIsVisible}
-				message={'在庫の上限を超えている商品があります。'} />
 			<div className='w-3/4 mx-auto sm:flex sm:gap-2'>
 				<div className='w-full sm:w-2/5 mb-10'>
 					<div className='p-2 border rounded'>
 						<a href='/cart'>&lt; <span className='text-sm hover:underline'>買い物かごに戻る</span></a>
 						<ul className='p-2 font-mono'>{
-							cart.length && Object.keys(cart[0]).length ? cart.map((item, i) => {
+							(cart.length && Object.keys(cart[0]).length) ? cart.map((item, i) => {
 								return (<li key={i} className='pr-2 py-4 flex border-b'>
 									<img
-										src={'/products/' + item.image_id + '.jpg'}
+										src={imageSrc(base64Images[item.base64Images_idx])}
 										alt='商品画像'
 										className='w-16 h-16 aspect-square object-cover rounded' />
 									<div className='w-full pl-4 items-center'>
@@ -127,7 +124,7 @@ const OrderForm = () => {
 										</div>
 									</div>
 								</li>);
-							}) : ''
+							}):''
 						}</ul>
 						<div className='mt-6 px-2 font-mono'>
 							<div className='flex'>

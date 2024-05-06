@@ -61,13 +61,13 @@ INSERT INTO images (
 );
 
 -- Expect: Error
-INSERT INTO images (
-  order_of_images,
-	product_id
-) values (
-  1,
-	3
-);
+-- INSERT INTO images (
+--   order_of_images,
+-- 	product_id
+-- ) values (
+--   1,
+-- 	3
+-- );
 
 SELECT * FROM images;
 -- */

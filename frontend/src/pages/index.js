@@ -1,9 +1,13 @@
 export { default as About } from './About';
+export { default as AdminPage } from './AdminPage';
 export { default as Cart } from './Cart';
 export { default as FAQ } from './FAQ';
 export { default as OrderCompleted } from './OrderCompleted';
 export { default as OrderForm } from './OrderForm';
-export { default as OrderProcessing } from './OrderProcessing';
 export { default as Product } from './Product';
 export { default as Products } from './Products';
 export { default as Top } from './Top';
+export { default as AdminNews } from './admin/AdminNews';
+export { default as AdminOrders } from './admin/AdminOrders';
+export { default as AdminProducts } from './admin/AdminProducts';
+export { default as AdminShipping } from './admin/AdminShipping';
