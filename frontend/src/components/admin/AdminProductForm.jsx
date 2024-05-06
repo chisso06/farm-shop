@@ -93,8 +93,8 @@ const AdminProductForm = ({productId, setProductId}) => {
 			context.setMessage('商品を更新しました');
 		} else {
 			res = await createProduct({product, images, imageFiles});
-			setProductId(res.product.id);
 			context.setMessage('商品を追加しました');
+			setProductId(res.product.id);
 		}
 		const imagesData = res.images.filter(image => !image.deleted);
 		const newImages = imagesData.map((image) => {
@@ -131,6 +131,10 @@ const AdminProductForm = ({productId, setProductId}) => {
 		};
 		const getData = async () => {
 			const productData = productId ? await getProduct(productId) : newProduct;
+			if (!productData) {
+				context.setMessage('商品が存在しません');
+				setProductId(-1);
+			}
 			const imagesData = productId ? await getProductImages(productId) : [];
 			const base64ImagesData = productId ? await getBase64Images(imagesData) : [];
 			const shippingMethodsData = await getShippingMethods();

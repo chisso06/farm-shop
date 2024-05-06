@@ -1,5 +1,5 @@
 import { React, useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { areaList } from '../data';
 import { getBase64Images, getProduct, getProductImages, getShippingFees, getShippingMethod, imageSrc, updateCartStorage } from '../functions';
 import { ToastContext } from '../functions/context/ToastFunc';
@@ -8,6 +8,7 @@ const Product = () => {
 	const params = useParams();
 	const productId = Number(params.product_id);
 	const context = useContext(ToastContext);
+	const navigate = useNavigate();
 	const [product, setProduct] = useState({});
 	const [images, setImages] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
@@ -56,10 +57,12 @@ const Product = () => {
 				setProduct(productData);
 				setImages(imagesData);
 				setBase64Images(base64ImagesData);
+			} else {
+				context.setMessage('商品が存在しません');
+				navigate('/products');
 			}
 		}
-		if (productId)
-			getData();
+		getData();
 	}, [productId]);
 
 	useEffect(() => {
