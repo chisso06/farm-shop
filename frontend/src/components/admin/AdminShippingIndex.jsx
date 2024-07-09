@@ -1,12 +1,19 @@
 import { React, useEffect, useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { getShippingMethods } from '../../functions';
 
 const AdminProductsIndex = ({setShippingId}) => {
 	const [shippingMethods, setShippingMethods] = useState([]);
+	const { showBoundary } = useErrorBoundary();
 
 	useEffect(() => {
 		const getData = async () => {
-			const shippingMethodsData = await getShippingMethods();
+			var shippingMethodsData;
+			try {
+				shippingMethodsData = await getShippingMethods();
+			} catch (err) {
+				showBoundary(err);
+			}
 			setShippingMethods(shippingMethodsData);
 		}
 		getData();

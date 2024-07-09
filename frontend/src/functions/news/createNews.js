@@ -5,7 +5,7 @@ const createNews = async (newsObj) => {
 		.then((res) => {
 			// console.log(res.data);
 			return res.data;
-		})
+		});
 };
 
 export default createNews;

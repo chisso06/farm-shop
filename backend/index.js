@@ -1,3 +1,18 @@
+// memo
+// if (err || !results.insertId)
+// error messageを全て定数に
+// console.log -> res.status(500).json({ error: true })
+// ↑の逆
+
+// error messages
+const CONNECTION_ERROR = "Error: connection error";
+const INVALID_PRODUCT_ID_ERROR = "Error: invalid product id";
+const INVALID_ORDER_ID_ERROR = "Error: invalid order id";
+const INVALID_METHOD_ID_ERROR = "Error: invalid method id";
+const INVALID_IMAGE_ID_ERROR = "Error: invalid image id";
+const INVALID_NEWS_ID_ERROR = "Error: invalid news id";
+const INVALID_SHIPPING_ID_ERROR = "Error: invalid shipping id";
+
 // config
 const config = require('config');
 const FRONTEND_ORIGIN = config.get('FRONTEND_ORIGIN');
@@ -21,7 +36,7 @@ const connection = mysql.createConnection({
 	user: 'miyu',
 	password: '',
 	database: 'farm_shop'
-})
+});
 const mysqlPromise = require('mysql2/promise');
 
 // cors
@@ -52,7 +67,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/test', (req, res) => {
-	res.json({ status: 'success', message: "Hello World!" });
+	res.status(200).json({ message: "Hello World!" });
 });
 
 const productsStorage = multer.diskStorage({
@@ -63,7 +78,7 @@ const uploadProducts = multer({ storage: productsStorage });
 app.post('/upload/products', uploadProducts.array('files[]', 10), (req, res) => {
 	console.log('body:', req.body);
 	console.log('files:', req.files);
-	res.json({status: 'success'});
+	res.status(200).json({ message: "uploaded product images" });
 });
 
 app.get('/products', (req, res) => {
@@ -82,15 +97,13 @@ app.get('/products', (req, res) => {
   connection.query(
 		sql_prompt,
     (err, results, fields) => {
-      if (err) {
-        console.log('connection error');
-        throw err;
-      }
+      if (err)
+        return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			results.map((p) => {
 				if (!p.image_id)
 					p.image_id = 0;
-			})
-			res.json(results);
+			});
+			res.status(200).json(results);
     }
   );
 });
@@ -104,11 +117,9 @@ app.get('/products', (req, res) => {
 //   connection.query(
 // 		sql_prompt,
 //     (err, results, fields) => {
-//       if (err) {
-//         console.log('connection error');
-//         throw err;
-//       }
-// 			res.json(results);
+//       if (err)
+// 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+// 			res.status(200).json(results);
 //     }
 //   );
 // });
@@ -116,8 +127,8 @@ app.get('/products', (req, res) => {
 app.get('/products/:id', (req, res) => {
 	const productId = Number(req.params.id);
 
-	if (productId <= 0)
-		return res.json({status: 'fatal'});
+	if (isNaN(productId) || productId <= 0)
+		return res.status(400).json({ message: INVALID_PRODUCT_ID_ERROR });
 
   connection.query(
     `SELECT products.*, images.id AS image_id
@@ -125,11 +136,9 @@ app.get('/products/:id', (req, res) => {
 		LEFT JOIN images ON products.id=images.product_id
 		WHERE products.id=${productId} AND (images.id IS NULL OR order_of_images=1)`,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			res.json(results[0]);
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json(results[0]);
 		}
   );
 });
@@ -147,35 +156,40 @@ app.post('/products', async (req, res) => {
 		public_status: productData.public_status,
 		popular_status: productData.popular_status
 	};
+
 	const productId = await new Promise((resolve) => {
 		connection.query(
 			`INSERT INTO products SET ?`,
 			product,
 			(err, results, fields) => {
-				if (err) {
-					console.log('connection error');
-					throw err;
-				}
+				if (err || !results.insertId)
+					return res.status(500).json({ error: true, message: "could not create product" });
 				product.id = results.insertId;
 				resolve(results.insertId);
 			}
-		)
+		);
 	});
+
 	await new Promise((resolve) => {
 		connection.query(
 			`DELETE FROM images WHERE product_id=${productId}`,
 			(err, results, fields) => {
 				if (err) {
-					console.log('connection error');
-					throw err;
+					connection.query(
+						`DELETE FROM products WHERE id=${productId}`,
+						(err) => {console.log(CONNECTION_ERROR)}
+					)
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 				resolve(results);
 			}
 		);
 	});
+
 	const images = await Promise.all(imagesData.map(async (data) => {
 		if (data.deleted) {
-			fs.unlink(`backend/public/products/${data.id}.jpg`, (err) => {});
+			fs.unlink(`backend/public/products/${data.id}.jpg`,
+				(err) => {console.log("Error: could not unlink image file")});
 			return (data);
 		} else {
 			const image = {
@@ -195,8 +209,11 @@ app.post('/products', async (req, res) => {
 					[Object.keys(image), Object.values(image)],
 					(err, results, fields) => {
 						if (err) {
-							console.log(err);
-							throw err;
+							connection.query(`
+								DELETE FROM products WHERE id=${productId}`,
+								(err) => {console.log(CONNECTION_ERROR)}
+							);
+							return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 						}
 						if (results.insertId)
 							data.id = results.insertId;
@@ -206,8 +223,7 @@ app.post('/products', async (req, res) => {
 			});
 		}
 	}));
-	return res.json({
-		status: 'success',
+	return res.status(200).json({
 		product,
 		images
 	});
@@ -229,36 +245,33 @@ app.post('/products/:id', async (req, res) => {
 		popular_status: productData.popular_status,
 	};
 	if (isNaN(productId) || productId !== product.id)
-		return res.json({status: 'fatal', message: 'invalid method id.'});
+		return res.status(400).json({ message: INVALID_METHOD_ID_ERROR });
 
 	await new Promise((resolve) => {
 		connection.query(
 			`UPDATE products SET ?, updated_at=NOW() WHERE id=${product.id}`,
 			product,
 			(err, results, fields) => {
-				if (err) {
-					console.log('connection error');
-					throw err;
-				}
+				if (err)
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				resolve(product.id);
 			}
 		);
 	});
 	await new Promise((resolve) => {
 		connection.query(
-			`DELETE FROM images WHERE product_id=${product.id}`,
+			`DELETE FROM images WHERE product_id=${productId}`,
 			(err, results, fields) => {
-				if (err) {
-					console.log('connection error');
-					throw err;
-				}
+				if (err)
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				resolve(results);
 			}
 		);
 	});
 	const images = await Promise.all(imagesData.map(async (data) => {
 		if (data.deleted) {
-			fs.unlink(`backend/public/products/${data.id}.jpg`, (err) => {});
+			fs.unlink(`backend/public/products/${data.id}.jpg`,
+				(err) => {console.log("could not unlink image file")});
 			return (data);
 		} else {
 			const image = {
@@ -277,10 +290,8 @@ app.post('/products/:id', async (req, res) => {
 					sql_prompt2,
 					[Object.keys(image), Object.values(image)],
 					(err, results, fields) => {
-						if (err) {
-							console.log(err);
-							throw err;
-						}
+						if (err)
+							return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 						if (results.insertId)
 							data.id = results.insertId;
 						resolve(data);
@@ -289,8 +300,7 @@ app.post('/products/:id', async (req, res) => {
 			});
 		}
 	}));
-	return res.json({
-		status: 'success',
+	return res.status(200).json({
 		product,
 		images
 	});
@@ -299,20 +309,19 @@ app.post('/products/:id', async (req, res) => {
 app.delete('/products/:id', async (req, res) => {
 	const productId = Number(req.params.id);
 
-	if (productId <= 0)
-		return res.json({status: 'fatal'});
+	if (isNaN(productId) || productId <= 0)
+		return res.status(400).json({ message: INVALID_PRODUCT_ID_ERROR });
 
 	// 画像を削除
 	await new Promise((resolve) => {
 		connection.query(
 			`SELECT * FROM images WHERE product_id=${productId}`,
 			(err, results, fields) => {
-				if (err) {
-					console.log('connection error');
-					throw err;
-				}
+				if (err)
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				results.map((image) => {
-					fs.unlink(`backend/public/products/${image.id}.jpg`, (err) => {});
+					fs.unlink(`backend/public/products/${image.id}.jpg`,
+						(err) => {console.log("could not unlink image file")});
 				});
 				resolve(results);
 			}
@@ -322,11 +331,9 @@ app.delete('/products/:id', async (req, res) => {
 	connection.query(
 		`DELETE FROM products WHERE id=${productId}`,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			res.json({status: 'success'});
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json({ message: `deleted product ${productId}` });
 		}
 	);
 });
@@ -335,7 +342,7 @@ app.get('/products/:id/images', (req, res) => {
 	const productId = Number(req.params.id);
 
 	if (productId <= 0)
-		return res.json({status: 'fatal'});
+		return res.status(400).json({ message: INVALID_PRODUCT_ID_ERROR });
 	const sql_prompt = `
 		SELECT * FROM images
 		WHERE product_id=${productId}
@@ -345,11 +352,9 @@ app.get('/products/:id/images', (req, res) => {
   connection.query(
 		sql_prompt,
     (err, results, fields) => {
-      if (err) {
-        console.log('connection error');
-        throw err;
-      }
-			res.json(results);
+      if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json(results);
     }
   );
 });
@@ -358,14 +363,15 @@ app.get('/images/:id', (req, res) => {
 	const imageId = Number(req.params.id);
 
 	if (imageId <= 0)
-		return res.json({});
+		return res.status(400).json({ message: INVALID_IMAGE_ID_ERROR });
 	fs.readFile(
 		`backend/public/products/${imageId}.jpg`,
 		'base64',
 		(err, data) => {
-			// console.log(`${data}`.substr(0, 300) + '...');
+			if (err)
+				console.log("could not read image file");
 			res.set('Content-Type', 'image/jpeg');
-			res.json(data);
+			res.status(200).json(data);
 		}
 	);
 });
@@ -375,11 +381,9 @@ app.get('/news', (req, res) => {
 		SELECT id, DATE_FORMAT(date, '%Y年%m月%d日') AS date, content
 		FROM news ORDER BY date desc`,
 	(err, results, fields) => {
-		if (err) {
-			console.log('connection error');
-			throw err;
-		}
-		res.json(results);
+		if (err)
+			return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+		res.status(200).json(results);
 	});
 });
 
@@ -390,12 +394,9 @@ app.post('/news', (req, res) => {
 		`INSERT INTO news SET ?`,
 		news,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			// res.json(results);
-			res.json({status: 'success', message: 'added new news'});
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json({ message: 'added new news' });
 		});
 });
 
@@ -403,16 +404,13 @@ app.delete('/news/:id', (req, res) => {
 	const newsId = Number(req.params.id);
 
 	if (isNaN(newsId) || newsId <= 0)
-		return res.json({status: 'fatal', message: 'invalid news_id'});
+		return res.status(400).json({ message: INVALID_NEWS_ID_ERROR });
 	connection.query(
 		`DELETE FROM news WHERE id=${newsId}`,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			// res.json(results);
-			res.json({status: 'success', message: `deleted news id:${newsId}`});
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json({ message: `deleted news id:${newsId}` });
 		});
 });
 
@@ -420,21 +418,23 @@ app.get('/shipping', (req, res) => {
 	connection.query(
 		`SELECT * FROM shipping_methods`,
 		(err, results, fields) => {
-			if (err) { throw err; }
-			res.json(results);
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json(results);
 		});
 });
 
 app.get('/shipping/:id', (req, res) => {
 	var methodId = Number(req.params.id);
 
-	if (!methodId)
-		return res.json({status: 'fatal', message: 'invalid method id.'});
+	if (isNaN(methodId) || methodId <= 0)
+		return res.status(400).json({ message: INVALID_METHOD_ID_ERROR });
 	connection.query(
 		`SELECT * FROM shipping_methods WHERE id=${methodId}`,
 		(err, results, fields) => {
-			if (err) { throw err }
-			res.json(results[0]);
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json(results[0]);
 		}
 	);
 });
@@ -448,14 +448,13 @@ app.post('/shipping', async(req, res) => {
 			`INSERT INTO shipping_methods SET ?`,
 			method,
 			(err, results, fields) => {
-				if (err) throw err;
+				if (err || !results.insertId)
+					res.status(500).json({ error: true, message: "could not create shipping_method" });
 				method.id = results.insertId;
 				resolve(results.insertId);
 			}
 		);
 	});
-	if (!methodId)
-		return res.json({status: 'fatal'});
 
 	const fees = await Promise.all(feesData.map(async (data) => {
 		const fee = {
@@ -480,15 +479,25 @@ app.post('/shipping', async(req, res) => {
 				`INSERT INTO shipping_fees SET ?`,
 				fee,
 				(err, results, fields) => {
-					if (err) throw err;
+					if (err || !results.insertId) {
+						connection.query(
+							`DELETE FROM shipping_fees WHERE method_id=${methodId}`,
+							(err) => {console.log("could not delete shipping fees")}
+						);
+						connection.query(
+							`DELETE FROM shipping_methods WHERE id=${methodId}`,
+							(err) => {console.log("could not delete shipping method")}
+						);
+						return res.status(500).json({ error: true, message: "could not create shipping_fee" });
+					}
 					data.id = results.insertId;
 					resolve(data);
 				}
 			);
 		});
 	}));
-	return res.json({
-		status: 'success',
+
+	return res.status(200).json({
 		message: '配送方法を保存しました',
 		method,
 		fees,
@@ -500,7 +509,7 @@ app.post('/shipping/:id', async (req, res) => {
 	const feesData = req.body.fees;
 
 	if (isNaN(methodId) || methodId != req.body.method.id)
-		return res.json({status: 'fatal', message: 'invalid method id.'});
+		return res.status(400).json({ message: INVALID_METHOD_ID_ERROR });
 
 	const method = {
 		id: req.body.method.id,
@@ -513,25 +522,21 @@ app.post('/shipping/:id', async (req, res) => {
 			sql_prompt,
 			method,
 			(err, results, fields) => {
-				if (err) {
-					console.log('connection error');
-					throw err;
-				}
+				if (err)
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				method.id = (method.id ? method.id : results.insertId);
 				resolve(method.id ? method.id : results.insertId);
 			}
 		);
 	});
 	if (!methodId)
-		return res.json({status: 'fatal'});
+		return res.status(500).json({ error: true, message: 'could not update shipping_method' });
 	await new Promise((resolve) => {
 		connection.query(
 			`DELETE FROM shipping_fees WHERE method_id=${methodId}`,
 			(err, results, fields) => {
-				if (err) {
-					console.log('connection error');
-					throw err;
-				}
+				if (err)
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				resolve(results);
 			}
 		);
@@ -563,10 +568,8 @@ app.post('/shipping/:id', async (req, res) => {
 				sql_prompt,
 				fee,
 				(err, results, fields) => {
-					if (err) {
-						console.log(err);
-						throw err;
-					}
+					if (err)
+						return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 					if (!data.id)
 						data.id = results.insertId;
 					resolve(data);
@@ -574,8 +577,7 @@ app.post('/shipping/:id', async (req, res) => {
 			);
 		});
 	}));
-	return res.json({
-		status: 'success',
+	return res.status(200).json({
 		message: '配送方法を保存しました',
 		method,
 		fees,
@@ -586,26 +588,20 @@ app.delete('/shipping/:id', (req, res) => {
 	const shippingId = Number(req.params.id);
 
 	if (isNaN(shippingId) || shippingId <= 0)
-		return res.json({status: 'fatal', message: 'invalid shipping_id'});
+		return res.status(400).json({ message: INVALID_SHIPPING_ID_ERROR });
 	connection.query(
 		`UPDATE products SET shipping_method=0 WHERE shipping_method=${shippingId}`,
-		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
+		(err) => {
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR })
 		}
 	);
 	connection.query(
 		`DELETE FROM shipping_methods WHERE id=${req.params.id}`,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			res.json({
-				status: 'success'
-			});
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json({ message: `deleted shipping_method id:${shippingId}` });
 		}
 	);
 });
@@ -614,17 +610,15 @@ app.get('/shipping/:id/fee', (req, res) => {
 	const methodId = Number(req.params.id);
 
 	if (methodId <= 0)
-		return res.json({});
+		return res.status(400).json({ message: INVALID_METHOD_ID_ERROR });
 	connection.query(`
 		SELECT * FROM shipping_fees
 		WHERE method_id=${methodId}
 		ORDER BY min_n`,
 	(err, results, fields) => {
-		if (err) {
-			console.log('connection error');
-			throw err;
-		}
-		res.json(results);
+		if (err)
+			return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+		res.status(200).json(results);
 	});
 });
 
@@ -640,11 +634,9 @@ app.get('/orders', (req, res) => {
 			customer
 		FROM orders`,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			res.json(results);
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json(results);
 		}
   );
 });
@@ -653,7 +645,7 @@ app.get('/orders/:id', (req, res) => {
 	const orderId = req.params.id;
 
 	if (!orderId)
-		return res.json({status: 'fatal'});
+		return res.status(400).json({ message: INVALID_ORDER_ID_ERROR });
   connection.query(
     `SELECT
 			id,
@@ -666,11 +658,9 @@ app.get('/orders/:id', (req, res) => {
 		FROM orders
 		WHERE id='${orderId}'`,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			res.json(results[0]);
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json(results[0]);
 		}
   );
 });
@@ -680,17 +670,15 @@ app.post('/orders/:id', (req, res) => {
 	const orderId = req.params.id;
 
 	if (!orderId)
-		return res.json({status: 'fatal'});
+		return res.status(400).json({ message: INVALID_ORDER_ID_ERROR });
 	connection.query(`
 		UPDATE orders
 		SET status='${status}'
 		WHERE id='${orderId}'`,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			res.json({status: 'success', message: 'updated order status.'})
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json({ message: 'updated order status' })
 		}
 	);
 });
@@ -699,15 +687,13 @@ app.get('/ordered_products/:order_id', (req, res) => {
 	const orderId = req.params.order_id;
 
 	if (!orderId)
-		return res.json({status: 'fatal'});
+		return res.status(400).json({ message: INVALID_ORDER_ID_ERROR });
   connection.query(
     `SELECT * FROM ordered_products WHERE order_id='${orderId}'`,
 		(err, results, fields) => {
-			if (err) {
-				console.log('connection error');
-				throw err;
-			}
-			res.json(results);
+			if (err)
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			res.status(200).json(results);
 		}
   );
 });
@@ -742,24 +728,25 @@ app.post('/create-checkout-session', async (req, res) => {
 	var shipping_fee = 0;
 
 	if (!orderId)
-		return res.json({status: 'fatal'});
+		return res.status(400).json({message: INVALID_ORDER_ID_ERROR});
 
 	// 同一のorderIdで、未完了の支払いがあるかどうかをチェック
 	// await connectionPromise.beginTransaction();
 	const [results] = await connectionPromise.query(
 		`SELECT * FROM orders WHERE id='${orderId}' AND status='pending-payment'`
 	).catch((err) => {
-		console.log('connection error');
-		throw err;
+		return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 	});
 	if (results.length) {
 		const session = await stripe.checkout.sessions.retrieve(results[0].checkout_session_id)
-		.catch((err) => {throw err;});
+		.catch((err) => {
+			return res.status(500).json({ error: true, message: "could not retrieve stripe session" });
+		});
 		console.log('session_url:', session.url);
 		if (session.url) {
 			return res.redirect(303, session.url);
 		} else {
-			throw new Error('Error!');
+			return res.redirect(`${FRONTEND_ORIGIN}/cart?message=このカートは、未完了の支払いがあります`);
 		}
 	}
 
@@ -772,8 +759,7 @@ app.post('/create-checkout-session', async (req, res) => {
 			const [stock_results] = await connectionPromise.query(
 				`SELECT stock FROM products WHERE id=${item.product_id}`
 			).catch((err) => {
-				console.log('connection error');
-				throw err;
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			});
 			const stock = stock_results[0].stock;
 			item['stock'] = stock;
@@ -792,8 +778,7 @@ app.post('/create-checkout-session', async (req, res) => {
 		const [results] = await connectionPromise.query(
 			`SELECT name, price FROM products WHERE id=${item.product_id}`
 		).catch((err) => {
-			console.log('connection error');
-			throw err;
+			return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 		});
 		const line_item = {
 			price_data: {
@@ -834,8 +819,7 @@ app.post('/create-checkout-session', async (req, res) => {
 			WHERE method_id=${method.method_id}
 			ORDER BY min_n`
 			).catch((err) => {
-				console.log('connection error');
-				throw err;
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 		);
 		var i = 0;
@@ -865,7 +849,7 @@ app.post('/create-checkout-session', async (req, res) => {
 		success_url: `${FRONTEND_ORIGIN}/order-completed?order_id=${orderId}`,
 		cancel_url: `${FRONTEND_ORIGIN}/cart`,
 	}).catch((err) => {
-		throw (err);
+		return res.status(500).json({ error: true, message: "could not create stripe session" });
 	});
 
 	await Promise.all(cart.map(async (item, i) => {
@@ -874,8 +858,7 @@ app.post('/create-checkout-session', async (req, res) => {
 			UPDATE products SET stock=${item.stock - item.number} WHERE id=${item.product_id}`,
 			(err, results, fields) => {
 				if (err) {
-					console.log('connection error');
-					throw err;
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 			}
 		);
@@ -896,8 +879,7 @@ app.post('/create-checkout-session', async (req, res) => {
 		sql_prompt,
 		(err, results, fields) => {
 			if (err) {
-				console.log('connection error');
-				throw err;
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 		});
 	// ordered_products database
@@ -916,8 +898,11 @@ app.post('/create-checkout-session', async (req, res) => {
 			sql_prompt,
 			(err, results, fields) => {
 				if (err) {
-					console.log('connection error');
-					throw err;
+					connection.query(`DELETE FROM orders WHERE id='${orderId}'`,
+						(err) => {console.log(CONNECTION_ERROR)});
+						connection.query(`DELETE FROM ordered_products WHERE order_id='${orderId}'`,
+						(err) => {console.log(CONNECTION_ERROR)});
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 			});
 	})
@@ -940,10 +925,8 @@ app.post('/stripe-webhook', async (req, res) => {
 			connection.query(`
 				UPDATE orders SET status='pending-shipping' WHERE id='${client_reference_id}'`,
 				(err, results, fields) => {
-					if (err) {
-						console.log('connection error');
-						throw err;
-					}
+					if (err)
+						return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 			);
       break;
@@ -951,18 +934,16 @@ app.post('/stripe-webhook', async (req, res) => {
 			const [results] = await connectionPromise.query(`
 			SELECT * FROM orders WHERE id='${client_reference_id}'`)
 			.catch((err) => {
-				console.log('connection error');
-				throw err;
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			});
 			if (!results.length)
-				return res.json({received: true});
+				return res.status(200).json({received: true});
 
 			// 在庫を戻す
 			const [ordered_products] = await connectionPromise.query(`
 				SELECT * FROM ordered_products WHERE order_id='${client_reference_id}'`)
 			.catch((err) => {
-				console.log('connection error');
-				throw err;
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			});
 			ordered_products.map((item) => {
 				connection.query(`
@@ -970,10 +951,8 @@ app.post('/stripe-webhook', async (req, res) => {
 					SET stock=products.stock+${item.number}
 					WHERE id=${item.product_id}`,
 					(err, results, fields) => {
-						if (err) {
-							console.log('connection error');
-							throw err;
-						}
+						if (err)
+							return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 					}
 				);
 			});
@@ -981,21 +960,19 @@ app.post('/stripe-webhook', async (req, res) => {
 			connection.query(`
 			DELETE FROM orders WHERE id='${client_reference_id}'`,
 			(err, results, fields) => {
-				if (err) {
-					console.log('connection error');
-					throw err;
-				}
+				if (err)
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			});
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
-  res.json({received: true});
+  res.status(200).json({received: true});
 });
 
 app.all("*", (req, res) => {
 	console.log('[backend]404 ');
-  res.send("404!");
+  return res.status(404).json({ message: "not exist path" });
 })
 
 app.listen(4242, () => console.log('Running on port 4242'));

@@ -1,32 +1,52 @@
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { React, useContext, useEffect, useState } from "react";
+import { useErrorBoundary } from 'react-error-boundary';
 import { createNews, deleteNews, getNews } from '../../functions';
 import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminNews = () => {
 	const context = useContext(AdminToastContext);
 	const [news, setNews] = useState([]);
+	const { showBoundary } = useErrorBoundary();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
 		const newsObj = Object.fromEntries(new FormData(e.target).entries());
-		await createNews(newsObj);
-		const newsData = await getNews();
+		try {
+			await createNews(newsObj);
+		} catch (err) {
+			showBoundary(err);
+		}
+		var newsData;
+		try {
+			newsData = await getNews();
+		} catch (err) {
+			showBoundary(err);
+		}
 		setNews(newsData);
 		context.setMessage('新しいお知らせを追加しました');
 };
 
 	const handleTrash = async (newsId) => {
-		await deleteNews(newsId);
+		try {
+			await deleteNews(newsId);
+		} catch (err) {
+			showBoundary(err);
+		}
 		context.setMessage('お知らせを削除しました');
 		setNews(news.filter((n) => n.id !== newsId));
 	};
 
 	useEffect(() => {
 		const getData = async () => {
-			const newsData = await getNews();
+			var newsData;
+			try {
+				newsData = await getNews();
+			} catch (err) {
+				showBoundary(err);
+			}
 			setNews(newsData);
 		}
 		getData();

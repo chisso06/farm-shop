@@ -1,6 +1,7 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { React, useContext, useEffect, useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { useLocation } from 'react-router-dom';
 import { createCart, getIndexBase64Images, imageSrc, updateCartStorage } from '../functions';
 import { ToastContext } from '../functions/context/ToastFunc';
@@ -13,6 +14,7 @@ const Cart = () => {
   const [sum, setSum] = useState(0);
   const [cart, setCart] = useState([]);
   const [base64Images, setBase64Images] = useState([]);
+	const { showBoundary } = useErrorBoundary();
 
 	const handleChange = (e, i) => {
 		var value = Number(e.target.value);
@@ -47,7 +49,12 @@ const Cart = () => {
 	useEffect(() => {
 		var calcSum = 0;
 		const getData = async () => {
-			const base64ImagesData = await getIndexBase64Images(cart);
+			var base64ImagesData;
+			try {
+				base64ImagesData = await getIndexBase64Images(cart);
+			} catch (err) {
+				showBoundary(err);
+			}
 			setBase64Images(base64ImagesData);
 		}
 		getData();

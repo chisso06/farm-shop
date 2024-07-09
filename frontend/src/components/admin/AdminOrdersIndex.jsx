@@ -1,8 +1,10 @@
 import { React, useEffect, useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { getOrders } from '../../functions';
 
 const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 	const [orders, setOrders] = useState([]);
+	const { showBoundary } = useErrorBoundary();
 
 	const handleClick = (orderStatus) => {
 		setOrderId(orderStatus);
@@ -10,7 +12,12 @@ const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 
 	useEffect(() => {
 		const getData = async () => {
-			const ordersData = await getOrders();
+			var ordersData;
+			try {
+				ordersData = await getOrders();
+			} catch (err) {
+				showBoundary(err);
+			}
 			ordersData.map((o) => {
 				const orderStatus = orderStatusList.find((orderStatus) =>
 					orderStatus.name === o.status)

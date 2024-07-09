@@ -1,5 +1,6 @@
 // import logo from './logo.svg';
 import { React } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import {
   RouterProvider,
   createBrowserRouter
@@ -11,11 +12,13 @@ import {
   About,
   AdminPage,
   Cart,
+  ErrorPage,
   FAQ,
   OrderCompleted,
   OrderForm,
   Product,
   Products,
+  Test,
   Top
 } from './pages';
 
@@ -27,16 +30,54 @@ window.onpageshow = function(event) {
 
 function App() {
   const router = createBrowserRouter([
-    { path: '/', element: <Top /> },
-    { path: '/about', element: <About /> },
-    { path: '/products', element: <Products /> },
-    { path: '/products/:product_id', element: <Product /> },
-    { path: '/cart', element: <Cart /> },
-    { path: '/faq', element: <FAQ /> },
-    { path: '/order-form', element: <OrderForm />},
-    { path: '/order-completed', element: <OrderCompleted />},
-    { path: '/admin/', element: <AdminPage />},
-    { path: '/admin/:page', element: <AdminPage />}
+    {
+      path: '/',
+      element: <ErrorBoundary fallback={<ErrorPage />}><Top /></ErrorBoundary>
+    },
+    {
+      path: '/about',
+      element: <ErrorBoundary fallback={<ErrorPage />}><About /></ErrorBoundary>
+    },
+    {
+      path: '/products',
+      element: <ErrorBoundary fallback={<ErrorPage />}><Products /></ErrorBoundary>
+    },
+    {
+      path: '/products/:product_id',
+      element: <ErrorBoundary fallback={<ErrorPage />}><Product /></ErrorBoundary>
+    },
+    {
+      path: '/cart',
+      element: <ErrorBoundary fallback={<ErrorPage />}><Cart /></ErrorBoundary>
+    },
+    {
+      path: '/faq',
+      element: <ErrorBoundary fallback={<ErrorPage />}><FAQ /></ErrorBoundary>
+    },
+    {
+      path: '/order-form',
+      element: <ErrorBoundary fallback={<ErrorPage />}><OrderForm /></ErrorBoundary>
+    },
+    {
+      path: '/order-completed',
+      element: <ErrorBoundary fallback={<ErrorPage />}><OrderCompleted /></ErrorBoundary>
+    },
+    {
+      path: '/admin/',
+      element: <ErrorBoundary fallback={<ErrorPage />}><AdminPage /></ErrorBoundary>
+    },
+    {
+      path: '/admin/:page',
+      element: <ErrorBoundary fallback={<ErrorPage />}><AdminPage /></ErrorBoundary>
+    },
+    {
+      path: '/test',
+      element: <ErrorBoundary fallback={<ErrorPage />}><Test/></ErrorBoundary>
+    },
+    {
+      path: '*',
+      element: <ErrorPage />
+    }
   ]);
 
   return (

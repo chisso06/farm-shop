@@ -1,14 +1,27 @@
 import { React, useEffect, useState } from 'react';
 import { getIndexBase64Images, getProducts, imageSrc } from '../functions';
+import { useErrorBoundary } from "react-error-boundary";
 
 const Products = () => {
 	const [products, setProducts] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
+	const { showBoundary } = useErrorBoundary();
 
 	useEffect(() => {
 		const getData = async () => {
-			const productsData = await getProducts();
-			const base64ImagesData = await getIndexBase64Images(productsData);
+			var productsData;
+			var base64ImagesData;
+
+			try {
+				productsData = await getProducts();
+			} catch (err) {
+				showBoundary(err);
+			}
+			try {
+				base64ImagesData = await getIndexBase64Images(productsData);
+			} catch (err) {
+				showBoundary(err);
+			}
 			setProducts(productsData);
 			setBase64Images(base64ImagesData);
 		}

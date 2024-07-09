@@ -1,4 +1,5 @@
 import { React, useContext, useEffect, useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { getOrder, getOrderedProducts, updateOrder } from '../../functions';
 import { AdminToastContext } from '../../functions/context/ToastFunc';
 
@@ -6,6 +7,7 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	const context = useContext(AdminToastContext);
 	const [order, setOrder] = useState({});
 	const [orderedProducts, setOrderedProducts] = useState([]);
+	const { showBoundary } = useErrorBoundary();
 
 	const handleClick = (orderStatus) => {
 		setOrderId(orderStatus);
@@ -33,7 +35,11 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 
 	const updateStatus = async (orderStatus) => {
 		const newOrder = {...order, status: orderStatus};
-		await updateOrder(newOrder)
+		try {
+			await updateOrder(newOrder);
+		} catch (err) {
+			showBoundary(err);
+		}
 		setOrder(newOrder);
 		context.setMessage('ステータスを変更しました');
 	};
@@ -63,14 +69,24 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 
 	useEffect(() => {
 		const getData = async () => {
-			const orderData = await getOrder(orderId);
+			var orderData;
+			try {
+				orderData = await getOrder(orderId);
+			} catch (err) {
+				showBoundary(err);
+			}
 			const orderStatus = orderStatusList.find((orderStatus) =>
 				orderStatus.name === orderData.status
 			);
 			orderData.statusTitle = orderStatus.title;
 			setOrder(orderData);
 
-			const orderedProductsData = await getOrderedProducts(orderId);
+			var orderedProductsData;
+			try {
+				orderedProductsData = await getOrderedProducts(orderId);
+			} catch (err) {
+				showBoundary(err);
+			}
 			setOrderedProducts(orderedProductsData);
 		};
 		getData();

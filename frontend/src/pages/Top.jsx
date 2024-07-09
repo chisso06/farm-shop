@@ -1,14 +1,21 @@
 import { React, useEffect, useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { PopularItems } from '../components';
 import { getNews } from '../functions';
 
 const News = () => {
 	const [news, setNews] = useState([]);
+	const { showBoundary } = useErrorBoundary();
 
 	useEffect(() => {
 		const getData = async () => {
-			const newsData = await getNews();
-			setNews(newsData);
+			var newsData;
+			try {
+				newsData = await getNews();
+			} catch (err) {
+				showBoundary(err);
+			}
+				setNews(newsData);
 		}
 		getData();
 	}, []);
@@ -20,8 +27,7 @@ const News = () => {
 				news.length ? news.map((n, i) => {
 					return (<li key={i} className='py-5 border-b' >{n.date} {n.content}</li>);
 				}):''
-			}
-			</ul>
+			}</ul>
 		</div>
 	);
 };

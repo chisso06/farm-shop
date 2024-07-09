@@ -1,4 +1,5 @@
 import { React, useEffect, useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router-dom';
 import { areaList, prefectureList } from '../data';
 import { createCart, getIndexBase64Images, getShippingFees, imageSrc } from '../functions';
@@ -20,6 +21,7 @@ const OrderForm = () => {
 	});
 	const [base64Images, setBase64Images] = useState([]);
 	const navigate = useNavigate();
+	const showBoundary = useErrorBoundary();
 
 	const handleChange = (e) => {
 		setCustomerData({...customerData, [e.target.id]: e.target.value});
@@ -36,7 +38,7 @@ const OrderForm = () => {
 				const area = areaList.find((area) => area.prefectures.find((p) => p === e.target.value));
 				shippingFeeCalc += shippingFeesData[i][area.method_name];
 			}
-		}))
+		})).catch((err) => showBoundary(err));
 		setShippingFee(shippingFeeCalc);
 	};
 
@@ -70,7 +72,12 @@ const OrderForm = () => {
 			setShippingMethods(shippingMethodList);
 
 			const getData = async () => {
-				const base64ImagesData = await getIndexBase64Images(cart);
+				var base64ImagesData;
+				try {
+					base64ImagesData = await getIndexBase64Images(cart);
+				} catch (err) {
+					showBoundary(err);
+				}
 				setBase64Images(base64ImagesData);
 			}
 			getData();
