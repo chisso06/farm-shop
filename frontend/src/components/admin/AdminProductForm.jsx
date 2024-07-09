@@ -1,4 +1,6 @@
 import { React, useContext, useEffect, useRef, useState } from 'react';
+// import { AdminToast } from '../../components';
+import { useErrorBoundary } from 'react-error-boundary';
 import { categoryList } from '../../data';
 import {
 	createProduct,
@@ -20,6 +22,12 @@ const AdminProductForm = ({productId, setProductId}) => {
 	const [imageFiles, setImageFiles] = useState([]);
 	const inputRef = useRef(null);
 	const context = useContext(AdminToastContext);
+	const { showBoundary } = useErrorBoundary();
+
+	const error = () => {
+		context.setMessage('エラーが発生しました');
+		setProductId(-1);
+	}
 
 	const handleInputChange = (e) => {
 		const name =  e.target.name;
@@ -87,16 +95,26 @@ const AdminProductForm = ({productId, setProductId}) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		var res;
 		if (productId) {
-			res = await updateProduct({product, images, imageFiles});
+			try {
+				await updateProduct({product, images, imageFiles});
+			} catch (err) {
+				showBoundary(err);
+			}
+			// if (res.error)
+			// 	return error();
 			context.setMessage('商品を更新しました');
 		} else {
-			res = await createProduct({product, images, imageFiles});
+			var newProduct;
+			try {
+				newProduct = await createProduct({product, images, imageFiles});
+			} catch (err) {
+				showBoundary(err);
+			}
 			context.setMessage('商品を追加しました');
-			setProductId(res.product.id);
+			setProductId(newProduct.product.id);
 		}
-		const imagesData = res.images.filter(image => !image.deleted);
+		const imagesData = newProduct.images.filter((image) => !image.deleted);
 		const newImages = imagesData.map((image) => {
 			return {
 				id: image.id,
@@ -111,7 +129,11 @@ const AdminProductForm = ({productId, setProductId}) => {
 
 	const handleDelete = async () => {
 		if (window.confirm('この商品を削除しますか？')) {
-			await deleteProduct(productId);
+			try {
+				await deleteProduct(productId);
+			} catch (err) {
+				showBoundary(err);
+			}
 			context.setMessage('商品を削除しました');
 			setProductId(-1);
 		}
@@ -130,14 +152,35 @@ const AdminProductForm = ({productId, setProductId}) => {
 			popular_status: 0
 		};
 		const getData = async () => {
-			const productData = productId ? await getProduct(productId) : newProduct;
+			var productData;
+			var imagesData;
+			var base64ImagesData;
+			var shippingMethodsData;
+
+			try {
+				productData = productId ? await getProduct(productId) : newProduct;
+			} catch (err) {
+				showBoundary(err);
+			}
 			if (!productData) {
 				context.setMessage('商品が存在しません');
 				setProductId(-1);
 			}
-			const imagesData = productId ? await getProductImages(productId) : [];
-			const base64ImagesData = productId ? await getBase64Images(imagesData) : [];
-			const shippingMethodsData = await getShippingMethods();
+			try {
+				imagesData = productId ? await getProductImages(productId) : [];
+			} catch (err) {
+				showBoundary(err);
+			}
+			try {
+				base64ImagesData = productId ? await getBase64Images(imagesData) : [];
+			} catch (err) {
+				showBoundary(err);
+			}
+			try {
+				shippingMethodsData = await getShippingMethods();
+			} catch (err) {
+				showBoundary(err);
+			}
 			setProduct(productData);
 			setImages(imagesData);
 			setBase64Images(base64ImagesData);

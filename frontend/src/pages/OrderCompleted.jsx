@@ -1,4 +1,5 @@
 import { React, useEffect } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PopularItems } from '../components';
 import { getOrder, updateCartStorage } from '../functions';
@@ -8,10 +9,16 @@ const OrderCompleted = () => {
 	const query = new URLSearchParams(search);
 	const orderId = query.get('order_id');
 	const navigate = useNavigate();
+	const {showBoundary} = useErrorBoundary();
 
 	useEffect(() => {
 		const orderCheck = async () => {
-			const res = await getOrder(orderId);
+			var res;
+			try {
+				res = await getOrder(orderId);
+			} catch (err) {
+				showBoundary(err);
+			}
 			if (res.status === 'pending-payment')
 				navigate('/');
 		}

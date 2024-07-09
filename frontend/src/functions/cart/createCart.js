@@ -4,8 +4,7 @@ const createCart = async (setCart) => {
 	const cartStorage = JSON.parse(localStorage.getItem('cart'));
 	if (cartStorage) {
 		const cartList = await Promise.all(cartStorage.map(async (c) => {
-			const res = await axios.get(`/backend/products/${c.product_id}`)
-				.catch((err) => console.log(err));
+			const res = await axios.get(`/backend/products/${c.product_id}`);
 			const item = {
 				product_id: c.product_id,
 				number: c.number,

@@ -1,4 +1,5 @@
 import { React, useContext, useEffect, useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useParams } from 'react-router-dom';
 import { areaList } from '../data';
 import { getBase64Images, getProduct, getProductImages, getShippingFees, getShippingMethod, imageSrc, updateCartStorage } from '../functions';
@@ -18,6 +19,7 @@ const Product = () => {
 		product_id: productId,
 		number: 0,
 	});
+	const { showBoundary } = useErrorBoundary();
 
 	const handleChange = (e) => {
 		const {name, value} = e.target;
@@ -50,10 +52,25 @@ const Product = () => {
 
 	useEffect(() => {
 		const getData = async () => {
-			const productData = await getProduct(productId);
+			var productData;
+			try {
+				productData = await getProduct(productId);
+			} catch (err) {
+				showBoundary(err);
+			}
 			if (productData) {
-				const imagesData = await getProductImages(productId);
-				const base64ImagesData = await getBase64Images(imagesData);
+				var imagesData;
+				var base64ImagesData;
+				try {
+					imagesData = await getProductImages(productId);
+				} catch (err) {
+					showBoundary(err);
+				}
+				try {
+					base64ImagesData = await getBase64Images(imagesData);
+				} catch (err) {
+					showBoundary(err);
+				}
 				setProduct(productData);
 				setImages(imagesData);
 				setBase64Images(base64ImagesData);
@@ -67,8 +84,18 @@ const Product = () => {
 
 	useEffect(() => {
 		const getData = async () => {
-			const shippingMethodData = await getShippingMethod(product.shipping_method);
-			const shippingFeesData = await getShippingFees(product.shipping_method);
+			var shippingMethodData;
+			var shippingFeesData;
+			try {
+				shippingMethodData = await getShippingMethod(product.shipping_method);
+			} catch (err) {
+				showBoundary(err);
+			}
+			try {
+				shippingFeesData = await getShippingFees(product.shipping_method);
+			} catch (err) {
+				showBoundary(err);
+			}
 			setShippingMethod(shippingMethodData);
 			setShippingFees(shippingFeesData);
 		}

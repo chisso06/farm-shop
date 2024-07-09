@@ -1,4 +1,5 @@
 import { React, useContext, useEffect, useState } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
 import { areaList } from '../../data';
 import {
 	createShipping,
@@ -14,6 +15,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	const [shippingFees, setShippingFees] = useState([]);
 	const [shippingFeeIdx, setShippingFeeIdx] = useState(0);
 	const context = useContext(AdminToastContext);
+	const { showBoundary } = useErrorBoundary();
 
 	const handleMethodInputChange = (e) => {
 		const name =  e.target.name;
@@ -69,29 +71,37 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	}
 
 	const handleSubmit = async (e) => {
+		var res;
 		e.preventDefault();
 		if (shippingId) {
-			await updateShipping({method: shippingMethod, fees: shippingFees})
-			.then((res) => {
-				if (res.status === 'success') {
-					context.setMessage('配送方法を更新しました');
-				}
-			});
+			try {
+				res = await updateShipping({ method: shippingMethod, fees: shippingFees });
+			} catch (err) {
+				showBoundary(err);
+			}
+			if (res.status === 'success') {
+				context.setMessage('配送方法を更新しました');
+			}
 		} else {
-			await createShipping({method: shippingMethod, fees: shippingFees})
-			.then((res) => {
-				console.log(res);
-				if (res.status === 'success') {
-					setShippingId(res.method.id);
-					context.setMessage('配送方法を追加しました');
-				}
-			});
+			try {
+				res = await createShipping({ method: shippingMethod, fees: shippingFees })
+			} catch (err) {
+				showBoundary(err);
+			}
+			if (res.status === 'success') {
+				setShippingId(res.method.id);
+				context.setMessage('配送方法を追加しました');
+			}
 		}
 	};
 
 	const handleDelete = async () => {
 		if (window.confirm('この配送方法を削除しますか？\n※この配送方法が設定されている商品の配送方法は「なし」に設定されます')) {
-			await deleteShippingMethod(shippingId);
+			try {
+				await deleteShippingMethod(shippingId);
+			} catch (err) {
+				showBoundary(err);
+			}
 			context.setMessage('配送方法を削除しました');
 			setShippingId(-1);
 		}
@@ -124,8 +134,18 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			newShippingFees.push(newShippingFee);
 		}
 		const getData = async () => {
-			const shippingMethodData = shippingId ? await getShippingMethod(shippingId) : newShippingMethod;
-			const shippingFeesData = shippingId ? await getShippingFees(shippingId) : newShippingFees;
+			var shippingMethodData;
+			var shippingFeesData;
+			try {
+				shippingMethodData = shippingId ? await getShippingMethod(shippingId) : newShippingMethod;
+			} catch (err) {
+				showBoundary(err);
+			}
+			try {
+				shippingFeesData = shippingId ? await getShippingFees(shippingId) : newShippingFees;
+			} catch (err) {
+				showBoundary(err);
+			}
 			setShippingMethod(shippingMethodData);
 			setShippingFees(shippingFeesData);
 		}
