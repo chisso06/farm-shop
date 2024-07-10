@@ -2,14 +2,14 @@ import { React, useEffect } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PopularItems } from '../components';
-import { getOrder, updateCartStorage } from '../functions';
+import { getOrder } from '../functions';
 
 const OrderCompleted = () => {
 	const search = useLocation().search;
 	const query = new URLSearchParams(search);
 	const orderId = query.get('order_id');
 	const navigate = useNavigate();
-	const {showBoundary} = useErrorBoundary();
+	const { showBoundary } = useErrorBoundary();
 
 	useEffect(() => {
 		const orderCheck = async () => {
@@ -23,11 +23,6 @@ const OrderCompleted = () => {
 				navigate('/');
 		}
 		orderCheck();
-
-		const order_id = localStorage.getItem('order_id');
-		if (order_id === orderId) {
-			updateCartStorage([]);
-		}
 	}, [orderId]);
 
 	return (

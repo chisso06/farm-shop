@@ -24,11 +24,6 @@ const AdminProductForm = ({productId, setProductId}) => {
 	const context = useContext(AdminToastContext);
 	const { showBoundary } = useErrorBoundary();
 
-	const error = () => {
-		context.setMessage('エラーが発生しました');
-		setProductId(-1);
-	}
-
 	const handleInputChange = (e) => {
 		const name =  e.target.name;
 		var value = e.target.value;
@@ -95,26 +90,24 @@ const AdminProductForm = ({productId, setProductId}) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		var res;
 		if (productId) {
 			try {
-				await updateProduct({product, images, imageFiles});
+				res = await updateProduct({product, images, imageFiles});
 			} catch (err) {
 				showBoundary(err);
 			}
-			// if (res.error)
-			// 	return error();
 			context.setMessage('商品を更新しました');
 		} else {
-			var newProduct;
 			try {
-				newProduct = await createProduct({product, images, imageFiles});
+				res = await createProduct({product, images, imageFiles});
 			} catch (err) {
 				showBoundary(err);
 			}
 			context.setMessage('商品を追加しました');
-			setProductId(newProduct.product.id);
+			setProductId(res.product.id);
 		}
-		const imagesData = newProduct.images.filter((image) => !image.deleted);
+		const imagesData = res.images.filter((image) => !image.deleted);
 		const newImages = imagesData.map((image) => {
 			return {
 				id: image.id,

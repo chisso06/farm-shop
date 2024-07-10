@@ -699,9 +699,9 @@ app.get('/ordered_products/:order_id', (req, res) => {
 });
 
 app.post('/create-checkout-session', async (req, res) => {
-	const orderId = req.body.order_id;
-	const cart = JSON.parse(req.body.cart);
-	const customer = JSON.parse(req.body.customer);
+	const orderId = crypto.randomUUID().substring(0, 8).toUpperCase();;
+	const cart = req.body.cart;
+	const customer = req.body.customer;
 	const connectionPromise = await mysqlPromise.createConnection({
 		host: 'localhost',
 		user: 'miyu',
@@ -726,29 +726,6 @@ app.post('/create-checkout-session', async (req, res) => {
 	];
 	var total_amount = 0;
 	var shipping_fee = 0;
-
-	if (!orderId)
-		return res.status(400).json({message: INVALID_ORDER_ID_ERROR});
-
-	// 同一のorderIdで、未完了の支払いがあるかどうかをチェック
-	// await connectionPromise.beginTransaction();
-	const [results] = await connectionPromise.query(
-		`SELECT * FROM orders WHERE id='${orderId}' AND status='pending-payment'`
-	).catch((err) => {
-		return res.status(500).json({ error: true, message: CONNECTION_ERROR });
-	});
-	if (results.length) {
-		const session = await stripe.checkout.sessions.retrieve(results[0].checkout_session_id)
-		.catch((err) => {
-			return res.status(500).json({ error: true, message: "could not retrieve stripe session" });
-		});
-		console.log('session_url:', session.url);
-		if (session.url) {
-			return res.redirect(303, session.url);
-		} else {
-			return res.redirect(`${FRONTEND_ORIGIN}/cart?message=このカートは、未完了の支払いがあります`);
-		}
-	}
 
 	// 在庫確認
 	var stock_status = 1;
@@ -906,7 +883,8 @@ app.post('/create-checkout-session', async (req, res) => {
 				}
 			});
 	})
-	res.redirect(303, session.url);
+	// res.redirect(303, session.url);
+	res.status(200).json({session_url: session.url});
 });
 
 app.post('/stripe-webhook', async (req, res) => {

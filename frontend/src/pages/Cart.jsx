@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useLocation } from 'react-router-dom';
-import { createCart, getIndexBase64Images, imageSrc, updateCartStorage } from '../functions';
+import { createCart, getIndexBase64Images, imageSrc } from '../functions';
 import { ToastContext } from '../functions/context/ToastFunc';
 
 const Cart = () => {
@@ -24,7 +24,7 @@ const Cart = () => {
 			cartStorage.splice(i, 1);
 		else
 			cartStorage[i].number = value;
-		updateCartStorage(cartStorage);
+		localStorage.setItem('cart', JSON.stringify(cartStorage));
 		createCart(setCart);
 	}
 
@@ -32,7 +32,7 @@ const Cart = () => {
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
 
 		cartStorage.splice(i, 1);
-		updateCartStorage(cartStorage);
+		localStorage.setItem('cart', JSON.stringify(cartStorage));
 		createCart(setCart);
 	}
 

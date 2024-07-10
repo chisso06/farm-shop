@@ -2,7 +2,7 @@ import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useParams } from 'react-router-dom';
 import { areaList } from '../data';
-import { getBase64Images, getProduct, getProductImages, getShippingFees, getShippingMethod, imageSrc, updateCartStorage } from '../functions';
+import { getBase64Images, getProduct, getProductImages, getShippingFees, getShippingMethod, imageSrc } from '../functions';
 import { ToastContext } from '../functions/context/ToastFunc';
 
 const Product = () => {
@@ -45,7 +45,7 @@ const Product = () => {
 				cart.push(item);
 			else
 				cart[i].number += item.number;
-			updateCartStorage(cart);
+			localStorage.setItem('cart', JSON.stringify(cart));
 			context.setMessage('商品を買い物かごに追加しました');
 		}
 	};
@@ -106,7 +106,7 @@ const Product = () => {
 	useEffect(() => {
 		document.getElementById("button").setAttribute("disabled", true);
 		if (!localStorage.getItem('cart'))
-			updateCartStorage([])
+			localStorage.setItem('cart', JSON.stringify([]));
 	}, [])
 
 	const ShippingModal = () => {
