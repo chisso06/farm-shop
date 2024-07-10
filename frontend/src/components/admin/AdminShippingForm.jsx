@@ -11,8 +11,29 @@ import {
 import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminProductForm = ({shippingId, setShippingId}) => {
-	const [shippingMethod, setShippingMethod] = useState({});
-	const [shippingFees, setShippingFees] = useState([]);
+	const shippingFee = {
+		id: 0,
+		method_id: shippingId,
+		size: 'サイズ1',
+		min_n: 1,
+		max_n: 99,
+		Hokkaido: '',
+		Tohoku: '',
+		Kanto: '',
+		Sinetsu: '',
+		Hokuriku: '',
+		Tokai: '',
+		Kinki: '',
+		Chugoku: '',
+		Shikoku: '',
+		Kyusyu: '',
+		Okinawa: '',
+	};
+	const [shippingMethod, setShippingMethod] = useState({
+		id: 0,
+		name: ''
+	});
+	const [shippingFees, setShippingFees] = useState([shippingFee]);
 	const [shippingFeeIdx, setShippingFeeIdx] = useState(0);
 	const context = useContext(AdminToastContext);
 	const { showBoundary } = useErrorBoundary();
@@ -28,24 +49,27 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 		setShippingFeeIdx(Number(e.target.value));
 	}
 
-	const handleAddSizeClick = () => {
-		const newFee = {
-			id: 0,
-			method_id: shippingId,
-			size: '新しいサイズ',
-			min_n: 0,
-			max_n: 0,
-		}
-		areaList.map((area) => newFee[area.method_name]);
+	const handleAddSizeClick = (e) => {
+		e.preventDefault();
+
+		const newFee = shippingFee;
+		newFee.size = '新しいサイズ';
+		newFee.min_n = shippingFees[shippingFees.length - 1].max_n + 1;
+		newFee.max_n = newFee.min_n + 1;
+		// areaList.map((area) => newFee[area.method_name]);
 		setShippingFeeIdx(shippingFees.length);
 		setShippingFees([...shippingFees, newFee]);
 	}
 
-	const handleDeleteSizeClick = () => {
+	const handleDeleteSizeClick = (e) => {
+		e.preventDefault();
+
 		if (shippingFees.length === 1) {
 			window.alert('サイズを全て削除することはできません');
 			return ;
 		}
+		if (shippingFeeIdx < shippingFees.length - 1)
+			shippingFees[shippingFeeIdx + 1].min_n = shippingFees[shippingFeeIdx].min_n;
 		setShippingFees(shippingFees.filter((fee, i) => i !== shippingFeeIdx));
 		setShippingFeeIdx(shippingFeeIdx ? shippingFeeIdx - 1 : 0);
 	}
@@ -53,17 +77,11 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	const handleFeesInputChange = (e) => {
 		const name = e.target.name;
 		const value = (name === 'size') ? e.target.value : Number(e.target.value);
-
 		const shippingFeesData = shippingFees.map((fee, i) => {
 			if (i === shippingFeeIdx) {
-				if ((name === 'min_n' && i
-							&& value <= shippingFees[shippingFeeIdx - 1].max_n)
-						|| (name === 'max_n' && i < shippingFees.length - 1
-							&& value >= shippingFees[shippingFeeIdx + 1].min_n)) {
-					window.alert('下のサイズの最大値が上のサイズの最小値よりも小さくなるように設定してください');
-				} else {
-					fee[name] = value;
-				}
+				fee[name] = value;
+				if (i !== shippingFees.length - 1 && name === 'max_n')
+					shippingFees[i + 1].min_n = value + 1;
 			}
 			return fee;
 		})
@@ -71,8 +89,44 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	}
 
 	const handleSubmit = async (e) => {
-		var res;
 		e.preventDefault();
+
+		// validation
+		const validate_shippingFees = () => {
+			var message = '';
+			shippingFees.map((fee, i) => {
+				if (message.length)
+					return ;
+				// 入力が空白
+				for (var key in fee) {
+					if (key !== 'id' && key !== 'method_id') {
+						if (fee[key] === '')
+							message = '全てのサイズの全ての項目を入力してください';
+						else if (key !== 'size' && isNaN(fee[key]))
+							message = '全てのサイズの個数の条件および送料は半角数字で入力する必要があります';
+					}
+				}
+				if (message.length)
+					return ;
+				// 条件
+				if (!fee.min_n || !fee.max_n)
+					message = '全てのサイズの個数の条件を入力してください';
+				else if (!i && fee.min_n !== 1)
+					message = '一番下のサイズの個数の条件の最小値は1に設定してください';
+				else if (fee.min_n > fee.max_n)
+					message = 'サイズの個数の条件の最大値が最小値と同値以上になるように設定してください';
+				else if (i !== shippingFees.length - 1 && fee.max_n + 1 !== shippingFees[i + 1].min_n)
+					message = '上のサイズの個数の条件の最小値が下のサイズの個数の条件の最大値よりも1大きい値になるように設定してください';
+			});
+			return (message);
+		}
+		const validation_msg = validate_shippingFees();
+		if (validation_msg) {
+			window.alert(validation_msg);
+			return ;
+		}
+
+		var res;
 		if (shippingId) {
 			try {
 				res = await updateShipping({ method: shippingMethod, fees: shippingFees });
@@ -84,7 +138,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			}
 		} else {
 			try {
-				res = await createShipping({ method: shippingMethod, fees: shippingFees })
+				res = await createShipping({ method: shippingMethod, fees: shippingFees });
 			} catch (err) {
 				showBoundary(err);
 			}
@@ -95,7 +149,9 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 		}
 	};
 
-	const handleDelete = async () => {
+	const handleDelete = async (e) => {
+		e.preventDefault();
+
 		if (window.confirm('この配送方法を削除しますか？\n※この配送方法が設定されている商品の配送方法は「なし」に設定されます')) {
 			try {
 				await deleteShippingMethod(shippingId);
@@ -108,48 +164,24 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	};
 
 	useEffect(() => {
-		const newShippingMethod = {
-			id: 0,
-			name: ''
-		};
-		const newShippingFees = [];
-		for (let i = 0; i < 3; i ++) {
-			const newShippingFee = {
-				'method_id': shippingId,
-				'size': 'サイズ' + (i + 1),
-				'min_n': '',
-				'max_n': '',
-				'Hokkaido': '',
-				'Tohoku': '',
-				'Kanto': '',
-				'Sinetsu': '',
-				'Hokuriku': '',
-				'Tokai': '',
-				'Kinki': '',
-				'Chugoku': '',
-				'Shikoku': '',
-				'Kyusyu': '',
-				'Okinawa': '',
-			};
-			newShippingFees.push(newShippingFee);
-		}
 		const getData = async () => {
 			var shippingMethodData;
 			var shippingFeesData;
 			try {
-				shippingMethodData = shippingId ? await getShippingMethod(shippingId) : newShippingMethod;
+				shippingMethodData = await getShippingMethod(shippingId);
 			} catch (err) {
 				showBoundary(err);
 			}
 			try {
-				shippingFeesData = shippingId ? await getShippingFees(shippingId) : newShippingFees;
+				shippingFeesData = await getShippingFees(shippingId);
 			} catch (err) {
 				showBoundary(err);
 			}
 			setShippingMethod(shippingMethodData);
 			setShippingFees(shippingFeesData);
 		}
-		getData();
+		if (shippingId)
+			getData();
 	}, [shippingId]);
 
 	return (
@@ -190,8 +222,12 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 						</select>
 						{shippingFees[shippingFeeIdx] ? 
 							<div className='flex items-center h-full'>
-								<button onClick={handleAddSizeClick} className='ml-2 px-2 h-full text-sm border rounded hover:bg-stone-200'>サイズを追加</button>
-								<button onClick={handleDeleteSizeClick} className='ml-2 px-2 h-full text-sm border rounded hover:border-amber-600 hover:bg-amber-600 hover:border-opacity-5 hover:bg-opacity-50'>このサイズを削除</button>
+								<button onClick={handleAddSizeClick} className='ml-2 px-2 h-full text-sm border rounded hover:bg-stone-200'>
+									サイズを追加
+								</button>
+								<button onClick={handleDeleteSizeClick} className='ml-2 px-2 h-full text-sm border rounded hover:border-amber-600 hover:bg-amber-600 hover:border-opacity-5 hover:bg-opacity-50'>
+									このサイズを削除
+								</button>
 							</div>
 						:''}
 					</div>
@@ -215,10 +251,9 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 									onChange={handleFeesInputChange}
 									name='min_n'
 									type='number'
-									min={shippingFeeIdx ? shippingFees[shippingFeeIdx - 1].max_n + 1 : 1}
-									className='p-2 mr-2 w-20 border rounded invalid:border-amber-600'
+									className='p-2 mr-2 w-20 border rounded invalid:border-amber-600 disabled'
 									value={shippingFees[shippingFeeIdx].min_n}
-									required />
+									disabled />
 								個 〜
 								<input
 									onChange={handleFeesInputChange}
@@ -259,7 +294,6 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 					</button>
 					{shippingId ?
 						<button
-							type='button'
 							onClick={handleDelete}
 							className='w-full p-2 text-center text-white bg-stone-300 hover:bg-stone-400 rounded'>
 							この配送方法を削除する
