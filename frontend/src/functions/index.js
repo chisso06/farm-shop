@@ -1,5 +1,4 @@
 export { default as createCart } from './cart/createCart';
-export { default as updateCartStorage } from './cart/updateCartStorage';
 export { default as getBase64Image } from './images/getBase64Image';
 export { default as getBase64Images } from './images/getBase64Images';
 export { default as getIndexBase64Images } from './images/getIndexBase64Images';
