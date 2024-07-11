@@ -133,7 +133,7 @@ const Product = () => {
 									<tr key={i} className='border'>
 										<td>
 											<p>{area.name}</p>
-											<p className='text-xs'>{area.prefectures}</p>
+											<p className='text-xs'>{area.prefectures.join(',')}</p>
 										</td>
 										{ shippingFees.map((m, i) => {
 											return (<td key={i} className='px-2 text-center'>¥{m[area.method_name]}</td>);

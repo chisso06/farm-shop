@@ -16,7 +16,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 		method_id: shippingId,
 		size: 'サイズ1',
 		min_n: 1,
-		max_n: 99,
+		max_n: 5,
 		Hokkaido: '',
 		Tohoku: '',
 		Kanto: '',
@@ -271,7 +271,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 								<div key={i} className='my-2 flex items-center'>
 									<div className='mr-2 w-3/4 font-mono'>
 										<label>{area.name}<span className='font-serif text-sm text-amber-600'>*</span></label>
-										<p className='text-xs text-stone-600'>{area.prefectures}</p>
+										<p className='text-xs text-stone-600'>{area.prefectures.join(',')}</p>
 									</div>
 									<input
 										onChange={handleFeesInputChange}
