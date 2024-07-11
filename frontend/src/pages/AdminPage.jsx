@@ -1,9 +1,7 @@
 import { React, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdminNews, AdminOrders, AdminProducts, AdminShipping } from '.';
-import { AdminToast } from '../components';
 import { adminPagesList } from '../data';
-import { AdminToastContext, useAdminToast } from '../functions/context/ToastFunc';
 
 const AdminPage = () => {
 	const params = useParams();
@@ -63,14 +61,14 @@ const AdminPage = () => {
 
 	useEffect(() => {
 		if (width < 960) {
-			window.confirm('画面が小さすぎます。幅が960px以上のpcでアクセスしてください。');
+			window.alert('画面が小さすぎます。幅が960px以上のpcでアクセスしてください。');
 		} else if (!adminPage) {
 			navigate('/admin/admin-orders');
 		}
 	}, [width, navigate, adminPage]);
 
 	return (
-		<AdminToastContext.Provider value={useAdminToast()}>{
+		<div>{
 			(width >= 960 && sessionStorage.getItem('session')) ?
 			<div className='mt-16 flex'>
 				<div className='min-h-screen w-1/5 border-r bg-stone-100'>
@@ -78,13 +76,12 @@ const AdminPage = () => {
 					<AdminMenu />
 				</div>
 				<div className='h-full w-4/5 mt-14'>
-					<AdminToast />
 					<AdminContent />
 				</div>
 			</div>
 			:
 			<div />
-		}</AdminToastContext.Provider>
+		}</div>
 	)
 }
 

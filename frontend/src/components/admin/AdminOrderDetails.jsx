@@ -1,10 +1,8 @@
-import { React, useContext, useEffect, useState } from 'react';
+import { React, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { getOrder, getOrderedProducts, updateOrder } from '../../functions';
-import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
-	const context = useContext(AdminToastContext);
 	const [order, setOrder] = useState({});
 	const [orderedProducts, setOrderedProducts] = useState([]);
 	const { showBoundary } = useErrorBoundary();
@@ -41,7 +39,7 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 			showBoundary(err);
 		}
 		setOrder(newOrder);
-		context.setMessage('ステータスを変更しました');
+		window.alert('ステータスを変更しました');
 	};
 
 	const Modal = () => {

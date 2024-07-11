@@ -1,12 +1,10 @@
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { React, useContext, useEffect, useState } from "react";
+import { React, useEffect, useState } from "react";
 import { useErrorBoundary } from 'react-error-boundary';
 import { createNews, deleteNews, getNews } from '../../functions';
-import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminNews = () => {
-	const context = useContext(AdminToastContext);
 	const [news, setNews] = useState([]);
 	const { showBoundary } = useErrorBoundary();
 
@@ -26,7 +24,7 @@ const AdminNews = () => {
 			showBoundary(err);
 		}
 		setNews(newsData);
-		context.setMessage('新しいお知らせを追加しました');
+		window.alert('新しいお知らせを追加しました');
 };
 
 	const handleTrash = async (newsId) => {
@@ -35,7 +33,7 @@ const AdminNews = () => {
 		} catch (err) {
 			showBoundary(err);
 		}
-		context.setMessage('お知らせを削除しました');
+		window.alert('お知らせを削除しました');
 		setNews(news.filter((n) => n.id !== newsId));
 	};
 
