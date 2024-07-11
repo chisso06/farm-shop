@@ -8,7 +8,7 @@ import { createCart, getIndexBase64Images, getShippingFees, imageSrc } from '../
 const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 	const [sum, setSum] = useState(0);
 	const [base64Images, setBase64Images] = useState([]);
-	const showBoundary = useErrorBoundary();
+	const { showBoundary } = useErrorBoundary();
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -111,7 +111,7 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 	// 	address: '',
 	// 	memo: ''
 	// });
-	const showBoundary = useErrorBoundary();
+	const { showBoundary } = useErrorBoundary();
 
 	const handleChange = (e) => {
 		setCustomerData({...customerData, [e.target.name]: e.target.value});
@@ -119,13 +119,23 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 
 	const handleAreaChange = async (e) => {
 		setCustomerData({...customerData, [e.target.name]: e.target.value});
+		const area = areaList.find(
+			(area) => area.prefectures.find((p) => p === e.target.value));
 		var shippingFeeCalc = 0;
 
 		await Promise.all(shippingMethods.map(async (method) => {
+			if (!method.method_id)
+				return ;
 			const shippingFeesData = await getShippingFees(method.method_id);
-			for (let i = 0; i < shippingFeesData.length - 1 && (method.number < shippingFeesData[i].min_n || shippingFeesData[i].max_n < method.number); i ++) {
-				const area = areaList.find((area) => area.prefectures.find((p) => p === e.target.value));
-				shippingFeeCalc += shippingFeesData[i][area.method_name];
+			var n = method.number;
+			while (n > 0) {
+				var shippingFeeData = shippingFeesData.find(
+					(data) => data.min_n <= n && n <= data.max_n);
+				if (!shippingFeeData) {
+					shippingFeeData = shippingFeesData[shippingFeesData.length - 1];
+				}
+				shippingFeeCalc += shippingFeeData[area.method_name];
+				n -= shippingFeeData.max_n;
 			}
 		})).catch((err) => showBoundary(err));
 		setShippingFee(shippingFeeCalc);
