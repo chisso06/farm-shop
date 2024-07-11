@@ -14,9 +14,6 @@ const createCart = async (setCart) => {
 				stock: res.data.stock,
 				image_id: res.data.image_id
 			};
-			if (res.data.stock < item.number) {
-				item.number = res.data.stock;
-			}
 			return item;
 		}));
 		setCart(cartList);

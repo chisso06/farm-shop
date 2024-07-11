@@ -1,5 +1,4 @@
-import { React, useContext, useEffect, useRef, useState } from 'react';
-// import { AdminToast } from '../../components';
+import { React, useEffect, useRef, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { categoryList } from '../../data';
 import {
@@ -12,7 +11,6 @@ import {
 	imageSrc,
 	updateProduct
 } from '../../functions';
-import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminProductForm = ({productId, setProductId}) => {
 	const [product, setProduct] = useState({});
@@ -21,7 +19,6 @@ const AdminProductForm = ({productId, setProductId}) => {
 	const [base64Images, setBase64Images] = useState([]);
 	const [imageFiles, setImageFiles] = useState([]);
 	const inputRef = useRef(null);
-	const context = useContext(AdminToastContext);
 	const { showBoundary } = useErrorBoundary();
 
 	const handleInputChange = (e) => {
@@ -97,14 +94,14 @@ const AdminProductForm = ({productId, setProductId}) => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			context.setMessage('商品を更新しました');
+			window.alert('商品を更新しました');
 		} else {
 			try {
 				res = await createProduct({product, images, imageFiles});
 			} catch (err) {
 				showBoundary(err);
 			}
-			context.setMessage('商品を追加しました');
+			window.alert('商品を追加しました');
 			setProductId(res.product.id);
 		}
 		const imagesData = res.images.filter((image) => !image.deleted);
@@ -127,7 +124,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			context.setMessage('商品を削除しました');
+			window.alert('商品を削除しました');
 			setProductId(-1);
 		}
 	};
@@ -156,7 +153,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 				showBoundary(err);
 			}
 			if (!productData) {
-				context.setMessage('商品が存在しません');
+				window.alert('商品が存在しません');
 				setProductId(-1);
 			}
 			try {

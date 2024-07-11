@@ -40,7 +40,7 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 			}
 			getData();
 		} else if (!cart.length)
-				navigate('/cart');
+			navigate('/cart');
 	}, [cart]);
 
 	return (
@@ -143,6 +143,7 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
 		await axios.post('/backend/create-checkout-session', {cart, customer: customerData})
 		.then((res) => {
 			localStorage.setItem('cart', JSON.stringify([]));

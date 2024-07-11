@@ -39,7 +39,7 @@ const Product = () => {
 
 		if ((i < 0 && product.stock < item.number)
 			|| (i >= 0 && product.stock < cart[i].number + item.number))
-			window.confirm('在庫数を超えています。');
+			window.alert('在庫数を超えています。');
 		else {
 			if (i < 0)
 				cart.push(item);

@@ -1,4 +1,4 @@
-import { React, useContext, useEffect, useState } from 'react';
+import { React, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { areaList } from '../../data';
 import {
@@ -8,7 +8,6 @@ import {
 	getShippingMethod,
 	updateShipping
 } from '../../functions';
-import { AdminToastContext } from '../../functions/context/ToastFunc';
 
 const AdminProductForm = ({shippingId, setShippingId}) => {
 	const shippingFee = {
@@ -35,7 +34,6 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	});
 	const [shippingFees, setShippingFees] = useState([shippingFee]);
 	const [shippingFeeIdx, setShippingFeeIdx] = useState(0);
-	const context = useContext(AdminToastContext);
 	const { showBoundary } = useErrorBoundary();
 
 	const handleMethodInputChange = (e) => {
@@ -133,19 +131,15 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			if (res.status === 'success') {
-				context.setMessage('配送方法を更新しました');
-			}
+			window.alert('配送方法を更新しました');
 		} else {
 			try {
 				res = await createShipping({ method: shippingMethod, fees: shippingFees });
 			} catch (err) {
 				showBoundary(err);
 			}
-			if (res.status === 'success') {
-				setShippingId(res.method.id);
-				context.setMessage('配送方法を追加しました');
-			}
+			setShippingId(res.method.id);
+			window.alert('配送方法を追加しました');
 		}
 	};
 
@@ -158,7 +152,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			context.setMessage('配送方法を削除しました');
+			window.alert('配送方法を削除しました');
 			setShippingId(-1);
 		}
 	};
