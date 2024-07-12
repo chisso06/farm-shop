@@ -15,8 +15,9 @@ const uploadImages = async ({images, imageFiles}) => {
 			`/backend/upload/products`,
 			formData,
 			{headers: {'content-type': 'multipart/form-data'}})
-			.then((res) => {
-				// console.log(res.data);
+			.catch((err) => {
+				console.log("error");
+				window.alert('画像を保存することができませんでした');
 			});
 	}
 }

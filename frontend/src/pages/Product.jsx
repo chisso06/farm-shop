@@ -1,9 +1,35 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Icon } from '../components';
 import { areaList } from '../data';
 import { getBase64Images, getProduct, getProductImages, getShippingFees, getShippingMethod, imageSrc } from '../functions';
 import { ToastContext } from '../functions/context/ToastFunc';
+
+const ProductImagesCarousel = ({images, base64Images}) => {
+	const [imageIdx, setImageIdx] = useState(0);
+
+	return (
+		(images && images[imageIdx]) ? (
+			<div className='relative z-0'>
+				<img
+					src={imageSrc(base64Images[images[imageIdx].base64Images_idx])}
+					alt='商品画像'
+					className='aspect-[3/2] object-contain bg-stone-200' />
+				{imageIdx ? 
+					<button onClick={() => setImageIdx(imageIdx - 1)} className="absolute w-10 h-10 top-1/2 left-4 -translate-y-1/2 bg-white rounded-full opacity-50 hover:opacity-80" data-carousel-prev>
+						<Icon icon="circle-chevron-left" className="opacity-50 hover:opacity-80" />
+					</button>
+				: ''}
+				{imageIdx < images.length - 1 ? 
+					<button onClick={() => setImageIdx(imageIdx + 1)} className="absolute w-10 h-10 top-1/2 right-4 -translate-y-1/2 bg-white rounded-full opacity-50 hover:opacity-80" data-carousel-prev>
+						<Icon icon="circle-chevron-right" className="opacity-50 hover:opacity-80" />
+					</button>
+				: ''}
+			</div>
+		) : ''
+	)
+}
 
 const Product = () => {
 	const params = useParams();
@@ -158,15 +184,7 @@ const Product = () => {
 			</p>
 			<div className='sm:flex gap-4'>
 				<div className='sm:w-2/3'>
-					{images ? images.map((image, i) => {return (
-						image.order_of_images === 1 ? 
-							<img
-								key={i}
-								src={imageSrc(base64Images[image.base64Images_idx])}
-								alt='商品画像'
-								className='w-full aspect-[3/2] object-contain bg-stone-200' />
-						:''
-					)}):''}
+					<ProductImagesCarousel images={images} base64Images={base64Images} />
 					<div className='my-10'>
 						<p className='mb-4 text-2xl font-bold font-mono'>商品について</p>
 						<p className='whitespace-pre-line'>{product.description}</p>
