@@ -75,11 +75,18 @@ const productsStorage = multer.diskStorage({
 	destination: (req, file, cb) => cb(null, 'backend/public/products'),
 	filename: (req, file, cb) => {cb(null, file.originalname)}
 });
-const uploadProducts = multer({ storage: productsStorage });
-app.post('/upload/products', uploadProducts.array('files[]', 10), (req, res) => {
-	console.log('body:', req.body);
-	console.log('files:', req.files);
-	res.status(200).json({ message: "uploaded product images" });
+const uploadProducts = multer({ storage: productsStorage }).array('files[]', 10);
+app.post('/upload/products', (req, res) => {
+	uploadProducts(req, res, (err) => {
+		if (err) {
+			console.log("Error: Can't upload files");
+			return res.status(500).json({error: true, message: "Error: Can't upload files"});
+		} else {
+			console.log('body:', req.body);
+			console.log('files:', req.files);
+			res.status(200).json({ message: "uploaded product images" });
+		}
+	})
 });
 
 app.get('/products', (req, res) => {

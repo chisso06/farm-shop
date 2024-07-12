@@ -1,5 +1,7 @@
+import imageCompression from 'browser-image-compression';
 import { React, useEffect, useRef, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
+import { Icon } from '../../components';
 import { categoryList } from '../../data';
 import {
 	createProduct,
@@ -39,12 +41,14 @@ const AdminProductForm = ({productId, setProductId}) => {
 		if (!files)
 			return ;
 		const fileArray = Array.from(files);
-		fileArray.forEach((file) => {
-			const SIZE_5MB = 1024 * 1024 * 5;
-			if (file.size > SIZE_5MB) {
-				window.alert('ファイルサイズが5MBを超えています。');
-				return ;
-			}
+		fileArray.forEach(async (file) => {
+			// const SIZE_5MB = 1024 * 1024 * 5;
+			// if (file.size > SIZE_5MB) {
+			// 	window.alert('ファイルサイズが5MBを超えています。');
+			// 	return ;
+			// }
+			const compressedFile = await imageCompression(file, { maxSizeMB: 2 })
+			.catch((err) => showBoundary(err));
 			const image = {
 				id: 0,
 				order_of_images: images.length + 1,
@@ -53,10 +57,10 @@ const AdminProductForm = ({productId, setProductId}) => {
 				imageFiles_idx: imageFiles.length,
 				added: true
 			}
-			setImageFiles([...imageFiles, file]);
+			setImageFiles([...imageFiles, compressedFile]);
 			setImages([...images, image]);
 			const reader = new FileReader();
-			reader.onloadend = () => {
+			reader.onload = () => {
 				const base64Image = reader.result;
 				if (typeof(base64Image) !== 'string') {
 					setBase64Images([...base64Images, {}]);
@@ -65,7 +69,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 					setBase64Images([...base64Images, base64Image]);
 				}
 			};
-			reader.readAsDataURL(file);
+			reader.readAsDataURL(compressedFile);
 			if (inputRef.current) {
 				inputRef.current.value = "";
 			}
@@ -206,19 +210,25 @@ const AdminProductForm = ({productId, setProductId}) => {
 					<label>商品写真</label>
 					<div className='p-10 flex bg-stone-100 rounded'>
 						{images.length ? images.map((image, i) => {return !image.deleted ? (
-							<img
-								src={imageSrc(base64Images[image.base64Images_idx])}
-								onClick={() => handleImageClick(i)}
-								key={i}
-								alt='商品画像'
-								className='w-24 mr-4 aspect-square object-contain bg-white rounded hover:opacity-50'/>
+							<div className='relative z-0 mr-4 cursor-pointer group'>
+								<img
+									src={imageSrc(base64Images[image.base64Images_idx])}
+									onClick={() => handleImageClick(i)}
+									key={i}
+									alt='商品画像'
+									className='w-24 aspect-square object-contain bg-white rounded group-hover:opacity-50'/>
+								<Icon icon="trash" className='absolute w-10 h-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40' />
+							</div>
 						):''}):''}
-						<input
-							onChange={handleImageChange}
-							type='file'
-							accept="image/jpeg, image/png"
-							ref={inputRef}
-							className='w-24 h-24 bg-white rounded' />
+						<label className='w-24 h-24 flex items-center bg-white rounded'>
+							<p className='w-full text-stone-500 text-4xl font-bold text-center cursor-pointer'>+</p>
+							<input
+								onChange={handleImageChange}
+								type='file'
+								accept="image/jpeg, image/png"
+								ref={inputRef}
+								className='hidden' />
+						</label>
 					</div>
 				</div>
 				<div className='mt-4'>

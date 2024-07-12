@@ -1,8 +1,7 @@
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useLocation } from 'react-router-dom';
+import { Icon } from '../components';
 import { createCart, getIndexBase64Images, imageSrc } from '../functions';
 import { ToastContext } from '../functions/context/ToastFunc';
 
@@ -100,10 +99,7 @@ const Cart = () => {
 											onChange={(e) => {handleChange(e, i)}}
 											className='w-16 mx-2 p-2 border rounded invalid:text-amber-700 invalid:border-amber-600' />
 										<button>
-											<FontAwesomeIcon
-												onClick={() => {handleTrash(i)}}
-												icon={faTrash}
-												className='text-stone-300 hover:text-stone-400' />
+											<Icon icon="trash" className='w-4 opacity-20 hover:opacity-40' />
 										</button>
 									</div>
 								</div>
