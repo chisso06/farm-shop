@@ -1,15 +1,17 @@
 import axios from 'axios';
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router-dom';
 import { areaList, prefectureList } from '../data';
 import { createCart, getIndexBase64Images, getShippingFees, imageSrc } from '../functions';
+import { LoadingContext } from '../functions/context/LoadingFunc';
 
 const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 	const [sum, setSum] = useState(0);
 	const [base64Images, setBase64Images] = useState([]);
 	const { showBoundary } = useErrorBoundary();
 	const navigate = useNavigate();
+	const context = useContext(LoadingContext);
 
 	useEffect(() => {
 		if (cart.length && Object.keys(cart[0]).length) {
@@ -30,6 +32,7 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 			setShippingMethods(shippingMethodList);
 
 			const getData = async () => {
+				context.setLoading(true);
 				var base64ImagesData;
 				try {
 					base64ImagesData = await getIndexBase64Images(cart);
@@ -37,11 +40,12 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 					showBoundary(err);
 				}
 				setBase64Images(base64ImagesData);
+				context.setLoading(false);
 			}
 			getData();
 		} else if (!cart.length)
 			navigate('/cart');
-	}, [cart]);
+	}, [cart, setShippingMethods]);
 
 	return (
 		<div className='w-full sm:w-2/5 mb-10'>
@@ -112,12 +116,17 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 	// 	memo: ''
 	// });
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
 
 	const handleChange = (e) => {
+		e.preventDefault();
 		setCustomerData({...customerData, [e.target.name]: e.target.value});
 	};
 
 	const handleAreaChange = async (e) => {
+		e.preventDefault();
+		context.setLoading(true);
+
 		setCustomerData({...customerData, [e.target.name]: e.target.value});
 		const area = areaList.find(
 			(area) => area.prefectures.find((p) => p === e.target.value));
@@ -139,16 +148,21 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 			}
 		})).catch((err) => showBoundary(err));
 		setShippingFee(shippingFeeCalc);
+
+		context.setLoading(false);
 	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		context.setLoading(true);
 
 		await axios.post('/backend/create-checkout-session', {cart, customer: customerData})
 		.then((res) => {
 			localStorage.setItem('cart', JSON.stringify([]));
 			window.location.replace(res.data.session_url);
 		}).catch((err) => showBoundary(err));
+
+		context.setLoading(false);
 	}
 
 	return (
@@ -208,9 +222,20 @@ const OrderForm = () => {
 	const [cart, setCart] = useState([{}]);
 	const [shippingMethods, setShippingMethods] = useState([]);
 	const [shippingFee, setShippingFee] = useState(0);
+	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
 
 	useEffect(() => {
-		createCart(setCart);
+		const createCartFunc = async () => {
+			context.setLoading(true);
+			try {
+				await createCart(setCart);
+			} catch (err) {
+				showBoundary(err);
+			}
+			context.setLoading(false);
+		}
+		createCartFunc();
 	}, []);
 
 	return (

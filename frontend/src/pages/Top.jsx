@@ -1,21 +1,25 @@
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { PopularItems } from '../components';
 import { getNews } from '../functions';
+import { LoadingContext } from '../functions/context/LoadingFunc';
 
 const News = () => {
 	const [news, setNews] = useState([]);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
 
 	useEffect(() => {
 		const getData = async () => {
+			context.setLoading(true);
 			var newsData;
 			try {
 				newsData = await getNews();
 			} catch (err) {
 				showBoundary(err);
 			}
-				setNews(newsData);
+			setNews(newsData);
+			context.setLoading(false);
 		}
 		getData();
 	}, []);

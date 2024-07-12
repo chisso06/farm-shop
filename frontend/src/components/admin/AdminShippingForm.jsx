@@ -1,4 +1,4 @@
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { areaList } from '../../data';
 import {
@@ -8,6 +8,7 @@ import {
 	getShippingMethod,
 	updateShipping
 } from '../../functions';
+import { LoadingContext } from '../../functions/context/LoadingFunc';
 
 const AdminProductForm = ({shippingId, setShippingId}) => {
 	const shippingFee = {
@@ -35,8 +36,15 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	const [shippingFees, setShippingFees] = useState([shippingFee]);
 	const [shippingFeeIdx, setShippingFeeIdx] = useState(0);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
+
+	const handleClick = (e) => {
+		e.preventDefault();
+		setShippingId(-1);
+	}
 
 	const handleMethodInputChange = (e) => {
+		e.preventDefault();
 		const name =  e.target.name;
 		var value = e.target.value;
 
@@ -44,12 +52,12 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	};
 
 	const handleSizeChange = (e) => {
+		e.preventDefault();
 		setShippingFeeIdx(Number(e.target.value));
 	}
 
 	const handleAddSizeClick = (e) => {
 		e.preventDefault();
-
 		const newFee = shippingFee;
 		newFee.size = '新しいサイズ';
 		newFee.min_n = shippingFees[shippingFees.length - 1].max_n + 1;
@@ -61,7 +69,6 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 
 	const handleDeleteSizeClick = (e) => {
 		e.preventDefault();
-
 		if (shippingFees.length === 1) {
 			window.alert('サイズを全て削除することはできません');
 			return ;
@@ -73,6 +80,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	}
 
 	const handleFeesInputChange = (e) => {
+		e.preventDefault();
 		const name = e.target.name;
 		const value = (name === 'size') ? e.target.value : Number(e.target.value);
 		const shippingFeesData = shippingFees.map((fee, i) => {
@@ -88,7 +96,7 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-
+		context.setLoading(true);
 		// validation
 		const validate_shippingFees = () => {
 			var message = '';
@@ -141,10 +149,12 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			setShippingId(res.method.id);
 			window.alert('配送方法を追加しました');
 		}
+		context.setLoading(false);
 	};
 
 	const handleDelete = async (e) => {
 		e.preventDefault();
+		context.setLoading(true);
 
 		if (window.confirm('この配送方法を削除しますか？\n※この配送方法が設定されている商品の配送方法は「なし」に設定されます')) {
 			try {
@@ -155,10 +165,15 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			window.alert('配送方法を削除しました');
 			setShippingId(-1);
 		}
+
+		context.setLoading(false);
 	};
 
 	useEffect(() => {
+		console.log("[test]AdminShippingForm");
 		const getData = async () => {
+			// context.setLoading(true);
+
 			var shippingMethodData;
 			var shippingFeesData;
 			try {
@@ -173,14 +188,16 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			}
 			setShippingMethod(shippingMethodData);
 			setShippingFees(shippingFeesData);
+
+			// context.setLoading(false);
 		}
 		if (shippingId)
 			getData();
-	}, [shippingId]);
+	}, []);
 
 	return (
 		<div className='px-4'>
-			<button onClick={() => setShippingId(-1)}>
+			<button onClick={handleClick}>
 				&lt; <span className='text-sm hover:underline'>配送方法一覧に戻る</span>
 			</button>
 

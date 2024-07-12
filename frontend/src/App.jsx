@@ -6,7 +6,8 @@ import {
   createBrowserRouter
 } from 'react-router-dom';
 import './App.css';
-import { Footer, Header, Toast } from './components';
+import { Footer, Header, Loading, Toast } from './components';
+import { LoadingContext, useLoading } from './functions/context/LoadingFunc';
 import { ToastContext, useToast } from './functions/context/ToastFunc';
 import {
   About,
@@ -24,11 +25,11 @@ import {
 
 window.onpageshow = function(event) {
 	if (event.persisted) {
-		 window.location.reload();
+		window.location.reload();
 	}
 };
 
-function App() {
+const App = () => {
   const router = createBrowserRouter([
     {
       path: '/',
@@ -81,12 +82,15 @@ function App() {
   ]);
 
   return (
+    <LoadingContext.Provider value={useLoading()}>
     <ToastContext.Provider value={useToast()}>
       <Header />
       <Toast />
+      <Loading />
       <RouterProvider router={router} />
       <Footer />
     </ToastContext.Provider>
+    </LoadingContext.Provider>
   );
 };
 

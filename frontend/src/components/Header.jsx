@@ -4,7 +4,8 @@ const Header = ({pathname}) => {
 	const [open, setOpen] = useState(false);
 	const className = 'text-stone-400 hover:text-amber-600 rounded-md px-3 py-2 text-sm font-medium';
 
-	const handleMenu = () => {
+	const handleMenu = (e) => {
+		e.preventDefault();
 		if (open)
 			setOpen(false);
 		else
@@ -12,7 +13,7 @@ const Header = ({pathname}) => {
 	}
 
 	return (
-		<nav className='fixed z-50 top-0 left-0 right-0 bg-white border-b'>
+		<nav className='fixed z-40 top-0 left-0 right-0 bg-white border-b'>
 			<div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
 				<div className="relative flex h-16 items-center justify-between">
 					<div className="absolute inset-y-0 left-0 flex items-center sm:hidden">

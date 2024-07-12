@@ -1,20 +1,26 @@
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { getOrders } from '../../functions';
+import { LoadingContext } from '../../functions/context/LoadingFunc';
 
 const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 	const [orders, setOrders] = useState([]);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
 
-	const handleClick = (orderStatus) => {
-		setOrderId(orderStatus);
+	const handleClick = (e, orderId) => {
+		e.preventDefault();
+		setOrderId(orderId);
 	}
 
 	useEffect(() => {
+		console.log("[test]AdminOrdersIndex");
 		const getData = async () => {
 			var ordersData;
 			try {
+				// context.setLoading(true);
 				ordersData = await getOrders();
+				// context.setLoading(false);
 			} catch (err) {
 				showBoundary(err);
 			}
@@ -26,7 +32,7 @@ const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 			setOrders(ordersData);
 		};
 		getData();
-	}, [orderStatusList]);
+	}, []);
 
 	return (
 		<div>
@@ -44,7 +50,10 @@ const AdminOrdersIndex = ({setOrderId, orderStatusList}) => {
 				<tbody>
 					{orders.length ? orders.map((o, i) => {
 						return(
-							<tr onClick={() => handleClick(o.id)} key={i} className='border-b  hover:cursor-pointer hover:bg-amber-100'>
+							<tr
+								onClick={(e) => handleClick(e, o.id)}
+								key={i}
+								className='border-b  hover:cursor-pointer hover:bg-amber-100'>
 								<td className='pl-4 font-mono'>{o.id}</td>
 								<td className='py-2'>{o.ordered_at}</td>
 								<td className='py-2'>

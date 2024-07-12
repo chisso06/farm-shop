@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import { React, useEffect, useState } from 'react';
 import { AdminOrderDetails, AdminOrdersIndex } from '../../components';
 
 const AdminOrders = () => {
@@ -25,6 +25,10 @@ const AdminOrders = () => {
 			title: '保留'
 		},
 	];
+
+	useEffect(() => {
+		console.log("[test]AdminOrders");
+	}, []);
 
 	return (
 		orderId ? 

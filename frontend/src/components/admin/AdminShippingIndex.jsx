@@ -1,13 +1,27 @@
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { getShippingMethods } from '../../functions';
+import { LoadingContext } from '../../functions/context/LoadingFunc';
 
 const AdminProductsIndex = ({setShippingId}) => {
 	const [shippingMethods, setShippingMethods] = useState([]);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
+
+	const handleClick1 = (e) => {
+		e.preventDefault();
+		setShippingId(0);
+	}
+
+	const handleClick2 = (e, shippingId) => {
+		e.preventDefault();
+		setShippingId(shippingId);
+	}
 
 	useEffect(() => {
+		console.log("[test]AdminShippingIndex");
 		const getData = async () => {
+			// context.setLoading(true);
 			var shippingMethodsData;
 			try {
 				shippingMethodsData = await getShippingMethods();
@@ -15,6 +29,7 @@ const AdminProductsIndex = ({setShippingId}) => {
 				showBoundary(err);
 			}
 			setShippingMethods(shippingMethodsData);
+			// context.setLoading(false);
 		}
 		getData();
 	}, []);
@@ -25,7 +40,7 @@ const AdminProductsIndex = ({setShippingId}) => {
 				<p className='w-1/2 font-mono text-2xl font-bold'>送料管理</p>
 				<div className='w-1/2 flex justify-end'>
 					<button
-						onClick={() => setShippingId(0)}
+						onClick={handleClick1}
 						className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
 						+配送方法を追加
 					</button>
@@ -40,7 +55,10 @@ const AdminProductsIndex = ({setShippingId}) => {
 				<tbody>
 					{shippingMethods ? shippingMethods.map((shipping, i) => {
 						return shipping.id ? 
-							<tr onClick={() => {setShippingId(shipping.id)}} key={i} className='border-b hover:cursor-pointer hover:bg-amber-100'>
+							<tr
+								onClick={(e) => {handleClick2(e, shipping.id)}}
+								key={i}
+								className='border-b hover:cursor-pointer hover:bg-amber-100'>
 								<td className='pl-4 py-1 text-left'>{shipping.name}</td>
 							</tr>
 							:''

@@ -1,7 +1,6 @@
 import { React } from 'react';
 
 const ErrorPage = () => {
-	// throw new Error("Contact Page Error");
 	return (
 		<div className='my-16'>
 			<div className='pt-8 h-screen'>

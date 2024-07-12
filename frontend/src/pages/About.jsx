@@ -3,8 +3,8 @@ import { aboutContentsList } from '../data';
 
 const AboutContents = () => {
 	return (
-		<div className='bg-stone-100'>{
-			aboutContentsList.length ? aboutContentsList.map((content, i) => {
+		<div className='bg-stone-100'>
+			{ aboutContentsList.length ? aboutContentsList.map((content, i) => {
 				return (
 					<div key={i} className='sm:h-80 sm:grid sm:grid-cols-2'>
 						{(Boolean)(!(i % 2) || window.matchMedia('(max-width: 640px)').matches) ?
