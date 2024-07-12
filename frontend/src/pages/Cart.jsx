@@ -3,19 +3,24 @@ import { useErrorBoundary } from 'react-error-boundary';
 import { useLocation } from 'react-router-dom';
 import { Icon } from '../components';
 import { createCart, getIndexBase64Images, imageSrc } from '../functions';
+import { LoadingContext } from '../functions/context/LoadingFunc';
 import { ToastContext } from '../functions/context/ToastFunc';
 
 const Cart = () => {
 	const search = useLocation().search;
 	const query = new URLSearchParams(search);
 	const message = query.get('message');
-	const context = useContext(ToastContext);
   const [sum, setSum] = useState(0);
   const [cart, setCart] = useState([]);
   const [base64Images, setBase64Images] = useState([]);
 	const { showBoundary } = useErrorBoundary();
+	const toast_context = useContext(ToastContext);
+	const loading_context = useContext(LoadingContext);
 
-	const handleChange = (e, i) => {
+	const handleChange = async (e, i) => {
+		e.preventDefault();
+		loading_context.setLoading(true);
+
 		var value = Number(e.target.value);
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
 
@@ -24,45 +29,64 @@ const Cart = () => {
 		else
 			cartStorage[i].number = value;
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
-		createCart(setCart);
+		try {
+			await createCart(setCart);
+		} catch (err) {
+			showBoundary(err);
+		}
+
+		loading_context.setLoading(false);
 	}
 
-	const handleTrash = (i) => {
-		const cartStorage = JSON.parse(localStorage.getItem('cart'));
+	const handleTrash = async (e, i) => {
+		e.preventDefault();
+		loading_context.setLoading(true);
 
+		const cartStorage = JSON.parse(localStorage.getItem('cart'));
 		cartStorage.splice(i, 1);
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
-		createCart(setCart);
+		try {
+			await createCart(setCart);
+		} catch (err) {
+			showBoundary(err);
+		}
+
+		loading_context.setLoading(false);
 	}
 
 	useEffect(() => {
-		createCart(setCart);
-	}, []);
-
-	useEffect(() => {
-		if (message) {
-			context.setMessage(message);
-		}
-	}, [message, context]);
-
-	useEffect(() => {
-		var calcSum = 0;
 		const getData = async () => {
+			loading_context.setLoading(true);
+
+			var cartListData;
+			try {
+				cartListData = await createCart(setCart);
+			} catch (err) {
+				showBoundary(err);
+			}
+
 			var base64ImagesData;
 			try {
-				base64ImagesData = await getIndexBase64Images(cart);
+				base64ImagesData = await getIndexBase64Images(cartListData);
 			} catch (err) {
 				showBoundary(err);
 			}
 			setBase64Images(base64ImagesData);
+
+			var calcSum = 0;
+			cartListData.map((item) => {
+				calcSum += item.price * item.number;
+			});
+			setSum(calcSum);
+
+			loading_context.setLoading(false);
 		}
 		getData();
 
-		cart.map((item) => {
-			calcSum += item.price * item.number;
-		});
-		setSum(calcSum);
-	}, [cart]);
+		if (message) {
+			toast_context.setMessage(message);
+		}
+	}, [message]);
 
 	return (
 		<div className='w-3/4 my-16 mx-auto'>
@@ -98,7 +122,7 @@ const Cart = () => {
 											type='number'
 											onChange={(e) => {handleChange(e, i)}}
 											className='w-16 mx-2 p-2 border rounded invalid:text-amber-700 invalid:border-amber-600' />
-										<button>
+										<button onClick={(e) => handleTrash(e, i)}>
 											<Icon icon="trash" className='w-4 opacity-20 hover:opacity-40' />
 										</button>
 									</div>

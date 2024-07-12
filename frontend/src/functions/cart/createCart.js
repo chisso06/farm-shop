@@ -17,6 +17,7 @@ const createCart = async (setCart) => {
 			return item;
 		}));
 		setCart(cartList);
+		return (cartList);
 	}
 }
 

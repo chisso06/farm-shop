@@ -1,14 +1,29 @@
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { getIndexBase64Images, getProducts, imageSrc } from '../../functions';
+import { LoadingContext } from '../../functions/context/LoadingFunc';
 
 const AdminProductsIndex = ({setProductId}) => {
 	const [products, setProducts] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
+
+	const handleGoToCreateProductPage = (e) => {
+		e.preventDefault();
+		setProductId(0);
+	}
+
+	const handleGoToProductPage = (e, i) => {
+		e.preventDefault();
+		setProductId(i);
+	}
 
 	useEffect(() => {
+		console.log("[test]AdminProductsIndex");
 		const getData = async () => {
+			// context.setLoading(true);
+
 			var productsData;
 			var base64ImagesData;
 
@@ -24,6 +39,7 @@ const AdminProductsIndex = ({setProductId}) => {
 			}
 			setProducts(productsData);
 			setBase64Images(base64ImagesData);
+			// context.setLoading(false);
 		}
 		getData();
 	}, []);
@@ -34,7 +50,7 @@ const AdminProductsIndex = ({setProductId}) => {
 				<p className='w-1/2 font-mono text-2xl font-bold'>商品管理</p>
 				<div className='w-1/2 flex justify-end'>
 					<button
-						onClick={() => setProductId(0)}
+						onClick={handleGoToCreateProductPage}
 						className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
 						+商品を作成する
 					</button>
@@ -52,7 +68,10 @@ const AdminProductsIndex = ({setProductId}) => {
 				</thead>
 				<tbody>
 					{products ? products.map((p, i) => {return (
-						<tr onClick={() => {setProductId(p.id)}} key={i} className='border-b  hover:cursor-pointer hover:bg-amber-100'>
+						<tr
+							onClick={(e) => handleGoToProductPage(e, p.id)}
+							key={i}
+							className='border-b  hover:cursor-pointer hover:bg-amber-100'>
 							<td className='pl-4 py-1 flex items-center'>
 								<img
 									src={imageSrc(base64Images[p.base64Images_idx])}

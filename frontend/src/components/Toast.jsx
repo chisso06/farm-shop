@@ -4,6 +4,11 @@ import { ToastContext } from "../functions/context/ToastFunc";
 const Toast = () => {
 	const context = useContext(ToastContext);
 
+	const handleClick = (e) => {
+		e.preventDefault();
+		context.setMessage('');
+	}
+	
 	if (context.message) {
 		return (
 			<div className="w-3/4 mx-auto">
@@ -11,7 +16,7 @@ const Toast = () => {
 					<p className="my-auto block sm:inline">{context.message}</p>
 					<span
 						className="ml-auto text-stone-400 hover:text-stone-800 rounded-lg inline-flex items-center justify-center"
-						onClick={() => {context.setMessage('')}}>
+						onClick={handleClick}>
 						<svg
 							className="h-3"
 							aria-hidden="true"

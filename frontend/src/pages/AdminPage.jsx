@@ -45,27 +45,31 @@ const AdminPage = () => {
 	};
 
 	useEffect(() => {
+		console.log("[test]AdminPage1");
 		while (!sessionStorage.getItem('session')) {
 			const password = window.prompt('パスワードを入力してください');
 			if (password === process.env.REACT_APP_ADMIN_PASSWORD) {
 				sessionStorage.setItem('session', true);
 			}
 		}
-		const	checkSize = () => {
+		const checkSize = () => {
 			setWidth(window.innerWidth);
 		}
 		window.addEventListener('resize', checkSize);
 		checkSize();
-		return () => window.removeEventListener('resize', checkSize);
+		return () => {
+			window.removeEventListener('resize', checkSize);
+		};
 	}, []);
 
 	useEffect(() => {
+		console.log("[test]AdminPage2");
 		if (width < 960) {
 			window.alert('画面が小さすぎます。幅が960px以上のpcでアクセスしてください。');
 		} else if (!adminPage) {
 			navigate('/admin/admin-orders');
 		}
-	}, [width, navigate, adminPage]);
+	}, [width]);
 
 	return (
 		<div>{

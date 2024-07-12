@@ -1,14 +1,17 @@
-import { React, useEffect, useState } from "react";
+import { React, useContext, useEffect, useState } from "react";
 import { useErrorBoundary } from 'react-error-boundary';
 import { Icon } from '../../components';
 import { createNews, deleteNews, getNews } from '../../functions';
+import { LoadingContext } from "../../functions/context/LoadingFunc";
 
 const AdminNews = () => {
 	const [news, setNews] = useState([]);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		context.setLoading(true);
 
 		const newsObj = Object.fromEntries(new FormData(e.target).entries());
 		try {
@@ -24,20 +27,29 @@ const AdminNews = () => {
 		}
 		setNews(newsData);
 		window.alert('新しいお知らせを追加しました');
+
+		context.setLoading(false);
 };
 
-	const handleTrash = async (newsId) => {
+	const handleTrash = async (e, newsId) => {
+		e.preventDefault();
+		context.setLoading(true);
+
 		try {
 			await deleteNews(newsId);
 		} catch (err) {
 			showBoundary(err);
 		}
-		window.alert('お知らせを削除しました');
 		setNews(news.filter((n) => n.id !== newsId));
+		window.alert('お知らせを削除しました');
+
+		context.setLoading(false);
 	};
 
 	useEffect(() => {
+		console.log("[test]AdminNews");
 		const getData = async () => {
+			// context.setLoading(true);
 			var newsData;
 			try {
 				newsData = await getNews();
@@ -45,6 +57,7 @@ const AdminNews = () => {
 				showBoundary(err);
 			}
 			setNews(newsData);
+			// context.setLoading(false);
 		}
 		getData();
 	}, []);
@@ -67,7 +80,7 @@ const AdminNews = () => {
 						<li key={i} className='pr-4 py-5 flex items-center border-b'>
 							<p className='w-full'>{n.date} {n.content}</p>
 							<Icon
-								onClick={() => handleTrash(n.id)}
+								onClick={(e) => handleTrash(e, n.id)}
 							 	icon="trash"
 							 	className='text-stone-300 hover:text-stone-400 cursor-pointer' />
 						</li>);

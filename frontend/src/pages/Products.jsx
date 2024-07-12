@@ -1,17 +1,20 @@
-import { React, useEffect, useState } from 'react';
-import { getIndexBase64Images, getProducts, imageSrc } from '../functions';
+import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from "react-error-boundary";
+import { getIndexBase64Images, getProducts, imageSrc } from '../functions';
+import { LoadingContext } from '../functions/context/LoadingFunc';
 
 const Products = () => {
 	const [products, setProducts] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
 
 	useEffect(() => {
 		const getData = async () => {
+			context.setLoading(true);
+
 			var productsData;
 			var base64ImagesData;
-
 			try {
 				productsData = await getProducts();
 			} catch (err) {
@@ -24,6 +27,7 @@ const Products = () => {
 			}
 			setProducts(productsData);
 			setBase64Images(base64ImagesData);
+			context.setLoading(false);
 		}
 		getData();
 	}, []);

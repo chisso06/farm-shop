@@ -1,8 +1,9 @@
-import { React, useEffect } from 'react';
+import { React, useContext, useEffect } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PopularItems } from '../components';
 import { getOrder } from '../functions';
+import { LoadingContext } from '../functions/context/LoadingFunc';
 
 const OrderCompleted = () => {
 	const search = useLocation().search;
@@ -10,9 +11,11 @@ const OrderCompleted = () => {
 	const orderId = query.get('order_id');
 	const navigate = useNavigate();
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
 
 	useEffect(() => {
 		const orderCheck = async () => {
+			context.setLoading(true);
 			var res;
 			try {
 				res = await getOrder(orderId);
@@ -21,6 +24,7 @@ const OrderCompleted = () => {
 			}
 			if (res.status === 'pending-payment')
 				navigate('/');
+			context.setLoading(false);
 		}
 		orderCheck();
 	}, [orderId]);

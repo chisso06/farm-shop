@@ -16,7 +16,7 @@ const uploadImages = async ({images, imageFiles}) => {
 			formData,
 			{headers: {'content-type': 'multipart/form-data'}})
 			.catch((err) => {
-				console.log("error");
+				// console.log("error");
 				window.alert('画像を保存することができませんでした');
 			});
 	}

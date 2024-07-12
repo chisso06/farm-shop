@@ -1,17 +1,27 @@
-import { React, useEffect, useState } from 'react';
+import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { getOrder, getOrderedProducts, updateOrder } from '../../functions';
+import { LoadingContext } from '../../functions/context/LoadingFunc';
 
 const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	const [order, setOrder] = useState({});
 	const [orderedProducts, setOrderedProducts] = useState([]);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
 
-	const handleClick = (orderStatus) => {
-		setOrderId(orderStatus);
+	const handleOpenModal = (e) => {
+		e.preventDefault();
+		document.getElementById('modal').showModal();
 	}
 
-	const handleExportClick = (postType) => {
+	const handleClick = (e, orderId) => {
+		e.preventDefault();
+		setOrderId(orderId);
+	}
+
+	const handleExportClick = (e, postType) => {
+		e.preventDefault();
+
 		const filename = `address_${postType}.csv`;
 		const productContent = orderedProducts[0].name.substr(0, 18) + (orderedProducts.length > 1 ? '、他' : '');
 		var data = '';
@@ -31,7 +41,10 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 		URL.revokeObjectURL(link.href);
 	};
 
-	const updateStatus = async (orderStatus) => {
+	const updateStatus = async (e, orderStatus) => {
+		e.preventDefault();
+		context.setLoading(true);
+
 		const newOrder = {...order, status: orderStatus};
 		try {
 			await updateOrder(newOrder);
@@ -40,6 +53,8 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 		}
 		setOrder(newOrder);
 		window.alert('ステータスを変更しました');
+
+		context.setLoading(false);
 	};
 
 	const Modal = () => {
@@ -51,12 +66,12 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 					</form>
 					<p className='my-8'>出力するフォーマットを選択してください</p>
 					<button
-						onClick={() => handleExportClick('yu-pack')}
+						onClick={(e) => handleExportClick(e, 'yu-pack')}
 						className='w-full p-2 mb-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
 						ゆうパック
 					</button>
 					<button
-						onClick={() => handleExportClick('click-post')}
+						onClick={(e) => handleExportClick(e, 'click-post')}
 						className='w-full p-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
 						クリックポスト
 					</button>
@@ -66,10 +81,13 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	};
 
 	useEffect(() => {
+		console.log("[test]AdminOrderDetails");
 		const getData = async () => {
 			var orderData;
 			try {
+				// context.setLoading(true);
 				orderData = await getOrder(orderId);
+				// context.setLoading(false);
 			} catch (err) {
 				showBoundary(err);
 			}
@@ -81,20 +99,22 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 
 			var orderedProductsData;
 			try {
+				// context.setLoading(true);
 				orderedProductsData = await getOrderedProducts(orderId);
+				// context.setLoading(false);
 			} catch (err) {
 				showBoundary(err);
 			}
 			setOrderedProducts(orderedProductsData);
 		};
 		getData();
-	}, [orderId, orderStatusList]);
+	}, []);
 
 	return (
 		(order.id) ? 
 		<div className='px-4'>
 			<Modal />
-			<button onClick={() => handleClick('')}>
+			<button onClick={(e) => handleClick(e, '')}>
 				&lt; <span className='text-sm hover:underline'>注文一覧に戻る</span>
 			</button>
 			<p className='my-6 font-mono text-xl font-bold'>注文詳細</p>
@@ -109,7 +129,7 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 						<div className='flex'>
 							<p>発送待ち</p>
 							<button
-								onClick={() => updateStatus('shipping')}
+								onClick={(e) => updateStatus(e, 'shipping')}
 								className='ml-4 text-sm underline text-stone-600 hover:text-amber-600'>
 								発送済みにする
 							</button>
@@ -118,7 +138,7 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 						<div className='flex'>
 							<p>発送済み</p>
 							<button
-								onClick={() => updateStatus('completed')}
+								onClick={(e) => updateStatus(e, 'completed')}
 								className='ml-4 text-sm underline text-stone-600 hover:text-amber-600'>
 								完了にする
 							</button>
@@ -146,7 +166,9 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 				<li className='py-2 border-b'>
 					<div className='pb-2 flex font-mono'>
 						<p className='font-bold'>購入者情報</p>
-						<button onClick={() => document.getElementById('modal').showModal()} className='ml-8 text-sm underline text-stone-600 hover:text-amber-600'>
+						<button
+							onClick={handleOpenModal}
+							className='ml-8 text-sm underline text-stone-600 hover:text-amber-600'>
 							csvファイルに出力
 						</button>
 					</div>

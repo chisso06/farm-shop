@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Icon } from '../components';
 import { areaList } from '../data';
 import { getBase64Images, getProduct, getProductImages, getShippingFees, getShippingMethod, imageSrc } from '../functions';
+import { LoadingContext } from '../functions/context/LoadingFunc';
 import { ToastContext } from '../functions/context/ToastFunc';
 
 const ProductImagesCarousel = ({images, base64Images}) => {
@@ -34,7 +35,6 @@ const ProductImagesCarousel = ({images, base64Images}) => {
 const Product = () => {
 	const params = useParams();
 	const productId = Number(params.product_id);
-	const context = useContext(ToastContext);
 	const navigate = useNavigate();
 	const [product, setProduct] = useState({});
 	const [images, setImages] = useState([]);
@@ -46,8 +46,11 @@ const Product = () => {
 		number: 0,
 	});
 	const { showBoundary } = useErrorBoundary();
+	const toast_context = useContext(ToastContext);
+	const loading_context = useContext(LoadingContext);
 
 	const handleChange = (e) => {
+		e.preventDefault();
 		const {name, value} = e.target;
 		setItem({...item, [name]: Number(value) });
 		if (Number(value) > 0) {
@@ -59,7 +62,9 @@ const Product = () => {
 		}
 	};
 
-	const handleSubmit = async (e) => {
+	const handleSubmit = (e) => {
+		e.preventDefault();
+
 		const cart = JSON.parse(localStorage.getItem('cart'));
 		const i = cart.findIndex(({product_id}) => product_id === item.product_id);
 
@@ -72,12 +77,18 @@ const Product = () => {
 			else
 				cart[i].number += item.number;
 			localStorage.setItem('cart', JSON.stringify(cart));
-			context.setMessage('商品を買い物かごに追加しました');
+			toast_context.setMessage('商品を買い物かごに追加しました');
 		}
 	};
 
 	useEffect(() => {
+		document.getElementById("button").setAttribute("disabled", true);
+		if (!localStorage.getItem('cart'))
+			localStorage.setItem('cart', JSON.stringify([]));
+
 		const getData = async () => {
+			loading_context.setLoading(true);
+
 			var productData;
 			try {
 				productData = await getProduct(productId);
@@ -101,39 +112,30 @@ const Product = () => {
 				setImages(imagesData);
 				setBase64Images(base64ImagesData);
 			} else {
-				context.setMessage('商品が存在しません');
+				toast_context.setMessage('商品が存在しません');
 				navigate('/products');
 			}
+
+			if (productData.shipping_method) {
+				var shippingMethodData;
+				var shippingFeesData;
+				try {
+					shippingMethodData = await getShippingMethod(productData.shipping_method);
+				} catch (err) {
+					showBoundary(err);
+				}
+				try {
+					shippingFeesData = await getShippingFees(productData.shipping_method);
+				} catch (err) {
+					showBoundary(err);
+				}
+				setShippingMethod(shippingMethodData);
+				setShippingFees(shippingFeesData);
+			}
+			loading_context.setLoading(false);
 		}
 		getData();
 	}, [productId]);
-
-	useEffect(() => {
-		const getData = async () => {
-			var shippingMethodData;
-			var shippingFeesData;
-			try {
-				shippingMethodData = await getShippingMethod(product.shipping_method);
-			} catch (err) {
-				showBoundary(err);
-			}
-			try {
-				shippingFeesData = await getShippingFees(product.shipping_method);
-			} catch (err) {
-				showBoundary(err);
-			}
-			setShippingMethod(shippingMethodData);
-			setShippingFees(shippingFeesData);
-		}
-		if (product.shipping_method)
-			getData();
-	}, [product]);
-
-	useEffect(() => {
-		document.getElementById("button").setAttribute("disabled", true);
-		if (!localStorage.getItem('cart'))
-			localStorage.setItem('cart', JSON.stringify([]));
-	}, [])
 
 	const ShippingModal = () => {
 		if (shippingFees.length) {

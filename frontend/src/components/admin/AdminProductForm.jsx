@@ -1,5 +1,5 @@
 import imageCompression from 'browser-image-compression';
-import { React, useEffect, useRef, useState } from 'react';
+import { React, useContext, useEffect, useRef, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { Icon } from '../../components';
 import { categoryList } from '../../data';
@@ -13,6 +13,7 @@ import {
 	imageSrc,
 	updateProduct
 } from '../../functions';
+import { LoadingContext } from '../../functions/context/LoadingFunc';
 
 const AdminProductForm = ({productId, setProductId}) => {
 	const [product, setProduct] = useState({});
@@ -22,8 +23,15 @@ const AdminProductForm = ({productId, setProductId}) => {
 	const [imageFiles, setImageFiles] = useState([]);
 	const inputRef = useRef(null);
 	const { showBoundary } = useErrorBoundary();
+	const context = useContext(LoadingContext);
+
+	const handleBackToIndexPage = (e) => {
+		e.preventDefault();
+		setProductId(-1);
+	}
 
 	const handleInputChange = (e) => {
+		e.preventDefault();
 		const name =  e.target.name;
 		var value = e.target.value;
 
@@ -37,18 +45,20 @@ const AdminProductForm = ({productId, setProductId}) => {
 	};
 
 	const handleImageChange = (e) => {
+		e.preventDefault();
 		const files = e.target.files;
 		if (!files)
 			return ;
 		const fileArray = Array.from(files);
 		fileArray.forEach(async (file) => {
+			context.setLoading(true);
 			// const SIZE_5MB = 1024 * 1024 * 5;
 			// if (file.size > SIZE_5MB) {
 			// 	window.alert('ファイルサイズが5MBを超えています。');
 			// 	return ;
 			// }
 			const compressedFile = await imageCompression(file, { maxSizeMB: 2 })
-			.catch((err) => showBoundary(err));
+				.catch((err) => showBoundary(err));
 			const image = {
 				id: 0,
 				order_of_images: images.length + 1,
@@ -73,12 +83,14 @@ const AdminProductForm = ({productId, setProductId}) => {
 			if (inputRef.current) {
 				inputRef.current.value = "";
 			}
+			context.setLoading(false);
 		});
 	};
 
-	const handleImageClick = (i) => {
-		const imageList = images;
+	const handleImageClick = (e, i) => {
+		e.preventDefault();
 
+		const imageList = images;
 		if (imageList[i].added) {
 			base64Images.splice(imageList[i].base64Images_idx, 1);
 			imageFiles.splice(imageList[i].imageFiles_idx, 1);
@@ -91,6 +103,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		context.setLoading(true);
 		var res;
 		if (productId) {
 			try {
@@ -119,9 +132,12 @@ const AdminProductForm = ({productId, setProductId}) => {
 		});
 		setImages(newImages);
 		setImageFiles([]);
+		context.setLoading(false);
 	};
 
-	const handleDelete = async () => {
+	const handleDelete = async (e) => {
+		e.preventDefault();
+		context.setLoading(true);
 		if (window.confirm('この商品を削除しますか？')) {
 			try {
 				await deleteProduct(productId);
@@ -131,9 +147,11 @@ const AdminProductForm = ({productId, setProductId}) => {
 			window.alert('商品を削除しました');
 			setProductId(-1);
 		}
+		context.setLoading(false);
 	};
 
 	useEffect(() => {
+		console.log("[test]AdminProductForm");
 		const newProduct = {
 			id: 0,
 			name: '',
@@ -146,11 +164,11 @@ const AdminProductForm = ({productId, setProductId}) => {
 			popular_status: 0
 		};
 		const getData = async () => {
+			// context.setLoading(true);
 			var productData;
 			var imagesData;
 			var base64ImagesData;
 			var shippingMethodsData;
-
 			try {
 				productData = productId ? await getProduct(productId) : newProduct;
 			} catch (err) {
@@ -179,13 +197,14 @@ const AdminProductForm = ({productId, setProductId}) => {
 			setImages(imagesData);
 			setBase64Images(base64ImagesData);
 			setShippingMethods(shippingMethodsData);
+			// context.setLoading(false);
 		}
 		getData();
-	}, [productId]);
+	}, []);
 
 	return (
 		<div className='px-4'>
-			<button onClick={() => setProductId(-1)}>
+			<button onClick={handleBackToIndexPage}>
 				&lt; <span className='text-sm hover:underline'>商品一覧に戻る</span>
 			</button>
 
@@ -213,7 +232,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 							<div className='relative z-0 mr-4 cursor-pointer group'>
 								<img
 									src={imageSrc(base64Images[image.base64Images_idx])}
-									onClick={() => handleImageClick(i)}
+									onClick={(e) => handleImageClick(e, i)}
 									key={i}
 									alt='商品画像'
 									className='w-24 aspect-square object-contain bg-white rounded group-hover:opacity-50'/>
