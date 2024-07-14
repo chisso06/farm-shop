@@ -11,7 +11,14 @@ import { LoadingContext, useLoading } from './functions/context/LoadingFunc';
 import { ToastContext, useToast } from './functions/context/ToastFunc';
 import {
   About,
+  AdminNews,
+  AdminOrder,
+  AdminOrders,
   AdminPage,
+  AdminProduct,
+  AdminProducts,
+  AdminShippingMethod,
+  AdminShippingMethods,
   Cart,
   ErrorPage,
   FAQ,
@@ -65,11 +72,37 @@ const App = () => {
     },
     {
       path: '/admin/',
-      element: <ErrorBoundary fallback={<ErrorPage />}><AdminPage /></ErrorBoundary>
-    },
-    {
-      path: '/admin/:page',
-      element: <ErrorBoundary fallback={<ErrorPage />}><AdminPage /></ErrorBoundary>
+      element: <ErrorBoundary fallback={<ErrorPage />}><AdminPage /></ErrorBoundary>,
+      children: [
+        {
+          path: 'admin-orders',
+          element: <AdminOrders />,
+        },
+        {
+          path: 'admin-orders/:order_id',
+          element: <AdminOrder />,
+        },
+        {
+          path: 'admin-products',
+          element: <AdminProducts />,
+        },
+        {
+          path: 'admin-products/:product_id',
+          element: <AdminProduct />,
+        },
+        {
+          path: 'admin-shipping-methods',
+          element: <AdminShippingMethods />,
+        },
+        {
+          path: 'admin-shipping-methods/:method_id',
+          element: <AdminShippingMethod />,
+        },
+        {
+          path: 'admin-news',
+          element: <AdminNews />,
+        },
+      ],
     },
     {
       path: '/test',

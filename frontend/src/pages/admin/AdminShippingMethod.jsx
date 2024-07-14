@@ -1,5 +1,6 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
+import { useNavigate, useParams } from 'react-router-dom';
 import { areaList } from '../../data';
 import {
 	createShipping,
@@ -10,7 +11,9 @@ import {
 } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
-const AdminProductForm = ({shippingId, setShippingId}) => {
+const AdminShippingMethod = () => {
+	const params = useParams();
+	const shippingId = Number(params.method_id);
 	const shippingFee = {
 		id: 0,
 		method_id: shippingId,
@@ -35,13 +38,9 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	});
 	const [shippingFees, setShippingFees] = useState([shippingFee]);
 	const [shippingFeeIdx, setShippingFeeIdx] = useState(0);
+	const navigate = useNavigate();
 	const { showBoundary } = useErrorBoundary();
 	const context = useContext(LoadingContext);
-
-	const handleClick = (e) => {
-		e.preventDefault();
-		setShippingId(-1);
-	}
 
 	const handleMethodInputChange = (e) => {
 		e.preventDefault();
@@ -123,12 +122,20 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 					message = 'サイズの個数の条件の最大値が最小値と同値以上になるように設定してください';
 				else if (i !== shippingFees.length - 1 && fee.max_n + 1 !== shippingFees[i + 1].min_n)
 					message = '上のサイズの個数の条件の最小値が下のサイズの個数の条件の最大値よりも1大きい値になるように設定してください';
+				// サイズ名が重複していないか
+				for (var fee_i = i + 1; fee_i < shippingFees.length; fee_i ++) {
+					if (fee.size === shippingFees[fee_i].size) {
+						message = 'サイズ名が重複しています';
+						break ;
+					}
+				}
 			});
 			return (message);
 		}
 		const validation_msg = validate_shippingFees();
 		if (validation_msg) {
 			window.alert(validation_msg);
+			context.setLoading(false);
 			return ;
 		}
 
@@ -146,8 +153,8 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			setShippingId(res.method.id);
-			window.alert('配送方法を追加しました');
+			if (!window.alert('配送方法を追加しました'))
+				navigate(`/admin/admin-shipping-methods/${res.method.id}`);
 		}
 		context.setLoading(false);
 	};
@@ -162,17 +169,16 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			window.alert('配送方法を削除しました');
-			setShippingId(-1);
+			if (!window.alert('配送方法を削除しました'))
+				navigate('/admin/admin-shipping-methods');
 		}
 
 		context.setLoading(false);
 	};
 
 	useEffect(() => {
-		console.log("[test]AdminShippingForm");
 		const getData = async () => {
-			// context.setLoading(true);
+			context.setLoading(true);
 
 			var shippingMethodData;
 			var shippingFeesData;
@@ -189,17 +195,17 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 			setShippingMethod(shippingMethodData);
 			setShippingFees(shippingFeesData);
 
-			// context.setLoading(false);
+			context.setLoading(false);
 		}
 		if (shippingId)
 			getData();
-	}, []);
+	}, [shippingId]);
 
 	return (
 		<div className='px-4'>
-			<button onClick={handleClick}>
+			<a href='/admin/admin-shipping-methods'>
 				&lt; <span className='text-sm hover:underline'>配送方法一覧に戻る</span>
-			</button>
+			</a>
 
 			<form onSubmit={handleSubmit}>
 				<p className='my-6 font-mono text-xl font-bold'>配送方法追加・編集</p>
@@ -316,4 +322,4 @@ const AdminProductForm = ({shippingId, setShippingId}) => {
 	);
 }
 
-export default AdminProductForm;
+export default AdminShippingMethod;
