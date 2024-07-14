@@ -47,9 +47,8 @@ const AdminNews = () => {
 	};
 
 	useEffect(() => {
-		console.log("[test]AdminNews");
 		const getData = async () => {
-			// context.setLoading(true);
+			context.setLoading(true);
 			var newsData;
 			try {
 				newsData = await getNews();
@@ -57,7 +56,7 @@ const AdminNews = () => {
 				showBoundary(err);
 			}
 			setNews(newsData);
-			// context.setLoading(false);
+			context.setLoading(false);
 		}
 		getData();
 	}, []);
@@ -76,13 +75,12 @@ const AdminNews = () => {
 					</button>
 				</form>
 				<ul>
-					{news.length ? news.map((n, i) => {return (
+					{news.length ? news.map((n, i) => { return (
 						<li key={i} className='pr-4 py-5 flex items-center border-b'>
 							<p className='w-full'>{n.date} {n.content}</p>
-							<Icon
-								onClick={(e) => handleTrash(e, n.id)}
-							 	icon="trash"
-							 	className='text-stone-300 hover:text-stone-400 cursor-pointer' />
+							<button onClick={(e) => handleTrash(e, n.id)}>
+								<Icon icon="trash" className='w-4 opacity-20 hover:opacity-40' />
+							</button>
 						</li>);
 					}):''}
 				</ul>

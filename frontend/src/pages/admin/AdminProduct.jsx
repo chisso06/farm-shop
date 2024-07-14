@@ -1,6 +1,7 @@
 import imageCompression from 'browser-image-compression';
 import { React, useContext, useEffect, useRef, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Icon } from '../../components';
 import { categoryList } from '../../data';
 import {
@@ -15,20 +16,28 @@ import {
 } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
-const AdminProductForm = ({productId, setProductId}) => {
-	const [product, setProduct] = useState({});
+const AdminProduct = () => {
+	const params = useParams();
+	const productId = Number(params.product_id);
+	const [product, setProduct] = useState({
+		id: 0,
+		name: '',
+		description: '',
+		price: 0,
+		stock: 0,
+		category: '',
+		shipping_method: '',
+		public_status: 0,
+		popular_status: 0
+	});
 	const [images, setImages] = useState([]);
 	const [shippingMethods, setShippingMethods] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
 	const [imageFiles, setImageFiles] = useState([]);
 	const inputRef = useRef(null);
+	const navigate = useNavigate();
 	const { showBoundary } = useErrorBoundary();
 	const context = useContext(LoadingContext);
-
-	const handleBackToIndexPage = (e) => {
-		e.preventDefault();
-		setProductId(-1);
-	}
 
 	const handleInputChange = (e) => {
 		e.preventDefault();
@@ -36,12 +45,17 @@ const AdminProductForm = ({productId, setProductId}) => {
 		var value = e.target.value;
 
 		if (e.target.type === 'checkbox') {
-			value = Number(e.target.checked);
+			if (e.target.checked)
+				value = 1;
+			else
+				value = 0;
+			// value = Number(e.target.checked);
 		}
-		setProduct({
+		const productObj = {
 			...product,
 			[name]: value
-		});
+		};
+		setProduct(productObj);
 	};
 
 	const handleImageChange = (e) => {
@@ -118,8 +132,8 @@ const AdminProductForm = ({productId, setProductId}) => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			window.alert('商品を追加しました');
-			setProductId(res.product.id);
+			if (!window.alert('商品を追加しました'))
+				navigate(`/admin/admin-products/${res.product.id}`);
 		}
 		const imagesData = res.images.filter((image) => !image.deleted);
 		const newImages = imagesData.map((image) => {
@@ -144,69 +158,64 @@ const AdminProductForm = ({productId, setProductId}) => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			window.alert('商品を削除しました');
-			setProductId(-1);
+			if (!window.alert('商品を削除しました'))
+				navigate('/admin/admin-products');
 		}
 		context.setLoading(false);
 	};
 
 	useEffect(() => {
-		console.log("[test]AdminProductForm");
-		const newProduct = {
-			id: 0,
-			name: '',
-			description: '',
-			price: 0,
-			stock: 0,
-			category: '',
-			shipping_method: '',
-			public_status: 0,
-			popular_status: 0
-		};
-		const getData = async () => {
-			// context.setLoading(true);
+		const getProductData = async () => {
+			context.setLoading(true);
 			var productData;
 			var imagesData;
 			var base64ImagesData;
-			var shippingMethodsData;
 			try {
-				productData = productId ? await getProduct(productId) : newProduct;
+				productData = await getProduct(productId);
 			} catch (err) {
 				showBoundary(err);
 			}
 			if (!productData) {
-				window.alert('商品が存在しません');
-				setProductId(-1);
+				if (!window.alert('商品が存在しません'))
+					navigate('/admin/admin-products');
 			}
 			try {
-				imagesData = productId ? await getProductImages(productId) : [];
+				imagesData = await getProductImages(productId);
 			} catch (err) {
 				showBoundary(err);
 			}
 			try {
-				base64ImagesData = productId ? await getBase64Images(imagesData) : [];
-			} catch (err) {
-				showBoundary(err);
-			}
-			try {
-				shippingMethodsData = await getShippingMethods();
+				base64ImagesData = await getBase64Images(imagesData);
 			} catch (err) {
 				showBoundary(err);
 			}
 			setProduct(productData);
 			setImages(imagesData);
 			setBase64Images(base64ImagesData);
-			setShippingMethods(shippingMethodsData);
-			// context.setLoading(false);
+			context.setLoading(false);
 		}
-		getData();
-	}, []);
+		if (productId)
+			getProductData();
+
+		const getShippingMethodsData = async () => {
+			context.setLoading(true);
+			var shippingMethodsData;
+			try {
+				shippingMethodsData = await getShippingMethods();
+			} catch (err) {
+				showBoundary(err);
+			}
+			setShippingMethods(shippingMethodsData);
+			context.setLoading(false);
+		}
+		getShippingMethodsData();
+	}, [productId]);
 
 	return (
 		<div className='px-4'>
-			<button onClick={handleBackToIndexPage}>
+			<a href='/admin/admin-products'>
 				&lt; <span className='text-sm hover:underline'>商品一覧に戻る</span>
-			</button>
+			</a>
 
 			<form onSubmit={handleSubmit}>
 				<p className='my-6 font-mono text-xl font-bold'>商品追加・編集</p>
@@ -229,7 +238,7 @@ const AdminProductForm = ({productId, setProductId}) => {
 					<label>商品写真</label>
 					<div className='p-10 flex bg-stone-100 rounded'>
 						{images.length ? images.map((image, i) => {return !image.deleted ? (
-							<div className='relative z-0 mr-4 cursor-pointer group'>
+							<div key={i} className='relative z-0 mr-4 cursor-pointer group'>
 								<img
 									src={imageSrc(base64Images[image.base64Images_idx])}
 									onClick={(e) => handleImageClick(e, i)}
@@ -320,9 +329,9 @@ const AdminProductForm = ({productId, setProductId}) => {
 						onChange={handleInputChange}
 						name='public_status'
 						type='checkbox'
-						value={Number(product.public_status)}
-						className='w-4 h-4 mr-2 checked:bg-amber-600'
-						checked={product.public_status} />
+						value={product.public_status}
+						// checked={product.public_status}
+						className='w-4 h-4 mr-2 checked:bg-amber-600' />
 					<input
 						onChange={handleInputChange}
 						name='public_status'
@@ -339,9 +348,9 @@ const AdminProductForm = ({productId, setProductId}) => {
 						onChange={handleInputChange}
 						name='popular_status'
 						type='checkbox'
-						value={Number(product.popular_status)}
-						className='w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500 focus:ring-2 before:text-amber-200'
-						checked={product.popular_status} />
+						value={product.popular_status}
+						// checked={product.popular_status}
+						className='w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500 focus:ring-2 before:text-amber-200' />
 				</div>
 				<div className='px-40 my-16 justify-center'>
 					<button
@@ -363,4 +372,4 @@ const AdminProductForm = ({productId, setProductId}) => {
 	);
 }
 
-export default AdminProductForm;
+export default AdminProduct;

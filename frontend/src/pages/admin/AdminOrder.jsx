@@ -1,9 +1,13 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
+import { useParams } from 'react-router-dom';
+import { orderStatusList } from '../../data';
 import { getOrder, getOrderedProducts, updateOrder } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
-const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
+const AdminOrder = () => {
+	const params = useParams();
+	const orderId = params.order_id;
 	const [order, setOrder] = useState({});
 	const [orderedProducts, setOrderedProducts] = useState([]);
 	const { showBoundary } = useErrorBoundary();
@@ -12,11 +16,6 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	const handleOpenModal = (e) => {
 		e.preventDefault();
 		document.getElementById('modal').showModal();
-	}
-
-	const handleClick = (e, orderId) => {
-		e.preventDefault();
-		setOrderId(orderId);
 	}
 
 	const handleExportClick = (e, postType) => {
@@ -81,13 +80,11 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	};
 
 	useEffect(() => {
-		console.log("[test]AdminOrderDetails");
 		const getData = async () => {
+			context.setLoading(true);
 			var orderData;
 			try {
-				// context.setLoading(true);
 				orderData = await getOrder(orderId);
-				// context.setLoading(false);
 			} catch (err) {
 				showBoundary(err);
 			}
@@ -99,24 +96,23 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 
 			var orderedProductsData;
 			try {
-				// context.setLoading(true);
 				orderedProductsData = await getOrderedProducts(orderId);
-				// context.setLoading(false);
 			} catch (err) {
 				showBoundary(err);
 			}
 			setOrderedProducts(orderedProductsData);
+			context.setLoading(false);
 		};
 		getData();
-	}, []);
+	}, [orderId]);
 
 	return (
 		(order.id) ? 
 		<div className='px-4'>
 			<Modal />
-			<button onClick={(e) => handleClick(e, '')}>
+			<a href='/admin/admin-orders'>
 				&lt; <span className='text-sm hover:underline'>注文一覧に戻る</span>
-			</button>
+			</a>
 			<p className='my-6 font-mono text-xl font-bold'>注文詳細</p>
 			<ul>
 				<li className='py-2 flex border-b'>
@@ -212,4 +208,4 @@ const AdminOrderDetails = ({orderId, setOrderId, orderStatusList}) => {
 	:'');
 };
 
-export default AdminOrderDetails;
+export default AdminOrder;

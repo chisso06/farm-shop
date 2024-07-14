@@ -106,6 +106,7 @@ app.get('/products', (req, res) => {
 		sql_prompt,
     (err, results, fields) => {
       if (err) {
+				console.log(err);
         return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			results.map((p) => {
@@ -148,6 +149,7 @@ app.get('/products/:id', (req, res) => {
 		WHERE products.id=${productId} AND (images.id IS NULL OR order_of_images=1)`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json(results[0]);
@@ -191,8 +193,12 @@ app.post('/products', async (req, res) => {
 				if (err) {
 					connection.query(
 						`DELETE FROM products WHERE id=${productId}`,
-						(err) => {console.error(CONNECTION_ERROR)}
+						(err2) => {
+							console.log(err2);
+							console.error(CONNECTION_ERROR);
+						}
 					)
+					console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 				resolve(results);
@@ -225,8 +231,12 @@ app.post('/products', async (req, res) => {
 						if (err) {
 							connection.query(`
 								DELETE FROM products WHERE id=${productId}`,
-								(err) => {console.error(CONNECTION_ERROR)}
+								(err2) => {
+									console.log(err2);
+									console.error(CONNECTION_ERROR);
+								}
 							);
+							console.log(err);
 							return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 						}
 						if (results.insertId)
@@ -269,6 +279,7 @@ app.post('/products/:id', async (req, res) => {
 			product,
 			(err, results, fields) => {
 				if (err) {
+					console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 				resolve(product.id);
@@ -280,6 +291,7 @@ app.post('/products/:id', async (req, res) => {
 			`DELETE FROM images WHERE product_id=${productId}`,
 			(err, results, fields) => {
 				if (err) {
+					console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 				resolve(results);
@@ -309,6 +321,7 @@ app.post('/products/:id', async (req, res) => {
 					[Object.keys(image), Object.values(image)],
 					(err, results, fields) => {
 						if (err) {
+							console.log(err);
 							return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 						}
 						if (results.insertId)
@@ -339,6 +352,7 @@ app.delete('/products/:id', async (req, res) => {
 			`SELECT * FROM images WHERE product_id=${productId}`,
 			(err, results, fields) => {
 				if (err) {
+					console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 				results.map((image) => {
@@ -354,6 +368,7 @@ app.delete('/products/:id', async (req, res) => {
 		`DELETE FROM products WHERE id=${productId}`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json({ message: `deleted product ${productId}` });
@@ -378,6 +393,7 @@ app.get('/products/:id/images', (req, res) => {
 		sql_prompt,
     (err, results, fields) => {
       if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json(results);
@@ -410,6 +426,7 @@ app.get('/news', (req, res) => {
 		FROM news ORDER BY date desc`,
 	(err, results, fields) => {
 		if (err) {
+			console.log(err);
 			return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 		}
 		res.status(200).json(results);
@@ -424,6 +441,7 @@ app.post('/news', (req, res) => {
 		news,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json({ message: 'added new news' });
@@ -441,6 +459,7 @@ app.delete('/news/:id', (req, res) => {
 		`DELETE FROM news WHERE id=${newsId}`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json({ message: `deleted news id:${newsId}` });
@@ -452,6 +471,7 @@ app.get('/shipping', (req, res) => {
 		`SELECT * FROM shipping_methods`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json(results);
@@ -469,6 +489,7 @@ app.get('/shipping/:id', (req, res) => {
 		`SELECT * FROM shipping_methods WHERE id=${methodId}`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json(results[0]);
@@ -565,6 +586,7 @@ app.post('/shipping/:id', async (req, res) => {
 			method,
 			(err, results, fields) => {
 				if (err) {
+					console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 				method.id = (method.id ? method.id : results.insertId);
@@ -581,6 +603,7 @@ app.post('/shipping/:id', async (req, res) => {
 			`DELETE FROM shipping_fees WHERE method_id=${methodId}`,
 			(err, results, fields) => {
 				if (err) {
+					console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 				resolve(results);
@@ -615,6 +638,7 @@ app.post('/shipping/:id', async (req, res) => {
 				fee,
 				(err, results, fields) => {
 					if (err) {
+						console.log(err);
 						return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 					}
 					if (!data.id)
@@ -642,6 +666,7 @@ app.delete('/shipping/:id', (req, res) => {
 		`UPDATE products SET shipping_method=0 WHERE shipping_method=${shippingId}`,
 		(err) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR })
 			}
 		}
@@ -650,6 +675,7 @@ app.delete('/shipping/:id', (req, res) => {
 		`DELETE FROM shipping_methods WHERE id=${req.params.id}`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json({ message: `deleted shipping_method id:${shippingId}` });
@@ -670,6 +696,7 @@ app.get('/shipping/:id/fee', (req, res) => {
 		ORDER BY min_n`,
 	(err, results, fields) => {
 		if (err) {
+			console.log(err);
 			return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 		}
 		res.status(200).json(results);
@@ -689,6 +716,7 @@ app.get('/orders', (req, res) => {
 		FROM orders`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json(results);
@@ -716,6 +744,7 @@ app.get('/orders/:id', (req, res) => {
 		WHERE id='${orderId}'`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json(results[0]);
@@ -737,6 +766,7 @@ app.post('/orders/:id', (req, res) => {
 		WHERE id='${orderId}'`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json({ message: 'updated order status' })
@@ -755,6 +785,7 @@ app.get('/ordered_products/:order_id', (req, res) => {
     `SELECT * FROM ordered_products WHERE order_id='${orderId}'`,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json(results);
@@ -800,6 +831,7 @@ app.post('/create-checkout-session', async (req, res) => {
 			const [stock_results] = await connectionPromise.query(
 				`SELECT stock FROM products WHERE id=${item.product_id}`
 			).catch((err) => {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			});
 			const stock = stock_results[0].stock;
@@ -820,6 +852,7 @@ app.post('/create-checkout-session', async (req, res) => {
 		const [results] = await connectionPromise.query(
 			`SELECT name, price FROM products WHERE id=${item.product_id}`
 		).catch((err) => {
+			console.log(err);
 			return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 		});
 		const line_item = {
@@ -861,6 +894,7 @@ app.post('/create-checkout-session', async (req, res) => {
 			WHERE method_id=${method.method_id}
 			ORDER BY min_n`
 			).catch((err) => {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 		);
@@ -901,6 +935,7 @@ app.post('/create-checkout-session', async (req, res) => {
 			UPDATE products SET stock=${item.stock - item.number} WHERE id=${item.product_id}`,
 			(err, results, fields) => {
 				if (err) {
+					console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 			}
@@ -922,6 +957,7 @@ app.post('/create-checkout-session', async (req, res) => {
 		sql_prompt,
 		(err, results, fields) => {
 			if (err) {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 		});
@@ -942,9 +978,16 @@ app.post('/create-checkout-session', async (req, res) => {
 			(err, results, fields) => {
 				if (err) {
 					connection.query(`DELETE FROM orders WHERE id='${orderId}'`,
-						(err) => {console.error(CONNECTION_ERROR)});
+						(err2) => {
+							console.log(err2);
+							console.error(CONNECTION_ERROR);
+						});
 						connection.query(`DELETE FROM ordered_products WHERE order_id='${orderId}'`,
-						(err) => {console.error(CONNECTION_ERROR)});
+						(err2) => {
+							console.log(err2);
+							console.error(CONNECTION_ERROR);
+						});
+						console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 			});
@@ -969,6 +1012,7 @@ app.post('/stripe-webhook', async (req, res) => {
 				UPDATE orders SET status='pending-shipping' WHERE id='${client_reference_id}'`,
 				(err, results, fields) => {
 					if (err)
+						console.log(err);
 						return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 				}
 			);
@@ -977,6 +1021,7 @@ app.post('/stripe-webhook', async (req, res) => {
 			const [results] = await connectionPromise.query(`
 			SELECT * FROM orders WHERE id='${client_reference_id}'`)
 			.catch((err) => {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			});
 			if (!results.length)
@@ -986,6 +1031,7 @@ app.post('/stripe-webhook', async (req, res) => {
 			const [ordered_products] = await connectionPromise.query(`
 				SELECT * FROM ordered_products WHERE order_id='${client_reference_id}'`)
 			.catch((err) => {
+				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			});
 			ordered_products.map((item) => {
@@ -994,8 +1040,10 @@ app.post('/stripe-webhook', async (req, res) => {
 					SET stock=products.stock+${item.number}
 					WHERE id=${item.product_id}`,
 					(err, results, fields) => {
-						if (err)
+						if (err) {
+							console.log(err);
 							return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+						}
 					}
 				);
 			});
@@ -1003,8 +1051,10 @@ app.post('/stripe-webhook', async (req, res) => {
 			connection.query(`
 			DELETE FROM orders WHERE id='${client_reference_id}'`,
 			(err, results, fields) => {
-				if (err)
+				if (err) {
+					console.log(err);
 					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+				}
 			});
       break;
     default:

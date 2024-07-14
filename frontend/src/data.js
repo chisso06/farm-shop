@@ -36,12 +36,35 @@ export const adminPagesList = [
 		title: '商品管理',
 	},
 	{
-		name: 'admin-shipping',
+		name: 'admin-shipping-methods',
 		title: '送料管理',
 	},
 	{
 		name: 'admin-news',
 		title: 'お知らせ管理',
+	},
+];
+
+export const orderStatusList = [
+	{
+		name: 'pending-payment',
+		title: '支払待ち'
+	},
+	{
+		name: 'pending-shipping',
+		title: '発送待ち'
+	},
+	{
+		name: 'shipping',
+		title: '発送済み'
+	},
+	{
+		name: 'completed',
+		title: '完了'
+	},
+	{
+		name: 'pending',
+		title: '保留'
 	},
 ];
 

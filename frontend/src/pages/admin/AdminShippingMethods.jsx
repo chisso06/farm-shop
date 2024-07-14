@@ -1,27 +1,23 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
+import { useNavigate } from 'react-router-dom';
 import { getShippingMethods } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
-const AdminProductsIndex = ({setShippingId}) => {
+const AdminShippingMethods = () => {
 	const [shippingMethods, setShippingMethods] = useState([]);
 	const { showBoundary } = useErrorBoundary();
 	const context = useContext(LoadingContext);
+	const navigate = useNavigate();
 
-	const handleClick1 = (e) => {
+	const handleClick = (e, method_id) => {
 		e.preventDefault();
-		setShippingId(0);
-	}
-
-	const handleClick2 = (e, shippingId) => {
-		e.preventDefault();
-		setShippingId(shippingId);
+		navigate(`/admin/admin-shipping-methods/${method_id}`);
 	}
 
 	useEffect(() => {
-		console.log("[test]AdminShippingIndex");
 		const getData = async () => {
-			// context.setLoading(true);
+			context.setLoading(true);
 			var shippingMethodsData;
 			try {
 				shippingMethodsData = await getShippingMethods();
@@ -29,7 +25,7 @@ const AdminProductsIndex = ({setShippingId}) => {
 				showBoundary(err);
 			}
 			setShippingMethods(shippingMethodsData);
-			// context.setLoading(false);
+			context.setLoading(false);
 		}
 		getData();
 	}, []);
@@ -39,11 +35,11 @@ const AdminProductsIndex = ({setShippingId}) => {
 			<div className='px-4 pb-4 flex'>
 				<p className='w-1/2 font-mono text-2xl font-bold'>送料管理</p>
 				<div className='w-1/2 flex justify-end'>
-					<button
-						onClick={handleClick1}
+					<a
+						href='/admin/admin-shipping-methods/0'
 						className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
 						+配送方法を追加
-					</button>
+					</a>
 				</div>
 			</div>
 			<table className='w-full'>
@@ -56,7 +52,7 @@ const AdminProductsIndex = ({setShippingId}) => {
 					{shippingMethods ? shippingMethods.map((shipping, i) => {
 						return shipping.id ? 
 							<tr
-								onClick={(e) => {handleClick2(e, shipping.id)}}
+								onClick={(e) => {handleClick(e, shipping.id)}}
 								key={i}
 								className='border-b hover:cursor-pointer hover:bg-amber-100'>
 								<td className='pl-4 py-1 text-left'>{shipping.name}</td>
@@ -69,4 +65,4 @@ const AdminProductsIndex = ({setShippingId}) => {
 	)
 };
 
-export default AdminProductsIndex;
+export default AdminShippingMethods;
