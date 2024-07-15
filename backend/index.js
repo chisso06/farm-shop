@@ -15,19 +15,11 @@ const INVALID_SHIPPING_ID_ERROR = "Error: invalid shipping id";
 const NO_STOCK_ERROR = "Error: no stock";
 
 // config
-const config = require('config');
-const FRONTEND_ORIGIN = config.get('FRONTEND_ORIGIN');
-
-// // cors
-// const origin = req.headers.origin;
-// if (origin === FRONTEND_ORIGIN) {
-//   res.header('Access-Control-Allow-Origin', origin);
-//   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
-//   // res.header('Access-Control-Allow-Methods', 'PUT, DELETE, OPTIONS');
-// }
+require('dotenv').config();
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
+const STRIPE_SK_KEY = process.env.STRIPE_SK_KEY;
 
 //stripe
-const STRIPE_SK_KEY = config.get('STRIPE_SK_KEY');
 const stripe = require('stripe')(STRIPE_SK_KEY);
 
 // mysql2
@@ -39,6 +31,14 @@ const connection = mysql.createConnection({
 	database: 'farm_shop'
 });
 const mysqlPromise = require('mysql2/promise');
+
+// // cors
+// const origin = req.headers.origin;
+// if (origin === FRONTEND_ORIGIN) {
+//   res.header('Access-Control-Allow-Origin', origin);
+//   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+//   // res.header('Access-Control-Allow-Methods', 'PUT, DELETE, OPTIONS');
+// }
 
 // cors
 const cors = require('cors');
@@ -1068,4 +1068,6 @@ app.all("*", (req, res) => {
   return res.status(404).json({ message: "not exist path" });
 })
 
-app.listen(4242, () => console.log('Running on port 4242'));
+app.listen(4242, () => {
+	console.log('Running on port 4242');
+});
