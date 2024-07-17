@@ -1,6 +1,6 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Icon } from '../components';
 import { areaList } from '../data';
 import { getBase64Images, getProduct, getProductImages, getShippingFees, getShippingMethod, imageSrc } from '../functions';
@@ -35,7 +35,6 @@ const ProductImagesCarousel = ({images, base64Images}) => {
 const Product = () => {
 	const params = useParams();
 	const productId = Number(params.product_id);
-	const navigate = useNavigate();
 	const [product, setProduct] = useState({});
 	const [images, setImages] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
@@ -111,8 +110,10 @@ const Product = () => {
 				setImages(imagesData);
 				setBase64Images(base64ImagesData);
 			} else {
-				toast_context.setMessage('商品が存在しません');
-				navigate('/products');
+				window.alert('商品が存在しません');
+				loading_context.setLoading(false);
+				window.location.href = '/products';
+				return ;
 			}
 
 			if (productData.shipping_method) {

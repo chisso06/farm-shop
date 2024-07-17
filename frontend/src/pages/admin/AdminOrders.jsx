@@ -25,11 +25,13 @@ const AdminOrders = () => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			ordersData.map((o) => {
-				const orderStatus = orderStatusList.find((orderStatus) =>
-					orderStatus.name === o.status)
-				return o.statusTitle = orderStatus.title;
-			})
+			if (ordersData.length) {
+				ordersData.map((o) => {
+					const orderStatus = orderStatusList.find(
+						(status) => status.name === o.status);
+					return o.statusTitle = orderStatus.title;
+				});
+			}
 			setOrders(ordersData);
 			context.setLoading(false);
 		};

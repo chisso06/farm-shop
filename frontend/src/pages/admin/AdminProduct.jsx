@@ -1,7 +1,7 @@
 import imageCompression from 'browser-image-compression';
 import { React, useContext, useEffect, useRef, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Icon } from '../../components';
 import { categoryList } from '../../data';
 import {
@@ -35,7 +35,6 @@ const AdminProduct = () => {
 	const [base64Images, setBase64Images] = useState([]);
 	const [imageFiles, setImageFiles] = useState([]);
 	const inputRef = useRef(null);
-	const navigate = useNavigate();
 	const { showBoundary } = useErrorBoundary();
 	const context = useContext(LoadingContext);
 
@@ -130,8 +129,10 @@ const AdminProduct = () => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			if (!window.alert('商品を追加しました'))
-				navigate(`/admin/admin-products/${res.product.id}`);
+			window.alert('商品を追加しました');
+			context.setLoading(false);
+			window.location.href = `/admin/admin-products/${res.product.id}`;
+			return ;
 		}
 		const imagesData = res.images.filter((image) => !image.deleted);
 		const newImages = imagesData.map((image) => {
@@ -156,8 +157,8 @@ const AdminProduct = () => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			if (!window.alert('商品を削除しました'))
-				navigate('/admin/admin-products');
+			window.alert('商品を削除しました');
+			window.location.href = '/admin/admin-products';
 		}
 		context.setLoading(false);
 	};
@@ -174,8 +175,10 @@ const AdminProduct = () => {
 				showBoundary(err);
 			}
 			if (!productData) {
-				if (!window.alert('商品が存在しません'))
-					navigate('/admin/admin-products');
+				window.alert('商品が存在しません');
+				context.setLoading(false);
+				window.location.href = '/admin/admin-products';
+				return ;
 			}
 			try {
 				imagesData = await getProductImages(productId);

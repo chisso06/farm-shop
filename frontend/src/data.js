@@ -75,23 +75,26 @@ export const adminPagesList = [
 export const orderStatusList = [
 	{
 		name: 'pending-payment',
-		title: '支払待ち'
+		title: '支払待ち',
+		nextStatus: 'pending-shipping',
 	},
 	{
 		name: 'pending-shipping',
-		title: '発送待ち'
+		title: '発送待ち',
+		nextStatus: 'shipping',
 	},
 	{
 		name: 'shipping',
-		title: '発送済み'
+		title: '発送済み',
+		nextStatus: 'completed',
 	},
 	{
 		name: 'completed',
-		title: '完了'
+		title: '完了',
 	},
 	{
-		name: 'pending',
-		title: '保留'
+		name: 'canceled',
+		title: 'キャンセル済み',
 	},
 ];
 

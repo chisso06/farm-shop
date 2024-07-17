@@ -1,6 +1,6 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { areaList } from '../../data';
 import {
 	createShipping,
@@ -38,7 +38,6 @@ const AdminShippingMethod = () => {
 	});
 	const [shippingFees, setShippingFees] = useState([shippingFee]);
 	const [shippingFeeIdx, setShippingFeeIdx] = useState(0);
-	const navigate = useNavigate();
 	const { showBoundary } = useErrorBoundary();
 	const context = useContext(LoadingContext);
 
@@ -153,8 +152,8 @@ const AdminShippingMethod = () => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			if (!window.alert('配送方法を追加しました'))
-				navigate(`/admin/admin-shipping-methods/${res.method.id}`);
+			window.alert('配送方法を追加しました');
+			window.location.href = `/admin/admin-shipping-methods/${res.method.id}`;
 		}
 		context.setLoading(false);
 	};
@@ -169,8 +168,8 @@ const AdminShippingMethod = () => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			if (!window.alert('配送方法を削除しました'))
-				navigate('/admin/admin-shipping-methods');
+			window.alert('配送方法を削除しました');
+			window.location.href = '/admin/admin-shipping-methods';
 		}
 
 		context.setLoading(false);
@@ -186,6 +185,11 @@ const AdminShippingMethod = () => {
 				shippingMethodData = await getShippingMethod(shippingId);
 			} catch (err) {
 				showBoundary(err);
+			}
+			if (!shippingMethodData) {
+				context.setLoading(false);
+				window.location.href = '/admin/admin-shipping-methods';
+				return ;
 			}
 			try {
 				shippingFeesData = await getShippingFees(shippingId);
