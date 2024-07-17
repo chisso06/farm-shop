@@ -1,6 +1,6 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '../components';
 import { createCart, getIndexBase64Images, imageSrc } from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
@@ -16,6 +16,7 @@ const Cart = () => {
 	const { showBoundary } = useErrorBoundary();
 	const toast_context = useContext(ToastContext);
 	const loading_context = useContext(LoadingContext);
+	const navigate = useNavigate();
 
 	const handleChange = (e, i) => {
 		e.preventDefault();
@@ -23,6 +24,11 @@ const Cart = () => {
 		var value = Number(e.target.value);
 		var cartListData = cart;
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
+
+		if (!cartStorage) {
+			navigate('/cart');
+			return ;
+		}
 
 		cartListData[i].number = value;
 		cartStorage[i].number = value;

@@ -35,6 +35,7 @@ const AdminProducts = () => {
 			}
 			setProducts(productsData);
 			setBase64Images(base64ImagesData);
+
 			context.setLoading(false);
 		}
 		getData();

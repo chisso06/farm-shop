@@ -153,15 +153,16 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 		const result = cartStorage.find(
 			(item, i) => (item.product_id !== cart[i].product_id || item.number !== cart[i].number));
 		if (result) {
-			if (!window.alert("カートの内容が変更された可能性があります。"));
-				navigate('/cart');
-		} else {
-			await axios.post('/backend/create-checkout-session', {cart, customer: customerData})
-			.then((res) => {
-				localStorage.setItem('cart', JSON.stringify([]));
-				window.location.replace(res.data.session_url);
-			}).catch((err) => showBoundary(err));
+			window.alert("カートの内容が変更された可能性があります。");
+			context.setLoading(false);
+			navigate('/cart');
+			return ;
 		}
+		await axios.post('/backend/create-checkout-session', {cart, customer: customerData})
+		.then((res) => {
+			localStorage.setItem('cart', JSON.stringify([]));
+			window.location.replace(res.data.session_url);
+		}).catch((err) => showBoundary(err));
 
 		context.setLoading(false);
 	}

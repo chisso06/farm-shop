@@ -44,14 +44,19 @@ const AdminOrder = () => {
 		e.preventDefault();
 		context.setLoading(true);
 
-		const newOrder = {...order, status: orderStatus};
-		try {
-			await updateOrder(newOrder);
-		} catch (err) {
-			showBoundary(err);
+		if (orderStatus !== 'canceled'
+			|| window.confirm('この注文をキャンセルしますか？\nこの操作は取り消せません')) {
+			const newOrder = {...order, status: orderStatus};
+			try {
+				await updateOrder(newOrder);
+			} catch (err) {
+				showBoundary(err);
+			}
+			setOrder(newOrder);
+	
+			window.alert('ステータスを変更しました');
+			window.location.reload();
 		}
-		setOrder(newOrder);
-		window.alert('ステータスを変更しました');
 
 		context.setLoading(false);
 	};
@@ -88,10 +93,20 @@ const AdminOrder = () => {
 			} catch (err) {
 				showBoundary(err);
 			}
-			const orderStatus = orderStatusList.find((orderStatus) =>
-				orderStatus.name === orderData.status
-			);
+			if (!orderData) {
+				context.setLoading(false);
+				window.location.href = '/admin/admin-orders';
+				return ;
+			}
+			const orderStatus = orderStatusList.find(
+				(status) => status.name === orderData.status);
+			const nextOrderStatus = orderStatusList.find(
+				(status) => status.name === orderStatus.nextStatus);
 			orderData.statusTitle = orderStatus.title;
+			if (nextOrderStatus) {
+				orderData.nextStatus = nextOrderStatus.name;
+				orderData.nextStatusTitle = nextOrderStatus.title;
+			}
 			setOrder(orderData);
 
 			var orderedProductsData;
@@ -121,28 +136,23 @@ const AdminOrder = () => {
 				</li>
 				<li className='py-2 flex border-b'>
 					<p className='w-36 font-mono font-bold'>ステータス</p>
-					{order.status === 'pending-shipping' ?
 						<div className='flex'>
-							<p>発送待ち</p>
-							<button
-								onClick={(e) => updateStatus(e, 'shipping')}
-								className='ml-4 text-sm underline text-stone-600 hover:text-amber-600'>
-								発送済みにする
-							</button>
+							<p>{order.statusTitle}</p>
+							{ order.nextStatus ? 
+								<button
+									onClick={(e) => updateStatus(e, order.nextStatus)}
+									className='ml-4 text-sm underline text-stone-600 hover:text-amber-600'>
+									{order.nextStatusTitle}にする
+								</button>
+							: ''}
+							{ order.status !== 'canceled' ? 
+								<button
+									onClick={(e) => updateStatus(e, 'canceled')}
+									className='ml-4 text-sm underline text-stone-600 hover:text-amber-600'>
+									注文をキャンセル
+								</button>
+							: ''}
 						</div>
-					: order.status === 'shipping' ?
-						<div className='flex'>
-							<p>発送済み</p>
-							<button
-								onClick={(e) => updateStatus(e, 'completed')}
-								className='ml-4 text-sm underline text-stone-600 hover:text-amber-600'>
-								完了にする
-							</button>
-						</div>
-					: order.status === 'completed' ?
-						<p>完了</p>
-					: <p>{order.statusTitle}</p>
-					}
 				</li>
 				<li className='py-2 flex border-b'>
 					<p className='w-36 font-mono font-bold'>注文日時</p>
