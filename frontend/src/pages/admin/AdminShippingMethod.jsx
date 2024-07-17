@@ -199,7 +199,7 @@ const AdminShippingMethod = () => {
 		}
 		if (shippingId)
 			getData();
-	}, [shippingId]);
+	}, []);
 
 	return (
 		<div className='px-4'>

@@ -50,7 +50,6 @@ const Product = () => {
 	const loading_context = useContext(LoadingContext);
 
 	const handleChange = (e) => {
-		e.preventDefault();
 		const {name, value} = e.target;
 		setItem({...item, [name]: Number(value) });
 		if (Number(value) > 0) {
@@ -135,7 +134,7 @@ const Product = () => {
 			loading_context.setLoading(false);
 		}
 		getData();
-	}, [productId]);
+	}, []);
 
 	const ShippingModal = () => {
 		if (shippingFees.length) {

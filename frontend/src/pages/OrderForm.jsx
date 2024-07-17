@@ -27,7 +27,7 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 					shippingMethodList[i].number += item.number;
 				sum_calc += item.price * item.number;
 				return item;
-			})
+			});
 			setSum(sum_calc);
 			setShippingMethods(shippingMethodList);
 
@@ -41,11 +41,12 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 				}
 				setBase64Images(base64ImagesData);
 				context.setLoading(false);
-			}
+			};
 			getData();
-		} else if (!cart.length)
+		} else if (!cart.length) {
 			navigate('/cart');
-	}, [cart, setShippingMethods]);
+		}
+	}, [cart]);
 
 	return (
 		<div className='w-full sm:w-2/5 mb-10'>
@@ -94,7 +95,7 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 			</div>
 		</div>
 	);
-}
+};
 
 const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 	const [customerData, setCustomerData] = useState({
@@ -216,7 +217,7 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 			</button>
 		</form>
 	);
-}
+};
 
 const OrderForm = () => {
 	const [cart, setCart] = useState([{}]);

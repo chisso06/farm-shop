@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const createCart = async (setCart) => {
-	const cartStorage = JSON.parse(localStorage.getItem('cart'));
+	const cartStorage = JSON.parse(localStorage.getItem('cart')).filter((c) => c.number > 0);
 	if (cartStorage) {
 		const cartList = await Promise.all(cartStorage.map(async (c) => {
 			const res = await axios.get(`/backend/products/${c.product_id}`);
@@ -19,6 +19,6 @@ const createCart = async (setCart) => {
 		setCart(cartList);
 		return (cartList);
 	}
-}
+};
 
 export default createCart;

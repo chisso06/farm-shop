@@ -75,6 +75,10 @@ const App = () => {
       element: <ErrorBoundary fallback={<ErrorPage />}><AdminPage /></ErrorBoundary>,
       children: [
         {
+          path: '',
+          element: <AdminOrders />,
+        },
+        {
           path: 'admin-orders',
           element: <AdminOrders />,
         },
