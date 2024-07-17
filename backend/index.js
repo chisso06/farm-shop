@@ -99,7 +99,9 @@ app.get('/products', (req, res) => {
 		WHERE
 			${category ? `category='${category}' AND` : ''}
 			${popular_status ? `popular_status=1 AND`: ''}
+			public_status>0 AND
 			(images.id IS NULL OR order_of_images=1)
+		ORDER BY public_status ASC
 		`;
 
   connection.query(

@@ -217,6 +217,7 @@ const AdminProduct = () => {
 
 			<form onSubmit={handleSubmit}>
 				<p className='my-6 font-mono text-xl font-bold'>商品追加・編集</p>
+				{/* 商品名 */}
 				<div className='mt-4'>
 					<label>
 						商品名
@@ -232,6 +233,7 @@ const AdminProduct = () => {
 						value={product.name}
 						required />
 				</div>
+				{/* 商品写真 */}
 				<div className='mt-4'>
 					<label>商品写真</label>
 					<div className='p-10 flex bg-stone-100 rounded'>
@@ -258,6 +260,7 @@ const AdminProduct = () => {
 						</label>
 					</div>
 				</div>
+				{/* 商品説明 */}
 				<div className='mt-4'>
 					<label>
 						商品説明
@@ -272,6 +275,7 @@ const AdminProduct = () => {
 						value={product.description}
 						required />
 				</div>
+				{/* 価格 */}
 				<div className='mt-4 flex items-center'>
 					<label className='mr-2 w-1/2'>価格<span className='text-amber-600'>*</span></label>
 					<input
@@ -283,6 +287,7 @@ const AdminProduct = () => {
 						value={product.price}
 						required />
 				</div>
+				{/* 在庫 */}
 				<div className='mt-4 flex items-center'>
 					<label className='mr-2 w-1/2'>在庫<span className='text-amber-600'>*</span></label>
 					<input
@@ -294,6 +299,7 @@ const AdminProduct = () => {
 						value={product.stock}
 						required />
 				</div>
+				{/* カテゴリー */}
 				<div className='mt-4 flex items-center'>
 					<label className='mr-2 w-1/2'>カテゴリー<span className='text-amber-600'>*</span></label>
 					<select
@@ -308,6 +314,7 @@ const AdminProduct = () => {
 						})}
 					</select>
 				</div>
+				{/* 配送方法 */}
 				<div className='mt-4 flex items-center'>
 					<label className='mr-2 w-1/2'>配送方法<span className='text-amber-600'>*</span></label>
 					<select
@@ -322,6 +329,7 @@ const AdminProduct = () => {
 						}) : ''}
 					</select>
 				</div>
+				{/* 公開（優先度） */}
 				<div className='mt-4 flex items-center'>
 					<label className='mr-2 w-1/2'>公開（優先度）</label>
 					<input
@@ -341,6 +349,7 @@ const AdminProduct = () => {
 						disabled={!product.public_status}
 						required />
 				</div>
+				{/* 人気商品 */}
 				<div className='mt-4 flex items-center'>
 					<label className='mr-2 w-1/2'>人気商品</label>
 					<input
@@ -351,6 +360,7 @@ const AdminProduct = () => {
 						checked={product.popular_status}
 						className='w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500 focus:ring-2 before:text-amber-200' />
 				</div>
+				{/* Buttons */}
 				<div className='px-40 my-16 justify-center'>
 					<button
 						type='submit'
