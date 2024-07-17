@@ -1,30 +1,29 @@
 import { React, useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { adminPagesList } from '../data';
 
 const AdminPage = () => {
-	// const params = useParams();
+	const location = useLocation();
 	const [width, setWidth] = useState(960);
-	// const adminPage = params.page;
-	// const navigate = useNavigate();
 
 	const AdminMenu = () => {
 		return (
-			<div className=''>{
-				adminPagesList.map((p, i) => {
+			<div className=''>
+				{ adminPagesList.map((p, i) => {
 					var className = 'w-full p-4 block text-left border-b hover:bg-stone-300';
-					// if (p.name === adminPage)
-					// 	className += ' bg-stone-300';
+					if ('/admin' + p.pathname === location.pathname
+						|| (location.pathname === '/admin' && p.pathname === '/admin-orders'))
+						className += ' bg-stone-300';
 					return (
 						<a
-							href={'/admin/' + p.name}
+							href={'/admin' + p.pathname}
 							key={i}
 							className={className}>
 							{p.title}
 						</a>
 					);
-				})
-			}</div>
+				})}
+			</div>
 		);
 	};
 

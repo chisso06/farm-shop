@@ -99,23 +99,14 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 
 const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 	const [customerData, setCustomerData] = useState({
-		email: 'tkgth0725@gmail.com',
-		phone: '09063869557',
-		name: 'a',
-		zipCode: '6310003',
+		email: '',
+		phone: '',
+		name: '',
+		zipCode: '',
 		prefecture: '',
-		address: 'a',
+		address: '',
 		memo: ''
 	});
-	// const [customerData, setCustomerData] = useState({
-	// 	email: '',
-	// 	phone: '',
-	// 	name: '',
-	// 	zipCode: '',
-	// 	prefecture: '',
-	// 	address: '',
-	// 	memo: ''
-	// });
 	const { showBoundary } = useErrorBoundary();
 	const context = useContext(LoadingContext);
 	const navigate = useNavigate();

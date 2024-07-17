@@ -26,21 +26,48 @@ export const aboutContentsList = [
 	},
 ];
 
+export const PagesList = [
+	{
+		pathname: '/',
+		title: 'HOME',
+	},
+	{
+		pathname: '/about',
+		title: 'ABOUT',
+	},
+	// {
+	// 	pathname: '/blog',
+	// 	title: 'BLOG',
+	// },
+	{
+		pathname: '/products',
+		title: '商品一覧',
+	},
+	{
+		pathname: '/cart',
+		title: 'カート',
+	},
+	{
+		pathname: '/faq',
+		title: 'よくあるご質問',
+	},
+]
+
 export const adminPagesList = [
 	{
-		name: 'admin-orders',
+		pathname: '/admin-orders',
 		title: '注文管理',
 	},
 	{
-		name: 'admin-products',
+		pathname: '/admin-products',
 		title: '商品管理',
 	},
 	{
-		name: 'admin-shipping-methods',
+		pathname: '/admin-shipping-methods',
 		title: '送料管理',
 	},
 	{
-		name: 'admin-news',
+		pathname: '/admin-news',
 		title: 'お知らせ管理',
 	},
 ];

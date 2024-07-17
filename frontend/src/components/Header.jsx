@@ -1,8 +1,8 @@
 import { React, useState } from 'react';
+import { PagesList } from '../data';
 
-const Header = ({pathname}) => {
+const Header = () => {
 	const [open, setOpen] = useState(false);
-	const className = 'text-stone-400 hover:text-amber-600 rounded-md px-3 py-2 text-sm font-medium';
 
 	const handleMenu = (e) => {
 		e.preventDefault();
@@ -10,7 +10,17 @@ const Header = ({pathname}) => {
 			setOpen(false);
 		else
 			setOpen(true);
-	}
+	};
+
+	const Menu = ({className}) => {
+		return PagesList.map((p, i) => {
+			return (
+				<a href={p.pathname} key={i} className={className}>
+					{p.title}
+				</a>
+			);
+		});
+	};
 
 	return (
 		<nav className='fixed z-40 top-0 left-0 right-0 bg-white border-b'>
@@ -43,12 +53,7 @@ const Header = ({pathname}) => {
 						</a>
 						<div className="hidden sm:ml-6 sm:block">
 							<div className="flex space-x-4">
-								<a href="/" className={className}>HOME</a>
-								<a href="/about" className={className}>ABOUT</a>
-								{/* <a href="/blog" className={className}>BLOG</a> */}
-								<a href="/products" className={className}>商品一覧</a>
-								<a href="/cart" className={className}>カート</a>
-								<a href="/faq" className={className}>よくあるご質問</a>
+								<Menu className={'text-stone-400 hover:text-amber-600 rounded-md px-3 py-2 text-sm font-medium'} />
 							</div>
 						</div>
 					</div>
@@ -57,12 +62,7 @@ const Header = ({pathname}) => {
 			{open ? 
 				<div className="sm:hidden bg-white" id="mobile-menu">
 					<div className="space-y-1 px-2 pb-3 pt-2">
-						<a href="/" className={className + 'text-base block'}>HOME</a>
-						<a href="/about" className={className + 'text-base block'}>ABOUT</a>
-						{/* <a href="/blog" className={className + 'text-base block'}>BLOG</a> */}
-						<a href="/products" className={className + 'text-base block'}>商品一覧</a>
-						<a href="/cart" className={className + 'text-base block'}>カート</a>
-						<a href="/faq" className={className + 'text-base block'}>よくあるご質問</a>
+						<Menu className={'text-stone-400 hover:text-amber-600 rounded-md px-3 py-2 text-sm font-medium text-base block' } />
 					</div>
 				</div>
 				:''
