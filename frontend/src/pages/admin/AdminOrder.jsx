@@ -104,7 +104,7 @@ const AdminOrder = () => {
 			context.setLoading(false);
 		};
 		getData();
-	}, [orderId]);
+	}, []);
 
 	return (
 		(order.id) ? 

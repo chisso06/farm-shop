@@ -40,7 +40,6 @@ const AdminProduct = () => {
 	const context = useContext(LoadingContext);
 
 	const handleInputChange = (e) => {
-		e.preventDefault();
 		const name =  e.target.name;
 		var value = e.target.value;
 
@@ -49,7 +48,6 @@ const AdminProduct = () => {
 				value = 1;
 			else
 				value = 0;
-			// value = Number(e.target.checked);
 		}
 		const productObj = {
 			...product,
@@ -209,7 +207,7 @@ const AdminProduct = () => {
 			context.setLoading(false);
 		}
 		getShippingMethodsData();
-	}, [productId]);
+	}, []);
 
 	return (
 		<div className='px-4'>
@@ -238,11 +236,12 @@ const AdminProduct = () => {
 					<label>商品写真</label>
 					<div className='p-10 flex bg-stone-100 rounded'>
 						{images.length ? images.map((image, i) => {return !image.deleted ? (
-							<div key={i} className='relative z-0 mr-4 cursor-pointer group'>
+							<div
+								key={i}
+								onClick={(e) => handleImageClick(e, i)}
+								className='relative z-0 mr-4 cursor-pointer group'>
 								<img
 									src={imageSrc(base64Images[image.base64Images_idx])}
-									onClick={(e) => handleImageClick(e, i)}
-									key={i}
 									alt='商品画像'
 									className='w-24 aspect-square object-contain bg-white rounded group-hover:opacity-50'/>
 								<Icon icon="trash" className='absolute w-10 h-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40' />
@@ -330,7 +329,7 @@ const AdminProduct = () => {
 						name='public_status'
 						type='checkbox'
 						value={product.public_status}
-						// checked={product.public_status}
+						checked={product.public_status}
 						className='w-4 h-4 mr-2 checked:bg-amber-600' />
 					<input
 						onChange={handleInputChange}
@@ -349,7 +348,7 @@ const AdminProduct = () => {
 						name='popular_status'
 						type='checkbox'
 						value={product.popular_status}
-						// checked={product.popular_status}
+						checked={product.popular_status}
 						className='w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500 focus:ring-2 before:text-amber-200' />
 				</div>
 				<div className='px-40 my-16 justify-center'>

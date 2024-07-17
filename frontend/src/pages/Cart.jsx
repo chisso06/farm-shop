@@ -17,41 +17,31 @@ const Cart = () => {
 	const toast_context = useContext(ToastContext);
 	const loading_context = useContext(LoadingContext);
 
-	const handleChange = async (e, i) => {
+	const handleChange = (e, i) => {
 		e.preventDefault();
-		loading_context.setLoading(true);
 
 		var value = Number(e.target.value);
+		var cartListData = cart;
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
 
-		if (value <= 0)
-			cartStorage.splice(i, 1);
-		else
-			cartStorage[i].number = value;
-		localStorage.setItem('cart', JSON.stringify(cartStorage));
-		try {
-			await createCart(setCart);
-		} catch (err) {
-			showBoundary(err);
-		}
+		cartListData[i].number = value;
+		cartStorage[i].number = value;
 
-		loading_context.setLoading(false);
+		setCart([...cartListData]);
+		localStorage.setItem('cart', JSON.stringify(cartStorage));
 	}
 
-	const handleTrash = async (e, i) => {
+	const handleTrash = (e, i) => {
 		e.preventDefault();
-		loading_context.setLoading(true);
-
+		const cartListData = cart;
+		const base64ImagesData = base64Images;
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
+		cartListData.splice(i, 1);
+		base64ImagesData.splice(i, 1);
 		cartStorage.splice(i, 1);
+		setCart([...cartListData]);
+		setBase64Images([...base64ImagesData]);
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
-		try {
-			await createCart(setCart);
-		} catch (err) {
-			showBoundary(err);
-		}
-
-		loading_context.setLoading(false);
 	}
 
 	useEffect(() => {
@@ -73,12 +63,6 @@ const Cart = () => {
 			}
 			setBase64Images(base64ImagesData);
 
-			var calcSum = 0;
-			cartListData.map((item) => {
-				calcSum += item.price * item.number;
-			});
-			setSum(calcSum);
-
 			loading_context.setLoading(false);
 		}
 		getData();
@@ -86,7 +70,15 @@ const Cart = () => {
 		if (message) {
 			toast_context.setMessage(message);
 		}
-	}, [message]);
+	}, []);
+
+	useEffect(() => {
+		var calcSum = 0;
+		cart.map((item) => {
+			calcSum += item.price * item.number;
+		});
+		setSum(calcSum);
+	}, [cart]);
 
 	return (
 		<div className='w-3/4 my-16 mx-auto'>

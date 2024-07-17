@@ -27,7 +27,7 @@ const OrderCompleted = () => {
 			context.setLoading(false);
 		}
 		orderCheck();
-	}, [orderId]);
+	}, []);
 
 	return (
 		<div className='my-16'>
