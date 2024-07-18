@@ -1,7 +1,8 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
-import { getIndexBase64Images, getProducts, imageSrc } from '../functions';
+import { getIndexBase64Images, getProducts } from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
+import ProductsIndex from './ProductsIndex';
 
 const PopularItems = () => {
 	const [products, setProducts] = useState([]);
@@ -36,15 +37,7 @@ const PopularItems = () => {
 	return (
 		<div className='my-20 w-3/4 mx-auto'>
 			<p className='mb-20 text-center text-4xl text-black'>人気商品</p>
-			<div className='grid md:grid-cols-3 gap-5' >
-				{products.length ? products.map((p, i) => {
-					return (
-						<a href={'/products/' + p.id} className='bg-black hover:opacity-60' >
-							<img src={imageSrc(base64Images[p.base64Images_idx])} alt='goods' className='aspect-video sm:aspect-square object-cover' />
-						</a>
-					)
-				}):''}
-			</div>
+			<ProductsIndex products={products} base64Images={base64Images} />
 		</div>
 	);
 };

@@ -40,13 +40,10 @@ const Cart = () => {
 	const handleTrash = (e, i) => {
 		e.preventDefault();
 		const cartListData = cart;
-		const base64ImagesData = base64Images;
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
 		cartListData.splice(i, 1);
-		base64ImagesData.splice(i, 1);
 		cartStorage.splice(i, 1);
 		setCart([...cartListData]);
-		setBase64Images([...base64ImagesData]);
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
 	}
 

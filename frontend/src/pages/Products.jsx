@@ -1,17 +1,26 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from "react-error-boundary";
-import { getIndexBase64Images, getProducts, imageSrc } from '../functions';
+import { ProductsIndex } from '../components';
+import { categoryList } from '../data';
+import { getIndexBase64Images, getProducts } from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
 
 const Products = () => {
 	const [products, setProducts] = useState([]);
 	const [base64Images, setBase64Images] = useState([]);
+	const [category, setCategory] = useState('');
 	const { showBoundary } = useErrorBoundary();
-	const context = useContext(LoadingContext);
+	const loading_context = useContext(LoadingContext);
+
+	const handleCategoryChange = (e) => {
+		setCategory(e.target.value);
+	};
 
 	useEffect(() => {
+		if (!localStorage.getItem('cart'))
+			localStorage.setItem('cart', JSON.stringify([]));
 		const getData = async () => {
-			context.setLoading(true);
+			loading_context.setLoading(true);
 
 			var productsData;
 			var base64ImagesData;
@@ -27,7 +36,7 @@ const Products = () => {
 			}
 			setProducts(productsData);
 			setBase64Images(base64ImagesData);
-			context.setLoading(false);
+			loading_context.setLoading(false);
 		}
 		getData();
 	}, []);
@@ -35,21 +44,21 @@ const Products = () => {
 	return (
 		<div className='my-16'>
 			<p className='py-20 sm:py-40 text-center text-2xl sm:text-4xl bg-amber-800 text-white'>商品一覧</p>
-			<ul className='w-3/4 mx-auto my-20 grid sm:grid-cols-3 gap-4' >{
-				products.length ? products.map((p, i) => {
-					return (
-						<li key={i} className='bg-stone-200 hover:opacity-60'>
-							<a href={'/products/' + p.id} className='aspect-square' >
-								<img
-									src={imageSrc(base64Images[p.base64Images_idx])}
-									alt='goods'
-									className='aspect-video object-cover' />
-								<p className='p-2 text-sm font-mono' >{p.name}</p>
-							</a>
-						</li>
-					);
-				}):''
-			}</ul>
+			<div className='my-20 w-3/4 mx-auto'>
+				<div className='mb-8 flex flex-row-reverse'>
+					<select
+						onChange={handleCategoryChange}
+						name='category'
+						className='p-2 w-60 h-10 border rounded invalid:border-amber-600'
+						value={category}>
+						<option value=''>すべてのカテゴリー</option>
+						{categoryList.map((c, i) => {
+							return <option key={i} value={c}>{c}</option>
+						})}
+					</select>
+				</div>
+				<ProductsIndex products={products} category={category} base64Images={base64Images} />
+			</div>
 		</div>
 	);
 };

@@ -96,7 +96,7 @@ const Product = () => {
 
 			var productData;
 			try {
-				productData = await getProduct(productId);
+				productData = await getProduct(productId, true);
 			} catch (err) {
 				showBoundary(err);
 			}
