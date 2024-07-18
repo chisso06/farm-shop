@@ -713,9 +713,10 @@ app.get('/orders', (req, res) => {
 			shipping_fee,
 			total_amount,
 			status,
-			DATE_FORMAT(ordered_at, '%Y年%m月%d日 %h:%i') AS ordered_at,
+			DATE_FORMAT(ordered_at, '%Y年%m月%d日 %H:%i') AS ordered_at,
 			customer
-		FROM orders`,
+		FROM orders
+		ORDER BY ordered_at DESC`,
 		(err, results, fields) => {
 			if (err) {
 				console.log(err);
@@ -740,10 +741,11 @@ app.get('/orders/:id', (req, res) => {
 			shipping_fee,
 			total_amount,
 			status,
-			DATE_FORMAT(ordered_at, '%Y年%m月%d日 %h:%i') AS ordered_at,
+			DATE_FORMAT(ordered_at, '%Y年%m月%d日 %H:%i') AS ordered_at,
 			customer
 		FROM orders
-		WHERE id='${orderId}'`,
+		WHERE id='${orderId}'
+		ORDER BY ordered_at DESC`,
 		(err, results, fields) => {
 			if (err) {
 				console.log(err);
@@ -923,7 +925,7 @@ app.post('/create-checkout-session', async (req, res) => {
 		customer_email: customer.email,
 		line_items,
 		mode: 'payment',
-		expires_at: Math.trunc(Date.now() / 1000 + 30 * 60),
+		expires_at: Math.floor(Date.now() / 1000) + (60 * 30),
 		success_url: `${FRONTEND_ORIGIN}/order-completed?order_id=${orderId}`,
 		cancel_url: `${FRONTEND_ORIGIN}/cart`,
 	}).catch((err) => {
@@ -999,7 +1001,6 @@ app.post('/create-checkout-session', async (req, res) => {
 
 app.post('/stripe-webhook', async (req, res) => {
   const event = req.body;
-	const client_reference_id = event.data.object.client_reference_id;
 	const connectionPromise = await mysqlPromise.createConnection({
 		host: 'localhost',
 		user: 'miyu',
@@ -1007,31 +1008,27 @@ app.post('/stripe-webhook', async (req, res) => {
 		database: 'farm_shop',
 		// namedPlaceholders: true
 	});
+	const orderId = event.data.object.client_reference_id;
+	const sessionId = event.data.object.id;
 
   switch (event.type) {
-    case 'payment_intent.succeeded':
-			connection.query(`
-				UPDATE orders SET status='pending-shipping' WHERE id='${client_reference_id}'`,
-				(err, results, fields) => {
-					if (err)
-						console.log(err);
-						return res.status(500).json({ error: true, message: CONNECTION_ERROR });
-				}
-			);
-      break;
-    case 'checkout.session.expired':
+		case 'checkout.session.async_payment_failed':
+		case 'checkout.session.expired':
+			console.log(`Event type: [${event.type}]`);
+			console.log('orderId: ', orderId);
 			const [results] = await connectionPromise.query(`
-			SELECT * FROM orders WHERE id='${client_reference_id}'`)
+				SELECT * FROM orders
+				WHERE id='${orderId}' AND status='pending-payment'`)
 			.catch((err) => {
 				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			});
 			if (!results.length)
-				return res.status(200).json({received: true});
+				break ;
 
 			// 在庫を戻す
 			const [ordered_products] = await connectionPromise.query(`
-				SELECT * FROM ordered_products WHERE order_id='${client_reference_id}'`)
+				SELECT * FROM ordered_products WHERE order_id='${orderId}'`)
 			.catch((err) => {
 				console.log(err);
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
@@ -1051,7 +1048,7 @@ app.post('/stripe-webhook', async (req, res) => {
 			});
 			// レコード削除
 			connection.query(`
-			DELETE FROM orders WHERE id='${client_reference_id}'`,
+			DELETE FROM orders WHERE id='${orderId}'`,
 			(err, results, fields) => {
 				if (err) {
 					console.log(err);
@@ -1059,8 +1056,26 @@ app.post('/stripe-webhook', async (req, res) => {
 				}
 			});
       break;
+		case 'checkout.session.async_payment_succeeded':
+		case 'checkout.session.completed':
+			console.log(`Event type: [${event.type}]`);
+			console.log('orderId: ', orderId);
+			const session = await stripe.checkout.sessions.retrieve(sessionId);
+			if (session.payment_status === 'paid') {
+				connection.query(`
+					UPDATE orders SET status='pending-shipping'
+					WHERE id='${orderId}' AND status='pending-payment'`,
+					(err, results, fields) => {
+						if (err) {
+							console.log(err);
+							return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+						}
+					}
+				);
+			}
+			break ;
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      console.log(`Unhandled event type: [${event.type}]`);
   }
   res.status(200).json({received: true});
 });
