@@ -72,7 +72,6 @@ const AdminProduct = () => {
 				.catch((err) => showBoundary(err));
 			const image = {
 				id: 0,
-				order_of_images: images.length + 1,
 				product_id: productId,
 				base64Images_idx: base64Images.length,
 				imageFiles_idx: imageFiles.length,
@@ -103,8 +102,6 @@ const AdminProduct = () => {
 
 		const imageList = images;
 		if (imageList[i].added) {
-			base64Images.splice(imageList[i].base64Images_idx, 1);
-			imageFiles.splice(imageList[i].imageFiles_idx, 1);
 			imageList.splice(i, 1);
 		} else {
 			imageList[i].deleted = true;
@@ -139,7 +136,6 @@ const AdminProduct = () => {
 			return {
 				id: image.id,
 				product_id: image.product_id,
-				order_of_images: image.order_of_images,
 				base64Images_idx: image.base64Images_idx
 			}
 		});
@@ -170,7 +166,7 @@ const AdminProduct = () => {
 			var imagesData;
 			var base64ImagesData;
 			try {
-				productData = await getProduct(productId);
+				productData = await getProduct(productId, false);
 			} catch (err) {
 				showBoundary(err);
 			}

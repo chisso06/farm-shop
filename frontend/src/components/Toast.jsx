@@ -36,8 +36,8 @@ const Toast = () => {
 					</span>
 				</div>
 			</div>
-		)
+		);
 	}
-}
+};
 
 export default Toast;

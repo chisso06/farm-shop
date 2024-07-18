@@ -1,11 +1,11 @@
 import axios from "axios";
 
 const uploadImages = async ({ table, images, imageFiles }) => {
-	if (imageFiles.length) {
+	if (images.length) {
 		const formData = new FormData();
-		imageFiles.map((file, i) => {
-			const image = images.find((data) => data.imageFiles_idx === i);
-			if (!image)
+		images.map((image, i) => {
+			const file = imageFiles[image.imageFiles_idx];
+			if (!file)
 				return ;
 			const blob = file.slice(0, file.size, file.type);
 			const renamedFile = new File([blob], image.id +'.jpg', {type: file.type});

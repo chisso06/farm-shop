@@ -45,7 +45,7 @@ const Blogs = () => {
 									alt='goods'
 									className='aspect-video object-cover rounded' />
 								<div className='p-2 my-2'>
-									<p className='font-bold' >
+									<p>
 										{blog.title && blog.title.length <= 14 ? blog.title : blog.title.substring(0, 13) + '…'}
 									</p>
 									<p className='text-sm font-mono text-stone-400'>{blog.created_at}</p>

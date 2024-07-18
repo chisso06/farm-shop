@@ -13,6 +13,7 @@ const INVALID_METHOD_ID_ERROR = "Error: invalid method id";
 const INVALID_IMAGE_ID_ERROR = "Error: invalid image id";
 const INVALID_NEWS_ID_ERROR = "Error: invalid news id";
 const INVALID_SHIPPING_ID_ERROR = "Error: invalid shipping id";
+const INVALID_PRODUCT_STATUS_ERROR = "Error: invalid product status"
 const NO_STOCK_ERROR = "Error: no stock";
 
 // config
@@ -118,6 +119,12 @@ app.get('/products', (req, res) => {
 	const category = req.query.category;
 	const popular_status = Number(req.query.popular_status);
 	const public_status = Number(req.query.public_status);
+
+	if (isNaN(popular_status) || isNaN(public_status)) {
+		console.error(INVALID_PRODUCT_STATUS_ERROR);
+		return res.status(400).json({ message: INVALID_PRODUCT_STATUS_ERROR });
+	}
+
 	const sql_prompt = `
 		SELECT products.*, images.id AS image_id
 		FROM products
@@ -164,17 +171,24 @@ app.get('/products', (req, res) => {
 
 app.get('/products/:id', (req, res) => {
 	const productId = Number(req.params.id);
+	const public_status = Number(req.query.public_status);
 
 	if (isNaN(productId) || productId <= 0) {
 		console.error(INVALID_PRODUCT_ID_ERROR);
 		return res.status(400).json({ message: INVALID_PRODUCT_ID_ERROR });
+	} else if (isNaN(public_status)) {
+		console.error(INVALID_PRODUCT_STATUS_ERROR);
+		return res.status(400).json({ message: INVALID_PRODUCT_STATUS_ERROR });
 	}
 
   connection.query(
     `SELECT products.*, images.id AS image_id
 		FROM products
 		LEFT JOIN images ON products.id=images.product_id
-		WHERE products.id=${productId} AND (images.id IS NULL OR order_of_images=1)`,
+		WHERE
+			${public_status ? `public_status>0 AND` : ''}
+			products.id=${productId} AND
+			(images.id IS NULL OR order_of_images=1)`,
 		(err, results, fields) => {
 			if (err) {
 				console.log(err);
@@ -234,7 +248,7 @@ app.post('/products', async (req, res) => {
 		);
 	});
 
-	const images = await Promise.all(imagesData.map(async (data) => {
+	const images = await Promise.all(imagesData.map(async (data, i) => {
 		if (data.deleted) {
 			fs.unlink(`backend/public/products/${data.id}.jpg`,
 				(err) => {
@@ -245,7 +259,7 @@ app.post('/products', async (req, res) => {
 		} else {
 			const image = {
 				id: data.id,
-				order_of_images: data.order_of_images,
+				order_of_images: i + 1,
 				product_id: productId,
 			};
 			if (!image.id)
@@ -329,7 +343,7 @@ app.post('/products/:id', async (req, res) => {
 			}
 		);
 	});
-	const images = await Promise.all(imagesData.map(async (data) => {
+	const images = await Promise.all(imagesData.map(async (data, i) => {
 		if (data.deleted) {
 			fs.unlink(`backend/public/products/${data.id}.jpg`,
 				(err) => {
@@ -340,7 +354,7 @@ app.post('/products/:id', async (req, res) => {
 		} else {
 			const image = {
 				id: data.id,
-				order_of_images: data.order_of_images,
+				order_of_images: i + 1,
 				product_id: product.id,
 			};
 			if (!image.id)
