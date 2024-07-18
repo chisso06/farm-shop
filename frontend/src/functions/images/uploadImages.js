@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const uploadImages = async ({images, imageFiles}) => {
+const uploadImages = async ({ table, images, imageFiles }) => {
 	if (imageFiles.length) {
 		const formData = new FormData();
 		imageFiles.map((file, i) => {
@@ -12,7 +12,7 @@ const uploadImages = async ({images, imageFiles}) => {
 			formData.append('files[]', renamedFile);
 		});
 		return await axios.post(
-			`/backend/upload/products`,
+			`/backend/upload/${table}`,
 			formData,
 			{headers: {'content-type': 'multipart/form-data'}})
 			.catch((err) => {

@@ -1,5 +1,7 @@
 export { default as About } from './About';
 export { default as AdminPage } from './AdminPage';
+export { default as Blog } from './Blog';
+export { default as Blogs } from './Blogs';
 export { default as Cart } from './Cart';
 export { default as ErrorPage } from './ErrorPage';
 export { default as FAQ } from './FAQ';
@@ -9,6 +11,8 @@ export { default as Product } from './Product';
 export { default as Products } from './Products';
 export { default as Test } from './Test';
 export { default as Top } from './Top';
+export { default as AdminBlog } from './admin/AdminBlog';
+export { default as AdminBlogs } from './admin/AdminBlogs';
 export { default as AdminNews } from './admin/AdminNews';
 export { default as AdminOrder } from './admin/AdminOrder';
 export { default as AdminOrders } from './admin/AdminOrders';

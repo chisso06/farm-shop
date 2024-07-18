@@ -186,7 +186,7 @@ const AdminProduct = () => {
 				showBoundary(err);
 			}
 			try {
-				base64ImagesData = await getBase64Images(imagesData);
+				base64ImagesData = await getBase64Images({ table: 'products', images: imagesData });
 			} catch (err) {
 				showBoundary(err);
 			}
@@ -240,7 +240,7 @@ const AdminProduct = () => {
 				<div className='mt-4'>
 					<label>商品写真</label>
 					<div className='p-10 flex bg-stone-100 rounded'>
-						{images.length ? images.map((image, i) => {return !image.deleted ? (
+						{ images.length ? images.map((image, i) => { return !image.deleted ? (
 							<div
 								key={i}
 								onClick={(e) => handleImageClick(e, i)}
@@ -251,7 +251,7 @@ const AdminProduct = () => {
 									className='w-24 aspect-square object-contain bg-white rounded group-hover:opacity-50'/>
 								<Icon icon="trash" className='absolute w-10 h-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40' />
 							</div>
-						):''}):''}
+						) : '' }) : '' }
 						<label className='w-24 h-24 flex items-center bg-white rounded'>
 							<p className='w-full text-stone-500 text-4xl font-bold text-center cursor-pointer'>+</p>
 							<input

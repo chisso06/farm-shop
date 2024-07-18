@@ -63,7 +63,7 @@ const Cart = () => {
 
 			var base64ImagesData;
 			try {
-				base64ImagesData = await getIndexBase64Images(cartListData);
+				base64ImagesData = await getIndexBase64Images({ table: 'products', objects: cartListData });
 			} catch (err) {
 				showBoundary(err);
 			}

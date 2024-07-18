@@ -3,7 +3,14 @@ import { useErrorBoundary } from 'react-error-boundary';
 import { useParams } from 'react-router-dom';
 import { Icon } from '../components';
 import { areaList } from '../data';
-import { getBase64Images, getProduct, getProductImages, getShippingFees, getShippingMethod, imageSrc } from '../functions';
+import {
+	getBase64Images,
+	getProduct,
+	getProductImages,
+	getShippingFees,
+	getShippingMethod,
+	imageSrc
+} from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
 import { ToastContext } from '../functions/context/ToastFunc';
 
@@ -102,7 +109,7 @@ const Product = () => {
 					showBoundary(err);
 				}
 				try {
-					base64ImagesData = await getBase64Images(imagesData);
+					base64ImagesData = await getBase64Images({ table: 'products', images: imagesData });
 				} catch (err) {
 					showBoundary(err);
 				}

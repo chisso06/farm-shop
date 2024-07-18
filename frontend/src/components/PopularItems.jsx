@@ -21,7 +21,7 @@ const PopularItems = () => {
 				showBoundary(err);
 			}
 			try {
-				base64ImagesData = await getIndexBase64Images(productsData);
+				base64ImagesData = await getIndexBase64Images({ table: 'products', objects: productsData });
 			} catch (err) {
 				showBoundary(err);
 			}

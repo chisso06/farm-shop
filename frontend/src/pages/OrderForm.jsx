@@ -35,7 +35,7 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 				context.setLoading(true);
 				var base64ImagesData;
 				try {
-					base64ImagesData = await getIndexBase64Images(cart);
+					base64ImagesData = await getIndexBase64Images({ table: 'products', objects: cart });
 				} catch (err) {
 					showBoundary(err);
 				}
