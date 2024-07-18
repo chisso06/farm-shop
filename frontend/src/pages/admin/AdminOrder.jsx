@@ -45,7 +45,7 @@ const AdminOrder = () => {
 		context.setLoading(true);
 
 		if (orderStatus !== 'canceled'
-			|| window.confirm('この注文をキャンセルしますか？\nこの操作は取り消せません')) {
+			|| window.confirm('この注文をキャンセルしますか？\n注文をキャンセルしても在庫は戻りません\n返金処理が必要な場合は、Stripeの管理画面より行なってください\nこの操作は取り消せません')) {
 			const newOrder = {...order, status: orderStatus};
 			try {
 				await updateOrder(newOrder);
@@ -162,7 +162,7 @@ const AdminOrder = () => {
 					<p className='w-36 font-mono font-bold'>合計金額</p>
 					<p>
 						¥{order.total_amount}
-						<span className='text-sm'>（送料¥{order.shipping_fee}を含む）</span>
+						<span className='text-sm'>（+送料¥{order.shipping_fee}）</span>
 					</p>
 				</li>
 				<li className='py-2 flex border-b'>

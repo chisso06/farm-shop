@@ -6,7 +6,7 @@ CREATE TABLE orders (
   shipping_fee INT NOT NULL,
   total_amount INT NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'pending-payment',
-  ordered_at DATE NOT NULL DEFAULT (CURRENT_DATE),
+  ordered_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   customer JSON NOT NULL
 );
 
