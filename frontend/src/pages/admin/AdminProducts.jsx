@@ -24,7 +24,7 @@ const AdminProducts = () => {
 			var base64ImagesData;
 
 			try {
-				productsData = await getProducts();
+				productsData = await getProducts(false, false);
 			} catch (err) {
 				showBoundary(err);
 			}

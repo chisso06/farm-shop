@@ -16,7 +16,7 @@ const PopularItems = () => {
 			var productsData;
 			var base64ImagesData;
 			try {
-				productsData = await getProducts(true);
+				productsData = await getProducts(true, true);
 			} catch (err) {
 				showBoundary(err);
 			}

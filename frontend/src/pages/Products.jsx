@@ -16,7 +16,7 @@ const Products = () => {
 			var productsData;
 			var base64ImagesData;
 			try {
-				productsData = await getProducts();
+				productsData = await getProducts(false, true);
 			} catch (err) {
 				showBoundary(err);
 			}

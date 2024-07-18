@@ -92,6 +92,7 @@ app.post('/upload/products', (req, res) => {
 app.get('/products', (req, res) => {
 	const category = req.query.category;
 	const popular_status = Number(req.query.popular_status);
+	const public_status = Number(req.query.public_status);
 	const sql_prompt = `
 		SELECT products.*, images.id AS image_id
 		FROM products
@@ -99,7 +100,7 @@ app.get('/products', (req, res) => {
 		WHERE
 			${category ? `category='${category}' AND` : ''}
 			${popular_status ? `popular_status=1 AND`: ''}
-			public_status>0 AND
+			${public_status ? `public_status>0 AND` : ''}
 			(images.id IS NULL OR order_of_images=1)
 		ORDER BY public_status ASC
 		`;
@@ -1048,13 +1049,13 @@ app.post('/stripe-webhook', async (req, res) => {
 			});
 			// レコード削除
 			connection.query(`
-			DELETE FROM orders WHERE id='${orderId}'`,
-			(err, results, fields) => {
-				if (err) {
-					console.log(err);
-					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
-				}
-			});
+				DELETE FROM orders WHERE id='${orderId}'`,
+				(err, results, fields) => {
+					if (err) {
+						console.log(err);
+						return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+					}
+				});
       break;
 		case 'checkout.session.async_payment_succeeded':
 		case 'checkout.session.completed':
