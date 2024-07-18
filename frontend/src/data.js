@@ -35,10 +35,10 @@ export const PagesList = [
 		pathname: '/about',
 		title: 'ABOUT',
 	},
-	// {
-	// 	pathname: '/blog',
-	// 	title: 'BLOG',
-	// },
+	{
+		pathname: '/blogs',
+		title: 'BLOG',
+	},
 	{
 		pathname: '/products',
 		title: '商品一覧',
@@ -65,6 +65,10 @@ export const adminPagesList = [
 	{
 		pathname: '/admin-shipping-methods',
 		title: '送料管理',
+	},
+	{
+		pathname: '/admin-blogs',
+		title: 'ブログ管理',
 	},
 	{
 		pathname: '/admin-news',

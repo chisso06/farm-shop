@@ -7,6 +7,7 @@
 // error messages
 const CONNECTION_ERROR = "Error: connection error";
 const INVALID_PRODUCT_ID_ERROR = "Error: invalid product id";
+const INVALID_BLOG_ID_ERROR = "Error: invalid blog id";
 const INVALID_ORDER_ID_ERROR = "Error: invalid order id";
 const INVALID_METHOD_ID_ERROR = "Error: invalid method id";
 const INVALID_IMAGE_ID_ERROR = "Error: invalid image id";
@@ -69,6 +70,30 @@ app.get('/', (req, res) => {
 
 app.get('/test', (req, res) => {
 	res.status(200).json({ message: "Hello World!" });
+});
+
+app.get('/images/:id', (req, res) => {
+	const imageId = Number(req.params.id);
+	const tableName = req.query.table;
+
+	if (imageId <= 0) {
+		console.error(INVALID_IMAGE_ID_ERROR);
+		return res.status(400).json({ message: INVALID_IMAGE_ID_ERROR });
+	} else if (tableName !== 'products' && tableName !== 'blogs') {
+		console.error("Error: invalid table name");
+		return res.status(400).json({ message: "Error: invalid table name" });
+	}
+
+	fs.readFile(
+		`backend/public/${tableName}/${imageId}.jpg`,
+		'base64',
+		(err, data) => {
+			if (err)
+				console.error("Error: could not read image file");
+			res.set('Content-Type', 'image/jpeg');
+			res.status(200).json(data);
+		}
+	);
 });
 
 const productsStorage = multer.diskStorage({
@@ -212,7 +237,10 @@ app.post('/products', async (req, res) => {
 	const images = await Promise.all(imagesData.map(async (data) => {
 		if (data.deleted) {
 			fs.unlink(`backend/public/products/${data.id}.jpg`,
-				(err) => {console.error("Error: could not unlink image file")});
+				(err) => {
+					if (err)
+						console.error("Error: could not unlink image file")
+				});
 			return (data);
 		} else {
 			const image = {
@@ -304,7 +332,10 @@ app.post('/products/:id', async (req, res) => {
 	const images = await Promise.all(imagesData.map(async (data) => {
 		if (data.deleted) {
 			fs.unlink(`backend/public/products/${data.id}.jpg`,
-				(err) => {console.error("Error: could not unlink image file")});
+				(err) => {
+					if (err)
+						console.error("Error: could not unlink image file");
+				});
 			return (data);
 		} else {
 			const image = {
@@ -360,7 +391,10 @@ app.delete('/products/:id', async (req, res) => {
 				}
 				results.map((image) => {
 					fs.unlink(`backend/public/products/${image.id}.jpg`,
-						(err) => {console.error("Error: could not unlink image file")});
+						(err) => {
+							if (err)
+								console.error("Error: could not unlink image file");
+						});
 				});
 				resolve(results);
 			}
@@ -404,21 +438,170 @@ app.get('/products/:id/images', (req, res) => {
   );
 });
 
-app.get('/images/:id', (req, res) => {
-	const imageId = Number(req.params.id);
+const blogsStorage = multer.diskStorage({
+	destination: (req, file, cb) => cb(null, 'backend/public/blogs'),
+	filename: (req, file, cb) => {cb(null, file.originalname)}
+});
+const uploadBlogs = multer({ storage: blogsStorage }).array('files[]', 10);
+app.post('/upload/blogs', (req, res) => {
+	uploadBlogs(req, res, (err) => {
+		if (err) {
+			console.log("Error: Can't upload files");
+			return res.status(500).json({error: true, message: "Error: Can't upload files"});
+		} else {
+			console.log('body:', req.body);
+			console.log('files:', req.files);
+			res.status(200).json({ message: "uploaded blog images" });
+		}
+	})
+});
 
-	if (imageId <= 0) {
-		console.error(INVALID_IMAGE_ID_ERROR);
-		return res.status(400).json({ message: INVALID_IMAGE_ID_ERROR });
+app.get('/blogs', (req, res) => {
+	const sql_prompt = `
+		SELECT
+			id,
+			title,
+			content,
+			id AS image_id,
+			DATE_FORMAT(created_at, '%Y年%m月%d日 %H:%i') AS created_at,
+			DATE_FORMAT(updated_at, '%Y年%m月%d日 %H:%i') AS updated_at
+		FROM blogs
+		ORDER BY created_at DESC`;
+
+  connection.query(
+		sql_prompt,
+    (err, results, fields) => {
+      if (err) {
+				console.log(err);
+        return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json(results);
+    }
+  );
+});
+
+// app.get('/blogs/images', (req, res) => {
+// 	const sql_prompt = `
+// 		SELECT * FROM images
+// 		WHERE order_of_images=1
+// 	`;
+
+//   connection.query(
+// 		sql_prompt,
+//     (err, results, fields) => {
+//       if (err)
+// 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+// 			res.status(200).json(results);
+//     }
+//   );
+// });
+
+app.get('/blogs/:id', (req, res) => {
+	const blogId = Number(req.params.id);
+
+	if (isNaN(blogId) || blogId <= 0) {
+		console.error(INVALID_BLOG_ID_ERROR);
+		return res.status(400).json({ message: INVALID_BLOG_ID_ERROR });
 	}
-	fs.readFile(
-		`backend/public/products/${imageId}.jpg`,
-		'base64',
-		(err, data) => {
+
+  connection.query(`
+		SELECT
+			id,
+			title,
+			content,
+			id AS image_id,
+			DATE_FORMAT(created_at, '%Y年%m月%d日 %H:%i') AS created_at,
+			DATE_FORMAT(updated_at, '%Y年%m月%d日 %H:%i') AS updated_at
+		FROM blogs
+		WHERE blogs.id=${blogId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log(err);
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json(results[0]);
+		}
+  );
+});
+
+app.post('/blogs', async (req, res) => {
+	const blogData = req.body;
+	const blog = {
+		title: blogData.title,
+		content: blogData.content,
+	};
+
+	await new Promise((resolve) => {
+		connection.query(
+			`INSERT INTO blogs SET ?`,
+			blog,
+			(err, results, fields) => {
+				if (err || !results.insertId) {
+					console.error("Error: could not create blog")
+					return res.status(500).json({ error: true, message: "Error: could not create blog" });
+				}
+				blog.id = results.insertId;
+				resolve(results.insertId);
+			}
+		);
+	});
+
+	return res.status(200).json({ blog });
+});
+
+app.post('/blogs/:id', async (req, res) => {
+	const blogId = Number(req.params.id);
+	const blogData = req.body;
+	const blog = {
+		id: blogData.id,
+		title: blogData.title,
+		content: blogData.content
+	};
+	if (isNaN(blogId) || blogId !== blog.id) {
+		console.error(INVALID_BLOG_ID_ERROR);
+		return res.status(400).json({ message: INVALID_BLOG_ID_ERROR });
+	}
+
+	await new Promise((resolve) => {
+		connection.query(
+			`UPDATE blogs SET ?, updated_at=NOW() WHERE id=${blog.id}`,
+			blog,
+			(err, results, fields) => {
+				if (err) {
+					console.log(err);
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+				}
+				resolve(blog.id);
+			}
+		);
+	});
+	return res.status(200).json({ blog });
+});
+
+app.delete('/blogs/:id', async (req, res) => {
+	const blogId = Number(req.params.id);
+
+	if (isNaN(blogId) || blogId <= 0) {
+		console.error(INVALID_BLOG_ID_ERROR);
+		return res.status(400).json({ message: INVALID_BLOG_ID_ERROR });
+	}
+
+	// 画像を削除
+	fs.unlink(`backend/public/blogs/${blogId}.jpg`,
+		(err) => {
 			if (err)
-				console.error("Error: could not read image file");
-			res.set('Content-Type', 'image/jpeg');
-			res.status(200).json(data);
+				console.error("Error: could not unlink image file");
+		});
+
+	// blogs(db)を削除
+	connection.query(
+		`DELETE FROM blogs WHERE id=${blogId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log(err);
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json({ message: `deleted blog ${blogId}` });
 		}
 	);
 });
@@ -545,11 +728,17 @@ app.post('/shipping', async(req, res) => {
 					if (err || !results.insertId) {
 						connection.query(
 							`DELETE FROM shipping_fees WHERE method_id=${methodId}`,
-							(err) => {console.error("Error: could not delete shipping fees")}
+							(err) => {
+								if (err)
+									console.error("Error: could not delete shipping fees");
+							}
 						);
 						connection.query(
 							`DELETE FROM shipping_methods WHERE id=${methodId}`,
-							(err) => {console.error("Error: could not delete shipping method")}
+							(err) => {
+								if (err)
+									console.error("Error: could not delete shipping method");
+							}
 						);
 						console.error("Error: could not create shipping_fee");
 						return res.status(500).json({ error: true, message: "Error: could not create shipping_fee" });
