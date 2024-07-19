@@ -19,6 +19,8 @@ import {
   AdminPage,
   AdminProduct,
   AdminProducts,
+  AdminReview,
+  AdminReviews,
   AdminShippingMethod,
   AdminShippingMethods,
   Blog,
@@ -30,6 +32,7 @@ import {
   OrderForm,
   Product,
   Products,
+  ReviewForm,
   Test,
   Top
 } from './pages';
@@ -83,6 +86,10 @@ const App = () => {
       element: <ErrorBoundary fallback={<ErrorPage />}><OrderCompleted /></ErrorBoundary>
     },
     {
+      path: '/reviews/:ordered_product_id',
+      element: <ErrorBoundary fallback={<ErrorPage />}><ReviewForm /></ErrorBoundary>
+    },
+    {
       path: '/admin/',
       element: <ErrorBoundary fallback={<ErrorPage />}><AdminPage /></ErrorBoundary>,
       children: [
@@ -113,6 +120,14 @@ const App = () => {
         {
           path: 'admin-blogs/:blog_id',
           element: <AdminBlog />,
+        },
+        {
+          path: 'admin-reviews',
+          element: <AdminReviews />,
+        },
+        {
+          path: 'admin-reviews/:review_id',
+          element: <AdminReview />,
         },
         {
           path: 'admin-shipping-methods',

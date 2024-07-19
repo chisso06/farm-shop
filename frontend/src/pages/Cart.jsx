@@ -56,6 +56,11 @@ const Cart = () => {
 				cartListData = await createCart(setCart);
 			} catch (err) {
 				showBoundary(err);
+				return ;
+			}
+			if (!cartListData) {
+				loading_context.setLoading(false);
+				return ;
 			}
 
 			var base64ImagesData;
@@ -63,6 +68,7 @@ const Cart = () => {
 				base64ImagesData = await getIndexBase64Images({ table: 'products', objects: cartListData });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setBase64Images(base64ImagesData);
 

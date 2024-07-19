@@ -9,10 +9,12 @@ const CONNECTION_ERROR = "Error: connection error";
 const INVALID_PRODUCT_ID_ERROR = "Error: invalid product id";
 const INVALID_BLOG_ID_ERROR = "Error: invalid blog id";
 const INVALID_ORDER_ID_ERROR = "Error: invalid order id";
+const INVALID_ORDERED_PRODUCT_ID_ERROR = "Error: invalid ordered product id";
 const INVALID_METHOD_ID_ERROR = "Error: invalid method id";
 const INVALID_IMAGE_ID_ERROR = "Error: invalid image id";
 const INVALID_NEWS_ID_ERROR = "Error: invalid news id";
 const INVALID_SHIPPING_ID_ERROR = "Error: invalid shipping id";
+const INVALID_REVIEW_ID_ERROR = "Error: invalid review id";
 const INVALID_PRODUCT_STATUS_ERROR = "Error: invalid product status"
 const NO_STOCK_ERROR = "Error: no stock";
 
@@ -65,37 +67,15 @@ app.use((req, res, next) => {
 });
 app.use(express.urlencoded({extended:true}))
 
+
 app.get('/', (req, res) => {
 	res.send('Hello World!');
 });
 
-app.get('/test', (req, res) => {
-	res.status(200).json({ message: "Hello World!" });
-});
 
-app.get('/images/:id', (req, res) => {
-	const imageId = Number(req.params.id);
-	const tableName = req.query.table;
-
-	if (imageId <= 0) {
-		console.error(INVALID_IMAGE_ID_ERROR);
-		return res.status(400).json({ message: INVALID_IMAGE_ID_ERROR });
-	} else if (tableName !== 'products' && tableName !== 'blogs') {
-		console.error("Error: invalid table name");
-		return res.status(400).json({ message: "Error: invalid table name" });
-	}
-
-	fs.readFile(
-		`backend/public/${tableName}/${imageId}.jpg`,
-		'base64',
-		(err, data) => {
-			if (err)
-				console.error("Error: could not read image file");
-			res.set('Content-Type', 'image/jpeg');
-			res.status(200).json(data);
-		}
-	);
-});
+/* ==========
+	product
+========== */
 
 const productsStorage = multer.diskStorage({
 	destination: (req, file, cb) => cb(null, 'backend/public/products'),
@@ -452,6 +432,11 @@ app.get('/products/:id/images', (req, res) => {
   );
 });
 
+
+/* ==========
+	blog
+========== */
+
 const blogsStorage = multer.diskStorage({
 	destination: (req, file, cb) => cb(null, 'backend/public/blogs'),
 	filename: (req, file, cb) => {cb(null, file.originalname)}
@@ -620,6 +605,142 @@ app.delete('/blogs/:id', async (req, res) => {
 	);
 });
 
+
+/* ==========
+	review
+========== */
+
+app.get('/reviews', (req, res) => {
+	const productId = Number(req.query.product_id);
+	const public_status = Number(req.query.public_status);
+
+	if (isNaN(productId) || productId < 0) {
+		console.error(INVALID_PRODUCT_ID_ERROR);
+		return res.status(400).json({ message: INVALID_PRODUCT_ID_ERROR });
+	} else if (isNaN(public_status)) {
+		console.error(INVALID_PRODUCT_STATUS_ERROR);
+		return res.status(400).json({ message: INVALID_PRODUCT_STATUS_ERROR });
+	}
+
+	const sql_prompt = `
+		SELECT
+			id,
+			product_id,
+			order_id,
+			score,
+			title,
+			nickname,
+			content,
+			public_status,
+			DATE_FORMAT(created_at, '%Y年%m月%d日') AS created_at
+		FROM reviews
+		${public_status ? `WHERE public_status='${public_status}' AND` : ''}
+		${productId ? `product_id=${productId}` : ''}
+		ORDER BY created_at DESC`;
+
+  connection.query(
+		sql_prompt,
+    (err, results, fields) => {
+      if (err) {
+				console.log(err);
+        return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json(results);
+    }
+  );
+});
+
+app.get('/reviews/:id', (req, res) => {
+	const reviewId = Number(req.params.id);
+
+	if (isNaN(reviewId) || reviewId <= 0) {
+		console.error(INVALID_REVIEW_ID_ERROR);
+		return res.status(400).json({ message: INVALID_REVIEW_ID_ERROR });
+	}
+
+  connection.query(`
+		SELECT
+			id,
+			product_id,
+			order_id,
+			score,
+			title,
+			nickname,
+			content,
+			public_status,
+			created_at,
+			DATE_FORMAT(created_at, '%Y年%m月%d日') AS created_at
+		FROM reviews
+		WHERE id=${reviewId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log(err);
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json(results[0]);
+		}
+  );
+});
+
+app.post('/reviews', async (req, res) => {
+	const reviewData = req.body;
+	const review = {
+		id: reviewData.id,
+		product_id: reviewData.product_id,
+		order_id: reviewData.order_id,
+		score: reviewData.score,
+		title: reviewData.title,
+		nickname: reviewData.nickname,
+		content: reviewData.content,
+	};
+
+	await new Promise((resolve) => {
+		connection.query(
+			`INSERT INTO reviews SET ?`,
+			review,
+			(err, results, fields) => {
+				if (err || !results.insertId) {
+					console.error(err)
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+				}
+				review.id = results.insertId;
+				resolve(results.insertId);
+			}
+		);
+	});
+
+	return res.status(200).json({ review });
+});
+
+app.post('/reviews/:id', async (req, res) => {
+	const reviewId = Number(req.params.id);
+	const reviewData = req.body;
+
+	if (isNaN(reviewId)) {
+		console.error(INVALID_REVIEW_ID_ERROR);
+		return res.status(400).json({ message: INVALID_REVIEW_ID_ERROR });
+	}
+
+	await new Promise((resolve) => {
+		connection.query(
+			`UPDATE reviews SET public_status=${reviewData.public_status} WHERE id=${reviewId}`,
+			(err, results, fields) => {
+				if (err) {
+					console.log(err);
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+				}
+				resolve(reviewId);
+			}
+		);
+	});
+	return res.status(200).json({ message: "updated review" });
+});
+
+
+/* ==========
+	news
+========== */
+
 app.get('/news', (req, res) => {
 	connection.query(`
 		SELECT id, DATE_FORMAT(date, '%Y年%m月%d日') AS date, content
@@ -665,6 +786,11 @@ app.delete('/news/:id', (req, res) => {
 			res.status(200).json({ message: `deleted news id:${newsId}` });
 		});
 });
+
+
+/* ==========
+	shipping
+========== */
 
 app.get('/shipping', (req, res) => {
 	connection.query(
@@ -909,6 +1035,11 @@ app.get('/shipping/:id/fee', (req, res) => {
 	});
 });
 
+
+/* ==========
+	order
+========== */
+
 app.get('/orders', (req, res) => {
   connection.query(
     `SELECT
@@ -982,8 +1113,8 @@ app.post('/orders/:id', (req, res) => {
 	);
 });
 
-app.get('/ordered_products/:order_id', (req, res) => {
-	const orderId = req.params.order_id;
+app.get('/ordered_products', (req, res) => {
+	const orderId = req.query.order_id;
 
 	if (!orderId) {
 		console.error(INVALID_ORDER_ID_ERROR);
@@ -1000,6 +1131,30 @@ app.get('/ordered_products/:order_id', (req, res) => {
 		}
   );
 });
+
+app.get('/ordered_products/:id', (req, res) => {
+	const orderedProductId = Number(req.params.id);
+
+	if (isNaN(orderedProductId) || orderedProductId <= 0) {
+		console.error(INVALID_ORDERED_PRODUCT_ID_ERROR);
+		return res.status(400).json({ message: INVALID_ORDERED_PRODUCT_ID_ERROR });
+	}
+  connection.query(
+    `SELECT * FROM ordered_products WHERE id='${orderedProductId}'`,
+		(err, results, fields) => {
+			if (err) {
+				console.log(err);
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json(results[0]);
+		}
+  );
+});
+
+
+/* ==========
+	stripe
+========== */
 
 app.post('/create-checkout-session', async (req, res) => {
 	const orderId = crypto.randomUUID().substring(0, 8).toUpperCase();;
@@ -1283,6 +1438,40 @@ app.post('/stripe-webhook', async (req, res) => {
   }
   res.status(200).json({received: true});
 });
+
+
+/* ==========
+	others
+========== */
+
+app.get('/test', (req, res) => {
+	res.status(200).json({ message: "Hello World!" });
+});
+
+app.get('/images/:id', (req, res) => {
+	const imageId = Number(req.params.id);
+	const tableName = req.query.table;
+
+	if (imageId <= 0) {
+		console.error(INVALID_IMAGE_ID_ERROR);
+		return res.status(400).json({ message: INVALID_IMAGE_ID_ERROR });
+	} else if (tableName !== 'products' && tableName !== 'blogs') {
+		console.error("Error: invalid table name");
+		return res.status(400).json({ message: "Error: invalid table name" });
+	}
+
+	fs.readFile(
+		`backend/public/${tableName}/${imageId}.jpg`,
+		'base64',
+		(err, data) => {
+			if (err)
+				console.error("Error: could not read image file");
+			res.set('Content-Type', 'image/jpeg');
+			res.status(200).json(data);
+		}
+	);
+});
+
 
 app.all("*", (req, res) => {
 	console.log('[backend]404 ');

@@ -27,11 +27,18 @@ const AdminProducts = () => {
 				productsData = await getProducts(false, false);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
+			if (!productsData) {
+				context.setLoading(false);
+				return ;
+			}
+
 			try {
 				base64ImagesData = await getIndexBase64Images({ table: 'products', objects: productsData });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setProducts(productsData);
 			setBase64Images(base64ImagesData);

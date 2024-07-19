@@ -144,6 +144,7 @@ const AdminShippingMethod = () => {
 				res = await updateShipping({ method: shippingMethod, fees: shippingFees });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('配送方法を更新しました');
 		} else {
@@ -151,6 +152,7 @@ const AdminShippingMethod = () => {
 				res = await createShipping({ method: shippingMethod, fees: shippingFees });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('配送方法を追加しました');
 			window.location.href = `/admin/admin-shipping-methods/${res.method.id}`;
@@ -167,6 +169,7 @@ const AdminShippingMethod = () => {
 				await deleteShippingMethod(shippingId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('配送方法を削除しました');
 			window.location.href = '/admin/admin-shipping-methods';
@@ -185,6 +188,7 @@ const AdminShippingMethod = () => {
 				shippingMethodData = await getShippingMethod(shippingId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			if (!shippingMethodData) {
 				context.setLoading(false);
@@ -195,6 +199,7 @@ const AdminShippingMethod = () => {
 				shippingFeesData = await getShippingFees(shippingId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setShippingMethod(shippingMethodData);
 			setShippingFees(shippingFeesData);

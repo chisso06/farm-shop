@@ -21,6 +21,7 @@ const OrderCompleted = () => {
 				res = await getOrder(orderId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			if (res.status === 'pending-payment')
 				navigate('/');
@@ -34,18 +35,18 @@ const OrderCompleted = () => {
 			<p className='py-20 sm:py-40 text-center text-2xl sm:text-4xl bg-cyan-800 text-white'>
 				注文完了
 			</p>
-			<div className='w-3/4 mx-auto mb-40'>
+			<div className='w-3/4 mx-auto'>
 				<p className='my-20 text-center text-xl'>
 					ご注文番号：{orderId}
 				</p>
 				<p className='mb-2 text-center'>ご注文ありがとうございました。</p>
 				<p className='mb-2 text-center'>注文番号は大切に保管してください。</p>
 				<p className='mb-16 text-center'>メールに領収書が届いていることをご確認ください。</p>
-				<p className='text-center'>
+				<p className='text-center mb-32'>
 					<a href='/' className='underline hover:text-amber-600'>トップページへ戻る</a>
 				</p>
+				<PopularItems />
 			</div>
-			<PopularItems />
 		</div>
 	);
 };

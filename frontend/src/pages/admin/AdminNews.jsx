@@ -18,12 +18,14 @@ const AdminNews = () => {
 			await createNews(newsObj);
 		} catch (err) {
 			showBoundary(err);
+			return ;
 		}
 		var newsData;
 		try {
 			newsData = await getNews();
 		} catch (err) {
 			showBoundary(err);
+			return ;
 		}
 		setNews(newsData);
 		window.alert('新しいお知らせを追加しました');
@@ -39,6 +41,7 @@ const AdminNews = () => {
 			await deleteNews(newsId);
 		} catch (err) {
 			showBoundary(err);
+			return ;
 		}
 		setNews(news.filter((n) => n.id !== newsId));
 		window.alert('お知らせを削除しました');
@@ -54,6 +57,7 @@ const AdminNews = () => {
 				newsData = await getNews();
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setNews(newsData);
 			context.setLoading(false);

@@ -118,6 +118,7 @@ const AdminProduct = () => {
 				res = await updateProduct({product, images, imageFiles});
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('商品を更新しました');
 		} else {
@@ -125,6 +126,7 @@ const AdminProduct = () => {
 				res = await createProduct({product, images, imageFiles});
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('商品を追加しました');
 			context.setLoading(false);
@@ -152,6 +154,7 @@ const AdminProduct = () => {
 				await deleteProduct(productId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('商品を削除しました');
 			window.location.href = '/admin/admin-products';
@@ -169,6 +172,7 @@ const AdminProduct = () => {
 				productData = await getProduct(productId, false);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			if (!productData) {
 				window.alert('商品が存在しません');
@@ -180,11 +184,13 @@ const AdminProduct = () => {
 				imagesData = await getProductImages(productId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			try {
 				base64ImagesData = await getBase64Images({ table: 'products', images: imagesData });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setProduct(productData);
 			setImages(imagesData);
@@ -201,6 +207,7 @@ const AdminProduct = () => {
 				shippingMethodsData = await getShippingMethods();
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setShippingMethods(shippingMethodsData);
 			context.setLoading(false);

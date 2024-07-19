@@ -24,6 +24,7 @@ const AdminOrders = () => {
 				ordersData = await getOrders();
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			if (ordersData.length) {
 				ordersData.map((o) => {

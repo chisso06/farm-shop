@@ -26,6 +26,7 @@ const Blog = () => {
 				blogData = await getBlog(blogId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			if (blogData) {
 				var base64ImageData;
@@ -33,6 +34,7 @@ const Blog = () => {
 					base64ImageData = await getBase64Image({ table: 'blogs', image_id: blogId });
 				} catch (err) {
 					showBoundary(err);
+					return ;
 				}
 				setBlog(blogData);
 				setBase64Image(base64ImageData);
@@ -49,8 +51,8 @@ const Blog = () => {
 	}, []);
 
 	return (
-		<div>
-			<div className='w-3/4 my-16 mx-auto'>
+		<div className='w-3/4 my-16 mx-auto'>
+			<div className='mb-32'>
 				<img
 					src={imageSrc(base64Image)}
 					alt='商品画像'

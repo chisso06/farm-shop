@@ -1,12 +1,13 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useParams } from 'react-router-dom';
-import { Icon } from '../components';
+import { Icon, PopularItems } from '../components';
 import { areaList } from '../data';
 import {
 	getBase64Images,
 	getProduct,
 	getProductImages,
+	getReviews,
 	getShippingFees,
 	getShippingMethod,
 	imageSrc
@@ -37,7 +38,44 @@ const ProductImagesCarousel = ({images, base64Images}) => {
 			</div>
 		) : ''
 	)
-}
+};
+
+const ProductReview = ({productId}) => {
+	const [reviews, setReviews] = useState([]);
+	const loading_context = useContext(LoadingContext);
+
+	useEffect(() => {
+		const getData = async () => {
+			loading_context.setLoading(true);
+			const reviewsData = await getReviews(productId, true);
+			setReviews(reviewsData);
+			loading_context.setLoading(false);
+		}
+		getData();
+	}, []);
+
+	if (reviews.length)
+		return (
+			<div className='mb-32'>
+				<p className='mb-4 text-2xl font-bold font-mono'>カスタマーレビュー</p>
+				{ reviews.map((review) => { return (
+					<div className='px-2 py-4 flex flex-col gap-2 border-b'>
+						<div className='flex gap-2'>
+							<Icon icon='circle-user' className="w-5 h-5" />
+							<p>{review.nickname}</p>
+							<p className='text-stone-400'>{review.created_at}</p>
+						</div>
+						<div className='flex'>
+							{ new Array(review.score).fill(<Icon icon="star" className="w-5 h-5 fill-amber-600" />) }
+							{ new Array(5 - review.score).fill(<Icon icon="star-border" className="w-5 h-5 fill-amber-600" />) }
+						</div>
+						<p className='font-bold'>「{review.title}」</p>
+						<p>{review.content}</p>
+					</div>
+				)})}
+			</div>
+	);
+};
 
 const Product = () => {
 	const params = useParams();
@@ -99,6 +137,7 @@ const Product = () => {
 				productData = await getProduct(productId, true);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			if (productData) {
 				var imagesData;
@@ -107,11 +146,13 @@ const Product = () => {
 					imagesData = await getProductImages(productId);
 				} catch (err) {
 					showBoundary(err);
+					return ;
 				}
 				try {
 					base64ImagesData = await getBase64Images({ table: 'products', images: imagesData });
 				} catch (err) {
 					showBoundary(err);
+					return ;
 				}
 				setProduct(productData);
 				setImages(imagesData);
@@ -130,11 +171,13 @@ const Product = () => {
 					shippingMethodData = await getShippingMethod(productData.shipping_method);
 				} catch (err) {
 					showBoundary(err);
+					return ;
 				}
 				try {
 					shippingFeesData = await getShippingFees(productData.shipping_method);
 				} catch (err) {
 					showBoundary(err);
+					return ;
 				}
 				setShippingMethod(shippingMethodData);
 				setShippingFees(shippingFeesData);
@@ -188,10 +231,10 @@ const Product = () => {
 	return (
 		<div className='w-3/4 my-16 mx-auto'>
 			{product.shipping_method ? <ShippingModal /> : ''}
-			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-4xl'>
+			<p className='mt-32 mb-10 sm:mt-40 sm:mb-20 text-center text-xl sm:text-3xl'>
 				{product.name}
 			</p>
-			<div className='sm:flex gap-4'>
+			<div className='mb-10 sm:flex gap-4'>
 				<div className='sm:w-2/3'>
 					<ProductImagesCarousel images={images} base64Images={base64Images} />
 					<div className='my-10'>
@@ -232,6 +275,8 @@ const Product = () => {
 					</div>
 				</div>
 			</div>
+			<ProductReview productId={productId} />
+			<PopularItems />
 		</div>
 	);
 };

@@ -80,6 +80,7 @@ const AdminBlog = () => {
 				res = await updateBlog({ blog, imageFile });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('ブログを更新しました');
 		} else {
@@ -87,6 +88,7 @@ const AdminBlog = () => {
 				res = await createBlog({ blog, imageFile });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('ブログを追加しました');
 			context.setLoading(false);
@@ -105,6 +107,7 @@ const AdminBlog = () => {
 				await deleteBlog(blogId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			window.alert('ブログを削除しました');
 			window.location.href = '/admin/admin-blogs';
@@ -121,6 +124,7 @@ const AdminBlog = () => {
 				blogData = await getBlog(blogId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			if (!blogData) {
 				window.alert('ブログが存在しません');
@@ -132,6 +136,7 @@ const AdminBlog = () => {
 				base64ImageData = await getBase64Image({ table: 'blogs', image_id: blogId });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setBlog(blogData);
 			setBase64Image(base64ImageData);
@@ -173,7 +178,7 @@ const AdminBlog = () => {
 							className='hidden' />
 					</label>
 				</div>
-				{/* 商品名 */}
+				{/* タイトル */}
 				<div className='mt-8'>
 					<label>
 						タイトル
@@ -189,7 +194,7 @@ const AdminBlog = () => {
 						value={blog.title}
 						required />
 				</div>
-				{/* 商品説明 */}
+				{/* 本文 */}
 				<div className='mt-4'>
 					<label>
 						本文
