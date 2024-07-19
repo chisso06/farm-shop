@@ -38,6 +38,7 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 					base64ImagesData = await getIndexBase64Images({ table: 'products', objects: cart });
 				} catch (err) {
 					showBoundary(err);
+					return ;
 				}
 				setBase64Images(base64ImagesData);
 				context.setLoading(false);
@@ -234,6 +235,7 @@ const OrderForm = () => {
 				await createCart(setCart);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			context.setLoading(false);
 		}

@@ -20,11 +20,13 @@ const PopularItems = () => {
 				productsData = await getProducts(true, true);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			try {
 				base64ImagesData = await getIndexBase64Images({ table: 'products', objects: productsData });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setProducts(productsData);
 			setBase64Images(base64ImagesData);
@@ -35,7 +37,7 @@ const PopularItems = () => {
 	}, []);
 
 	return (
-		<div className='my-20 w-3/4 mx-auto'>
+		<div className='my-20'>
 			<p className='mb-20 text-center text-4xl text-black'>人気商品</p>
 			<ProductsIndex products={products} base64Images={base64Images} />
 		</div>

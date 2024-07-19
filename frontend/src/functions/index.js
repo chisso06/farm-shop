@@ -10,6 +10,7 @@ export { default as deleteNews } from './news/deleteNews';
 export { default as getNews } from './news/getNews';
 
 export { default as getOrder } from './orders/getOrder';
+export { default as getOrderedProduct } from './orders/getOrderedProduct';
 export { default as getOrderedProducts } from './orders/getOrderedProducts';
 export { default as getOrders } from './orders/getOrders';
 export { default as updateOrder } from './orders/updateOrder';
@@ -26,6 +27,11 @@ export { default as deleteBlog } from './blogs/deleteBlog';
 export { default as getBlog } from './blogs/getBlog';
 export { default as getBlogs } from './blogs/getBlogs';
 export { default as updateBlog } from './blogs/updateBlog';
+
+export { default as createReview } from './reviews/createReview';
+export { default as getReview } from './reviews/getReview';
+export { default as getReviews } from './reviews/getReviews';
+export { default as updateReview } from './reviews/updateReview';
 
 export { default as createShipping } from './shipping/createShipping';
 export { default as deleteShippingMethod } from './shipping/deleteShippingMethod';

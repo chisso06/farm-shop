@@ -74,6 +74,10 @@ export const adminPagesList = [
 		pathname: '/admin-news',
 		title: 'お知らせ管理',
 	},
+	{
+		pathname: '/admin-reviews',
+		title: 'レビュー管理',
+	},
 ];
 
 export const orderStatusList = [

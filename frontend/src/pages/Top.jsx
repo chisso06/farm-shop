@@ -17,6 +17,7 @@ const News = () => {
 				newsData = await getNews();
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setNews(newsData);
 			context.setLoading(false);
@@ -25,7 +26,7 @@ const News = () => {
 	}, []);
 
 	return (
-		<div className='my-20 w-3/4 mx-auto'>
+		<div className='my-20'>
 			<p className='mb-20 text-center text-4xl text-black'>お知らせ</p>
 			<ul>{
 				news.length ? news.map((n, i) => {
@@ -40,8 +41,10 @@ const Top = () => {
 	return (
 		<div>
 			<img src='images/top.png' alt='top' className='w-full' ></img>
-			<News />
-			<PopularItems />
+			<div className='w-3/4 mx-auto'>
+				<News />
+				<PopularItems />
+			</div>
 		</div>
 	);
 };

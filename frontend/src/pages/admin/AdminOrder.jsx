@@ -51,6 +51,7 @@ const AdminOrder = () => {
 				await updateOrder(newOrder);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setOrder(newOrder);
 	
@@ -92,6 +93,7 @@ const AdminOrder = () => {
 				orderData = await getOrder(orderId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			if (!orderData) {
 				context.setLoading(false);
@@ -114,6 +116,7 @@ const AdminOrder = () => {
 				orderedProductsData = await getOrderedProducts(orderId);
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setOrderedProducts(orderedProductsData);
 			context.setLoading(false);

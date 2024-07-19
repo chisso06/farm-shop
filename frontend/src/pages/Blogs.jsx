@@ -19,11 +19,17 @@ const Blogs = () => {
 				blogsData = await getBlogs();
 			} catch (err) {
 				showBoundary(err);
+				return ;
+			}
+			if (!blogsData) {
+				context.setLoading(false);
+				return ;
 			}
 			try {
 				base64ImagesData = await getIndexBase64Images({ table: 'blogs', objects: blogsData });
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setBlogs(blogsData);
 			setBase64Images(base64ImagesData);

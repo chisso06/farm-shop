@@ -23,6 +23,7 @@ const AdminShippingMethods = () => {
 				shippingMethodsData = await getShippingMethods();
 			} catch (err) {
 				showBoundary(err);
+				return ;
 			}
 			setShippingMethods(shippingMethodsData);
 			context.setLoading(false);
