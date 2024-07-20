@@ -1,3 +1,15 @@
+export const shopname = 'ひだまり農園';
+
+export const shopinfo = `
+	────────────────────────
+	烏梅製造元　梅古庵
+	中西謙介
+	〒630-2302 奈良県奈良市月ヶ瀬尾山2263
+	TEL: 0743-92-0560
+	Email: [新しいメールアドレス]
+	URL: [https://baikoan.com/]
+	────────────────────────`;
+
 export const aboutContentsList = [
 	{
 		title: "ひだまり農園",
@@ -170,4 +182,4 @@ export const prefectureList = [
 	"宮崎県",
 	"鹿児島県",
 	"沖縄県",
-]
+];
