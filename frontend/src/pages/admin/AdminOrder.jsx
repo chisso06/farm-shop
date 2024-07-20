@@ -1,7 +1,8 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useParams } from 'react-router-dom';
-import { orderStatusList } from '../../data';
+import { Icon } from '../../components';
+import { orderStatusList, shopinfo, shopname } from '../../data';
 import { getOrder, getOrderedProducts, updateOrder } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
@@ -13,9 +14,9 @@ const AdminOrder = () => {
 	const { showBoundary } = useErrorBoundary();
 	const context = useContext(LoadingContext);
 
-	const handleOpenModal = (e) => {
+	const handleOpenExportModal = (e) => {
 		e.preventDefault();
-		document.getElementById('modal').showModal();
+		document.getElementById('export-modal').showModal();
 	}
 
 	const handleExportClick = (e, postType) => {
@@ -40,6 +41,184 @@ const AdminOrder = () => {
 		URL.revokeObjectURL(link.href);
 	};
 
+	const ExportModal = () => {
+		return (
+			<dialog id="export-modal" className="p-4 modal modal-bottom sm:modal-middle rounded-md">
+				<div className="modal-box">
+					<form method="dialog">
+						<button className="w-6 h-6 btn btn-sm btn-ghost absolute right-4 top-4">✕</button>
+					</form>
+					<p className='my-8'>出力するフォーマットを選択してください</p>
+					<button
+						onClick={(e) => handleExportClick(e, 'yu-pack')}
+						className='w-full p-2 mb-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
+						ゆうパック
+					</button>
+					<button
+						onClick={(e) => handleExportClick(e, 'click-post')}
+						className='w-full p-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
+						クリックポスト
+					</button>
+				</div>
+			</dialog>
+		)
+	};
+
+	const handleOpenMailModal = (e) => {
+		e.preventDefault();
+		console.log("[test]");
+		document.getElementById('mail-modal').showModal();
+	};
+
+	const OrderNotificationMail = () => {
+		return (
+			<div className='p-2 bg-stone-100'>
+				<p className='my-4'>件名：[{shopname}]【注文ID:{order.id}】ご購入ありがとうございます</p>
+				<p className='mb-4 whitespace-pre-line'>{`\
+					${order.customer.name} 様
+
+					この度は、${shopname} オンラインショップでお買い上げいただき、ありがとうございました。
+					商品がお手元に届くまで、こちらのメールは大切に保管してください。
+
+					【ご注文内容】
+					注文ID: ${order.id}
+					${orderedProducts.length ? orderedProducts.map((p) =>`\
+						・${p.name}:
+						　　¥${p.price} × ${p.number} 個\
+					`).join(''):''}
+	
+					注文や商品についてご不明な点がございましたら、お気軽にお問い合わせください。
+	
+					${shopinfo}
+				`}</p>
+			</div>
+		);
+	};
+
+	const ShippingNotificationMail = () => {
+		return (
+			<div className='p-2 bg-stone-100'>
+				<p className='my-4'>件名：[{shopname}]【注文ID:{order.id}】商品を発送しました</p>
+				<p className='mb-4 whitespace-pre-line'>{`\
+					${order.customer.name} 様
+
+					この度は、ご購入いただきありがとうございます。
+					ご注文いただいた商品を発送しました。
+					商品のお届けまでもう少々お待ちください。
+
+					【配送情報】
+					配送業者: ○○○○
+					伝票番号: ○○○○
+
+					【ご注文内容】
+					注文ID: ${order.id}
+					${orderedProducts.length ? orderedProducts.map((p) =>`\
+						・${p.name}:
+						　　¥${p.price} × ${p.number} 個\
+					`).join(''):''}
+
+					【お届け先】
+					〒${order.customer.zipCode}
+					${order.customer.preference} ${order.customer.address}
+					${order.customer.phone}
+					${order.customer.name} 様
+
+					注文や商品についてご不明な点がございましたら、お気軽にお問い合わせください。
+
+					${shopinfo}
+				`}</p>
+			</div>
+		);
+	};
+
+	// const ReceivingReminderMail = () => {
+	// 	return (
+	// 		<div className='p-2 bg-stone-100'>
+	// 			<p className='my-4'>件名：[{shopname}]【注文ID:{order.id}】商品をお受け取りください</p>
+	// 			<p className='mb-4 whitespace-pre-line'>{`\
+	// 				${order.customer.name} 様
+
+	// 				この度は、ご購入いただきありがとうございます。
+
+
+	// 				注文や商品についてご不明な点がございましたら、お気軽にお問い合わせください。
+
+	// 				${shopinfo}
+	// 			`}</p>
+	// 		</div>
+	// 	);
+	// };
+
+	const ReviewingReminderMail = () => {
+		var url = new URL(window.location.href);
+
+		return (
+			<div className='p-2 bg-stone-100'>
+				<p className='my-4'>件名：[{shopname}]【注文ID:{order.id}】商品のレビューのお願い</p>
+				<p className='mb-4 whitespace-pre-line'>{`\
+					${order.customer.name} 様
+
+					この度は、${shopname} オンラインショップでお買い上げいただき、ありがとうございました。
+					お客様のご購入された商品のご感想を頂きたく、今回、メールをお送りさせていただきました。
+					ぜひ、こちらの商品のご感想をお聞かせください。
+
+					${orderedProducts.length ? orderedProducts.map((p) =>`\
+						・${p.name}
+						　　${url.origin}/${p.id}
+					`).join(''):''}
+
+					ご満足いただけた方はもちろん、ご満足いただけなかったお客様の声も、とても貴重なご意見ですので、どうかご遠慮なくお申し付けくださいませ。
+
+					注文や商品についてご不明な点がございましたら、お気軽にお問い合わせください。
+
+					${shopinfo}
+				`}</p>
+			</div>
+		);
+	};
+
+	const MailModal = () => {
+		return (
+			<dialog id="mail-modal" className="p-4 w-1/2 h-screen modal modal-bottom sm:modal-middle rounded-md">
+				<div className="modal-box">
+					<form method="dialog">
+						<button className="w-6 h-6 btn btn-sm btn-ghost absolute right-4 top-4">✕</button>
+					</form>
+					<div>
+						<p className='mb-8 text-center'>メール定型文（ステータス：{order.statusTitle}）</p>
+						{ order.status === 'pending-shipping' ? 
+							<div>
+								<details>
+									<summary className='my-4'>注文完了メール</summary>
+									<OrderNotificationMail />
+								</details>
+							</div>
+							: order.status === 'shipping' ? 
+							<div>
+								<details>
+									<summary className='my-4'>発送通知メール</summary>
+									<ShippingNotificationMail />
+								</details>
+								{/* <details>
+									<summary className='my-4'>受け取り催促メール</summary>
+									<ReceivingReminderMail />
+								</details> */}
+							</div>
+							: order.status === 'completed' ?
+							<div>
+								<details>
+									<summary className='my-4'>レビュー催促メール</summary>
+									<ReviewingReminderMail />
+								</details>
+							</div>
+							:''
+						}
+					</div>
+				</div>
+			</dialog>
+		);
+	};
+
 	const updateStatus = async (e, orderStatus) => {
 		e.preventDefault();
 		context.setLoading(true);
@@ -60,29 +239,6 @@ const AdminOrder = () => {
 		}
 
 		context.setLoading(false);
-	};
-
-	const Modal = () => {
-		return (
-			<dialog id="modal" className="p-4 modal modal-bottom sm:modal-middle rounded-md">
-				<div className="modal-box">
-					<form method="dialog">
-						<button className="w-6 h-6 btn btn-sm btn-ghost absolute right-4 top-4">✕</button>
-					</form>
-					<p className='my-8'>出力するフォーマットを選択してください</p>
-					<button
-						onClick={(e) => handleExportClick(e, 'yu-pack')}
-						className='w-full p-2 mb-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
-						ゆうパック
-					</button>
-					<button
-						onClick={(e) => handleExportClick(e, 'click-post')}
-						className='w-full p-2 text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
-						クリックポスト
-					</button>
-				</div>
-			</dialog>
-		)
 	};
 
 	useEffect(() => {
@@ -127,7 +283,8 @@ const AdminOrder = () => {
 	return (
 		(order.id) ? 
 		<div className='px-4'>
-			<Modal />
+			<ExportModal />
+			<MailModal />
 			<a href='/admin/admin-orders'>
 				&lt; <span className='text-sm hover:underline'>注文一覧に戻る</span>
 			</a>
@@ -139,8 +296,19 @@ const AdminOrder = () => {
 				</li>
 				<li className='py-2 flex border-b'>
 					<p className='w-36 font-mono font-bold'>ステータス</p>
-						<div className='flex'>
+						<div className='flex items-center'>
 							<p>{order.statusTitle}</p>
+							{ (order.status === 'shipping'
+								|| order.status === 'completed'
+								|| order.status === 'pending-shipping') ? 
+								<button
+									onClick={handleOpenMailModal}
+									className='ml-1 w-4 h-4'>
+									<Icon
+										icon='envelope'
+										className='fill-stone-600  hover:fill-amber-600' />
+								</button>
+								:''}
 							{ order.nextStatus ? 
 								<button
 									onClick={(e) => updateStatus(e, order.nextStatus)}
@@ -152,7 +320,7 @@ const AdminOrder = () => {
 								<button
 									onClick={(e) => updateStatus(e, 'canceled')}
 									className='ml-4 text-sm underline text-stone-600 hover:text-amber-600'>
-									注文をキャンセル
+									キャンセル
 								</button>
 							: ''}
 						</div>
@@ -176,7 +344,7 @@ const AdminOrder = () => {
 					<div className='pb-2 flex font-mono'>
 						<p className='font-bold'>購入者情報</p>
 						<button
-							onClick={handleOpenModal}
+							onClick={handleOpenExportModal}
 							className='ml-8 text-sm underline text-stone-600 hover:text-amber-600'>
 							csvファイルに出力
 						</button>
