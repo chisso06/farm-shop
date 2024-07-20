@@ -1,9 +1,8 @@
-import axios from 'axios';
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router-dom';
 import { areaList, prefectureList } from '../data';
-import { createCart, getIndexBase64Images, getShippingFees, imageSrc } from '../functions';
+import { createCart, createCheckoutSession, getIndexBase64Images, getShippingFees, imageSrc } from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
 
 const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
@@ -159,11 +158,12 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 			navigate('/cart');
 			return ;
 		}
-		await axios.post('/backend/create-checkout-session', {cart, customer: customerData})
-		.then((res) => {
-			localStorage.setItem('cart', JSON.stringify([]));
-			window.location.replace(res.data.session_url);
-		}).catch((err) => showBoundary(err));
+
+		try {
+			await createCheckoutSession({cart, customer: customerData})
+		} catch (err) {
+			showBoundary(err);
+		}
 
 		context.setLoading(false);
 	}

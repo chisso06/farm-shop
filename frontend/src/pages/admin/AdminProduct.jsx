@@ -12,7 +12,8 @@ import {
 	getProductImages,
 	getShippingMethods,
 	imageSrc,
-	updateProduct
+	updateProduct,
+	validateProduct
 } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
@@ -112,6 +113,14 @@ const AdminProduct = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		context.setLoading(true);
+
+		const validation_message = validateProduct(product);
+		if (validation_message) {
+			window.alert(validation_message);
+			context.setLoading(false);
+			return ;
+		}
+
 		var res;
 		if (productId) {
 			try {

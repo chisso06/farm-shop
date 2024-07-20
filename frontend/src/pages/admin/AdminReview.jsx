@@ -1,7 +1,7 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useParams } from 'react-router-dom';
-import { getProduct, getReview, updateReview } from '../../functions';
+import { getProduct, getReview, updateReview, validateReview } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
 const AdminReview = () => {
@@ -17,6 +17,14 @@ const AdminReview = () => {
 
 		if (window.confirm(`このレビューを${public_status ? '公開' : '非公開'}にしますか？`)) {
 			const newReview = {...review, public_status};
+
+			const validation_message = validateReview(newReview);
+			if (validation_message) {
+				window.alert(validation_message);
+				context.setLoading(false);
+				return ;
+			}
+
 			try {
 				await updateReview(newReview);
 			} catch (err) {

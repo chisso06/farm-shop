@@ -9,7 +9,8 @@ import {
 	getBase64Image,
 	getBlog,
 	imageSrc,
-	updateBlog
+	updateBlog,
+	validateBlog
 } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
@@ -74,6 +75,14 @@ const AdminBlog = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		context.setLoading(true);
+
+		const validation_message = validateBlog(blog);
+		if (validation_message) {
+			window.alert(validation_message);
+			context.setLoading(false);
+			return ;
+		}
+
 		var res;
 		if (blogId) {
 			try {

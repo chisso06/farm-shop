@@ -7,6 +7,6 @@ const updateBlog = async ({ blog, imageFile }) => {
 			await uploadImage({ table: 'blogs', imageFile, image_id: blog.id });
 			return res.data;
 		});
-}
+};
 
 export default updateBlog;

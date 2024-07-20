@@ -66,7 +66,6 @@ const AdminOrder = () => {
 
 	const handleOpenMailModal = (e) => {
 		e.preventDefault();
-		console.log("[test]");
 		document.getElementById('mail-modal').showModal();
 	};
 
