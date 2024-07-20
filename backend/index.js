@@ -755,7 +755,11 @@ app.get('/news', (req, res) => {
 });
 
 app.post('/news', (req, res) => {
-	const news = req.body;
+	const newsData = req.body;
+	const news = {
+		date: newsData.date,
+		content: newsData.content,
+	};
 
 	connection.query(
 		`INSERT INTO news SET ?`,
@@ -824,9 +828,12 @@ app.get('/shipping/:id', (req, res) => {
 });
 
 app.post('/shipping', async(req, res) => {
-	const method = {name: req.body.method.name};
+	const methodData = req.body.method;
 	const feesData = req.body.fees;
 
+	const method = {
+		name: methodData.name
+	};
 	const methodId = await new Promise((resolve) => {
 		connection.query(
 			`INSERT INTO shipping_methods SET ?`,
@@ -899,6 +906,7 @@ app.post('/shipping', async(req, res) => {
 
 app.post('/shipping/:id', async (req, res) => {
 	var methodId = Number(req.params.id);
+	const methodData = req.body.method;
 	const feesData = req.body.fees;
 
 	if (isNaN(methodId) || methodId != req.body.method.id) {
@@ -907,8 +915,8 @@ app.post('/shipping/:id', async (req, res) => {
 	}
 
 	const method = {
-		id: req.body.method.id,
-		name: req.body.method.name,
+		id: methodData.id,
+		name: methodData.name,
 	};
 	
 	methodId = await new Promise((resolve) => {
