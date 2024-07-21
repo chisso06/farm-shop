@@ -1,7 +1,7 @@
 import { React, useContext, useEffect, useState } from "react";
 import { useErrorBoundary } from 'react-error-boundary';
 import { Icon } from '../../components';
-import { createNews, deleteNews, getNews } from '../../functions';
+import { createNews, deleteNews, getNews, validateNews } from '../../functions';
 import { LoadingContext } from "../../functions/context/LoadingFunc";
 
 const AdminNews = () => {
@@ -14,6 +14,13 @@ const AdminNews = () => {
 		context.setLoading(true);
 
 		const newsObj = Object.fromEntries(new FormData(e.target).entries());
+		const validation_message = validateNews(newsObj);
+		if (validation_message) {
+			window.alert(validation_message);
+			context.setLoading(false);
+			return ;
+		}
+
 		try {
 			await createNews(newsObj);
 		} catch (err) {

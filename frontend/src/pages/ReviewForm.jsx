@@ -1,7 +1,7 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useParams } from 'react-router-dom';
-import { createReview, getOrder, getOrderedProduct, getReview } from '../functions';
+import { createReview, getOrder, getOrderedProduct, getReview, validateReview } from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
 
 const ReviewForm = () => {
@@ -34,6 +34,14 @@ const ReviewForm = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		context.setLoading(true);
+
+		const validation_message = validateReview(review);
+		if (validation_message) {
+			window.alert(validation_message);
+			context.setLoading(false);
+			return ;
+		}
+
 		try {
 			await createReview(review);
 		} catch (err) {

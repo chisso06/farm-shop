@@ -7,7 +7,8 @@ import {
 	deleteShippingMethod,
 	getShippingFees,
 	getShippingMethod,
-	updateShipping
+	updateShipping,
+	validateShipping
 } from '../../functions';
 import { LoadingContext } from '../../functions/context/LoadingFunc';
 
@@ -20,17 +21,17 @@ const AdminShippingMethod = () => {
 		size: 'サイズ1',
 		min_n: 1,
 		max_n: 5,
-		Hokkaido: '',
-		Tohoku: '',
-		Kanto: '',
-		Sinetsu: '',
-		Hokuriku: '',
-		Tokai: '',
-		Kinki: '',
-		Chugoku: '',
-		Shikoku: '',
-		Kyusyu: '',
-		Okinawa: '',
+		Hokkaido: 0,
+		Tohoku: 0,
+		Kanto: 0,
+		Sinetsu: 0,
+		Hokuriku: 0,
+		Tokai: 0,
+		Kinki: 0,
+		Chugoku: 0,
+		Shikoku: 0,
+		Kyusyu: 0,
+		Okinawa: 0,
 	};
 	const [shippingMethod, setShippingMethod] = useState({
 		id: 0,
@@ -95,45 +96,10 @@ const AdminShippingMethod = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		context.setLoading(true);
-		// validation
-		const validate_shippingFees = () => {
-			var message = '';
-			shippingFees.map((fee, i) => {
-				if (message.length)
-					return ;
-				// 入力が空白
-				for (var key in fee) {
-					if (key !== 'id' && key !== 'method_id') {
-						if (fee[key] === '')
-							message = '全てのサイズの全ての項目を入力してください';
-						else if (key !== 'size' && isNaN(fee[key]))
-							message = '全てのサイズの個数の条件および送料は半角数字で入力する必要があります';
-					}
-				}
-				if (message.length)
-					return ;
-				// 条件
-				if (!fee.min_n || !fee.max_n)
-					message = '全てのサイズの個数の条件を入力してください';
-				else if (!i && fee.min_n !== 1)
-					message = '一番下のサイズの個数の条件の最小値は1に設定してください';
-				else if (fee.min_n > fee.max_n)
-					message = 'サイズの個数の条件の最大値が最小値と同値以上になるように設定してください';
-				else if (i !== shippingFees.length - 1 && fee.max_n + 1 !== shippingFees[i + 1].min_n)
-					message = '上のサイズの個数の条件の最小値が下のサイズの個数の条件の最大値よりも1大きい値になるように設定してください';
-				// サイズ名が重複していないか
-				for (var fee_i = i + 1; fee_i < shippingFees.length; fee_i ++) {
-					if (fee.size === shippingFees[fee_i].size) {
-						message = 'サイズ名が重複しています';
-						break ;
-					}
-				}
-			});
-			return (message);
-		}
-		const validation_msg = validate_shippingFees();
-		if (validation_msg) {
-			window.alert(validation_msg);
+
+		const validation_message = validateShipping({ method: shippingMethod, fees: shippingFees });
+		if (validation_message) {
+			window.alert(validation_message);
 			context.setLoading(false);
 			return ;
 		}
