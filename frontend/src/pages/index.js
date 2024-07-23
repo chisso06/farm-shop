@@ -1,5 +1,6 @@
 export { default as About } from './About';
 export { default as AdminPage } from './AdminPage';
+export { default as Article } from './Article';
 export { default as Blog } from './Blog';
 export { default as Blogs } from './Blogs';
 export { default as Cart } from './Cart';
@@ -12,6 +13,8 @@ export { default as Products } from './Products';
 export { default as ReviewForm } from './ReviewForm';
 export { default as Test } from './Test';
 export { default as Top } from './Top';
+export { default as AdminArticle } from './admin/AdminArticle';
+export { default as AdminArticles } from './admin/AdminArticles';
 export { default as AdminBlog } from './admin/AdminBlog';
 export { default as AdminBlogs } from './admin/AdminBlogs';
 export { default as AdminNews } from './admin/AdminNews';

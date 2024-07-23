@@ -7,6 +7,6 @@ const createBlog = async ({ blog, imageFile }) => {
 			await uploadImage({ table: 'blogs', imageFile, image_id: res.data.blog.id });
 			return res.data;
 		});
-}
+};
 
 export default createBlog;

@@ -79,6 +79,10 @@ export const adminPagesList = [
 		title: '送料管理',
 	},
 	{
+		pathname: '/articles',
+		title: '特集記事管理',
+	},
+	{
 		pathname: '/admin-blogs',
 		title: 'ブログ管理',
 	},

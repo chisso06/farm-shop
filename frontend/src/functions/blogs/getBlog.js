@@ -5,5 +5,6 @@ const getBlog = async (blogId) => {
 		.then((res) => {
 			return res.data;
 		});
-}
+};
+
 export default getBlog;

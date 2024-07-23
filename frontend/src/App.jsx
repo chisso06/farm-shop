@@ -11,6 +11,8 @@ import { LoadingContext, useLoading } from './functions/context/LoadingFunc';
 import { ToastContext, useToast } from './functions/context/ToastFunc';
 import {
   About,
+  AdminArticle,
+  AdminArticles,
   AdminBlog,
   AdminBlogs,
   AdminNews,
@@ -23,6 +25,7 @@ import {
   AdminReviews,
   AdminShippingMethod,
   AdminShippingMethods,
+  Article,
   Blog,
   Blogs,
   Cart,
@@ -74,6 +77,10 @@ const App = () => {
       element: <ErrorBoundary fallback={<ErrorPage />}><Blog /></ErrorBoundary>
     },
     {
+      path: '/articles/:article_id',
+      element: <ErrorBoundary fallback={<ErrorPage />}><Article /></ErrorBoundary>
+    },
+    {
       path: '/faq',
       element: <ErrorBoundary fallback={<ErrorPage />}><FAQ /></ErrorBoundary>
     },
@@ -120,6 +127,14 @@ const App = () => {
         {
           path: 'admin-blogs/:blog_id',
           element: <AdminBlog />,
+        },
+        {
+          path: 'articles',
+          element: <AdminArticles />,
+        },
+        {
+          path: 'articles/:article_id',
+          element: <AdminArticle />,
         },
         {
           path: 'admin-reviews',

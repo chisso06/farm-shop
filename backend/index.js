@@ -7,7 +7,7 @@
 // error messages
 const CONNECTION_ERROR = "Error: connection error";
 const INVALID_PRODUCT_ID_ERROR = "Error: invalid product id";
-const INVALID_BLOG_ID_ERROR = "Error: invalid blog id";
+const INVALID_BLOG_ID_ERROR = "Error: invalid article id";
 const INVALID_ORDER_ID_ERROR = "Error: invalid order id";
 const INVALID_ORDERED_PRODUCT_ID_ERROR = "Error: invalid ordered product id";
 const INVALID_METHOD_ID_ERROR = "Error: invalid method id";
@@ -601,6 +601,179 @@ app.delete('/blogs/:id', async (req, res) => {
 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
 			}
 			res.status(200).json({ message: `deleted blog ${blogId}` });
+		}
+	);
+});
+
+
+/* ==========
+	article
+========== */
+
+const articlesStorage = multer.diskStorage({
+	destination: (req, file, cb) => cb(null, 'backend/public/articles'),
+	filename: (req, file, cb) => {cb(null, file.originalname)}
+});
+const uploadArticles = multer({ storage: articlesStorage }).array('files[]', 10);
+app.post('/upload/articles', (req, res) => {
+	uploadArticles(req, res, (err) => {
+		if (err) {
+			console.log("Error: Can't upload files");
+			return res.status(500).json({error: true, message: "Error: Can't upload files"});
+		} else {
+			console.log('body:', req.body);
+			console.log('files:', req.files);
+			res.status(200).json({ message: "uploaded article images" });
+		}
+	})
+});
+
+app.get('/articles', (req, res) => {
+	const sql_prompt = `
+		SELECT
+			id,
+			title,
+			content,
+			id AS image_id,
+			DATE_FORMAT(created_at, '%Y年%m月%d日 %H:%i') AS created_at,
+			DATE_FORMAT(updated_at, '%Y年%m月%d日 %H:%i') AS updated_at
+		FROM articles
+		ORDER BY created_at DESC`;
+
+  connection.query(
+		sql_prompt,
+    (err, results, fields) => {
+      if (err) {
+				console.log(err);
+        return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json(results);
+    }
+  );
+});
+
+// app.get('/articles/images', (req, res) => {
+// 	const sql_prompt = `
+// 		SELECT * FROM images
+// 		WHERE order_of_images=1
+// 	`;
+
+//   connection.query(
+// 		sql_prompt,
+//     (err, results, fields) => {
+//       if (err)
+// 				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+// 			res.status(200).json(results);
+//     }
+//   );
+// });
+
+app.get('/articles/:id', (req, res) => {
+	const articleId = Number(req.params.id);
+
+	if (isNaN(articleId) || articleId <= 0) {
+		console.error(INVALID_ARTICLE_ID_ERROR);
+		return res.status(400).json({ message: INVALID_ARTICLE_ID_ERROR });
+	}
+
+  connection.query(`
+		SELECT
+			id,
+			title,
+			content,
+			id AS image_id,
+			DATE_FORMAT(created_at, '%Y年%m月%d日 %H:%i') AS created_at,
+			DATE_FORMAT(updated_at, '%Y年%m月%d日 %H:%i') AS updated_at
+		FROM articles
+		WHERE articles.id=${articleId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log(err);
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json(results[0]);
+		}
+  );
+});
+
+app.post('/articles', async (req, res) => {
+	const articleData = req.body;
+	const article = {
+		title: articleData.title,
+		content: articleData.content,
+	};
+
+	await new Promise((resolve) => {
+		connection.query(
+			`INSERT INTO articles SET ?`,
+			article,
+			(err, results, fields) => {
+				if (err || !results.insertId) {
+					console.error("Error: could not create article")
+					return res.status(500).json({ error: true, message: "Error: could not create article" });
+				}
+				article.id = results.insertId;
+				resolve(results.insertId);
+			}
+		);
+	});
+
+	return res.status(200).json({ article });
+});
+
+app.post('/articles/:id', async (req, res) => {
+	const articleId = Number(req.params.id);
+	const articleData = req.body;
+	const article = {
+		id: articleData.id,
+		title: articleData.title,
+		content: articleData.content
+	};
+	if (isNaN(articleId) || articleId !== article.id) {
+		console.error(INVALID_ARTICLE_ID_ERROR);
+		return res.status(400).json({ message: INVALID_ARTICLE_ID_ERROR });
+	}
+
+	await new Promise((resolve) => {
+		connection.query(
+			`UPDATE articles SET ?, updated_at=NOW() WHERE id=${article.id}`,
+			article,
+			(err, results, fields) => {
+				if (err) {
+					console.log(err);
+					return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+				}
+				resolve(article.id);
+			}
+		);
+	});
+	return res.status(200).json({ article });
+});
+
+app.delete('/articles/:id', async (req, res) => {
+	const articleId = Number(req.params.id);
+
+	if (isNaN(articleId) || articleId <= 0) {
+		console.error(INVALID_ARTICLE_ID_ERROR);
+		return res.status(400).json({ message: INVALID_ARTICLE_ID_ERROR });
+	}
+
+	// 画像を削除
+	fs.unlink(`backend/public/articles/${articleId}.jpg`,
+		(err) => {
+			if (err)
+				console.error("Error: could not unlink image file");
+		});
+
+	// articles(db)を削除
+	connection.query(
+		`DELETE FROM articles WHERE id=${articleId}`,
+		(err, results, fields) => {
+			if (err) {
+				console.log(err);
+				return res.status(500).json({ error: true, message: CONNECTION_ERROR });
+			}
+			res.status(200).json({ message: `deleted article ${articleId}` });
 		}
 	);
 });
@@ -1463,7 +1636,7 @@ app.get('/images/:id', (req, res) => {
 	if (imageId <= 0) {
 		console.error(INVALID_IMAGE_ID_ERROR);
 		return res.status(400).json({ message: INVALID_IMAGE_ID_ERROR });
-	} else if (tableName !== 'products' && tableName !== 'blogs') {
+	} else if (tableName !== 'products' && tableName !== 'blogs' && tableName !== 'articles') {
 		console.error("Error: invalid table name");
 		return res.status(400).json({ message: "Error: invalid table name" });
 	}

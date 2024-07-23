@@ -5,5 +5,6 @@ const deleteBlog = async (blogId) => {
 		.then((res) => {
 			return res.data;
 		});
-}
+};
+
 export default deleteBlog;
