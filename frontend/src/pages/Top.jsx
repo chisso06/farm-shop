@@ -1,6 +1,6 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
-import { PopularItems } from '../components';
+import { Articles, PopularItems } from '../components';
 import { getNews } from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
 
@@ -43,6 +43,7 @@ const Top = () => {
 			<img src='images/top.png' alt='top' className='w-full' ></img>
 			<div className='w-3/4 mx-auto'>
 				<News />
+				<Articles />
 				<PopularItems />
 			</div>
 		</div>

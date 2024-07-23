@@ -32,6 +32,13 @@ export { default as getBlogs } from './blogs/getBlogs';
 export { default as updateBlog } from './blogs/updateBlog';
 export { default as validateBlog } from './blogs/validateBlog';
 
+export { default as createArticle } from './articles/createArticle';
+export { default as deleteArticle } from './articles/deleteArticle';
+export { default as getArticle } from './articles/getArticle';
+export { default as getArticles } from './articles/getArticles';
+export { default as updateArticle } from './articles/updateArticle';
+export { default as validateArticle } from './articles/validateArticle';
+
 export { default as createReview } from './reviews/createReview';
 export { default as getReview } from './reviews/getReview';
 export { default as getReviews } from './reviews/getReviews';
