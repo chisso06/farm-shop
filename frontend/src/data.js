@@ -67,15 +67,15 @@ export const PagesList = [
 
 export const adminPagesList = [
 	{
-		pathname: '/admin-orders',
+		pathname: '/orders',
 		title: '注文管理',
 	},
 	{
-		pathname: '/admin-products',
+		pathname: '/products',
 		title: '商品管理',
 	},
 	{
-		pathname: '/admin-shipping-methods',
+		pathname: '/shipping-methods',
 		title: '送料管理',
 	},
 	{
@@ -83,15 +83,15 @@ export const adminPagesList = [
 		title: '特集記事管理',
 	},
 	{
-		pathname: '/admin-blogs',
+		pathname: '/blogs',
 		title: 'ブログ管理',
 	},
 	{
-		pathname: '/admin-news',
+		pathname: '/news',
 		title: 'お知らせ管理',
 	},
 	{
-		pathname: '/admin-reviews',
+		pathname: '/reviews',
 		title: 'レビュー管理',
 	},
 ];

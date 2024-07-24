@@ -13,7 +13,7 @@ const AdminBlogs = () => {
 
 	const handleClick = (e, blog_id) => {
 		e.preventDefault();
-		navigate(`/admin/admin-blogs/${blog_id}`);
+		navigate(`/admin/blogs/${blog_id}`);
 	}
 
 	useEffect(() => {
@@ -49,7 +49,7 @@ const AdminBlogs = () => {
 				<p className='w-1/2 font-mono text-2xl font-bold'>ブログ管理</p>
 				<div className='w-1/2 flex justify-end'>
 					<a
-						href='/admin/admin-blogs/0'
+						href='/admin/blogs/0'
 						className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
 						+ブログを作成する
 					</a>

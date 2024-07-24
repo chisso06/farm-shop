@@ -12,7 +12,7 @@ const AdminPage = () => {
 				{ adminPagesList.map((p, i) => {
 					var className = 'w-full p-4 block text-left border-b hover:bg-stone-300';
 					if ('/admin' + p.pathname === location.pathname
-						|| (location.pathname === '/admin' && p.pathname === '/admin-orders'))
+						|| (location.pathname === '/admin' && p.pathname === '/orders'))
 						className += ' bg-stone-300';
 					return (
 						<a
@@ -58,12 +58,12 @@ const AdminPage = () => {
 					<p className='w-full px-4 py-8 text-left border-b bg-white font-bold font-mono text-lg'>管理画面</p>
 					<AdminMenu />
 				</div>
-				<div className='h-full w-4/5 mt-14'>
+				<div className='min-h-screen w-4/5 mt-14'>
 					<Outlet />
 				</div>
 			</div>
 			:
-			<div />
+			<div className='h-screen' />
 		}</div>
 	)
 }

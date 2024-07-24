@@ -53,7 +53,7 @@ const AdminReview = () => {
 			}
 			if (!reviewData) {
 				context.setLoading(false);
-				window.location.href = '/admin/admin-reviews';
+				window.location.href = '/admin/reviews';
 				return ;
 			}
 
@@ -78,7 +78,7 @@ const AdminReview = () => {
 	return (
 		(review.id) ? 
 		<div className='px-4'>
-			<a href='/admin/admin-reviews'>
+			<a href='/admin/reviews'>
 				&lt; <span className='text-sm hover:underline'>レビュー一覧に戻る</span>
 			</a>
 			<p className='my-6 font-mono text-xl font-bold'>レビュー詳細</p>

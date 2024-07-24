@@ -121,7 +121,7 @@ const AdminShippingMethod = () => {
 				return ;
 			}
 			window.alert('配送方法を追加しました');
-			window.location.href = `/admin/admin-shipping-methods/${res.method.id}`;
+			window.location.href = `/admin/shipping-methods/${res.method.id}`;
 		}
 		context.setLoading(false);
 	};
@@ -138,7 +138,7 @@ const AdminShippingMethod = () => {
 				return ;
 			}
 			window.alert('配送方法を削除しました');
-			window.location.href = '/admin/admin-shipping-methods';
+			window.location.href = '/admin/shipping-methods';
 		}
 
 		context.setLoading(false);
@@ -158,7 +158,7 @@ const AdminShippingMethod = () => {
 			}
 			if (!shippingMethodData) {
 				context.setLoading(false);
-				window.location.href = '/admin/admin-shipping-methods';
+				window.location.href = '/admin/shipping-methods';
 				return ;
 			}
 			try {
@@ -178,7 +178,7 @@ const AdminShippingMethod = () => {
 
 	return (
 		<div className='px-4'>
-			<a href='/admin/admin-shipping-methods'>
+			<a href='/admin/shipping-methods'>
 				&lt; <span className='text-sm hover:underline'>配送方法一覧に戻る</span>
 			</a>
 

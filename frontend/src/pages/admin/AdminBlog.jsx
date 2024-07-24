@@ -101,7 +101,7 @@ const AdminBlog = () => {
 			}
 			window.alert('ブログを追加しました');
 			context.setLoading(false);
-			window.location.href = `/admin/admin-blogs/${res.blog.id}`;
+			window.location.href = `/admin/blogs/${res.blog.id}`;
 			return ;
 		}
 		setImageFile('');
@@ -119,7 +119,7 @@ const AdminBlog = () => {
 				return ;
 			}
 			window.alert('ブログを削除しました');
-			window.location.href = '/admin/admin-blogs';
+			window.location.href = '/admin/blogs';
 		}
 		context.setLoading(false);
 	};
@@ -138,7 +138,7 @@ const AdminBlog = () => {
 			if (!blogData) {
 				window.alert('ブログが存在しません');
 				context.setLoading(false);
-				window.location.href = '/admin/admin-blogs';
+				window.location.href = '/admin/blogs';
 				return ;
 			}
 			try {
@@ -157,7 +157,7 @@ const AdminBlog = () => {
 
 	return (
 		<div className='px-4'>
-			<a href='/admin/admin-blogs'>
+			<a href='/admin/blogs'>
 				&lt; <span className='text-sm hover:underline'>ブログ一覧に戻る</span>
 			</a>
 

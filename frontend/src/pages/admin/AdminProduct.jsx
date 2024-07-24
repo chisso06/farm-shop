@@ -139,7 +139,7 @@ const AdminProduct = () => {
 			}
 			window.alert('商品を追加しました');
 			context.setLoading(false);
-			window.location.href = `/admin/admin-products/${res.product.id}`;
+			window.location.href = `/admin/products/${res.product.id}`;
 			return ;
 		}
 		const imagesData = res.images.filter((image) => !image.deleted);
@@ -166,7 +166,7 @@ const AdminProduct = () => {
 				return ;
 			}
 			window.alert('商品を削除しました');
-			window.location.href = '/admin/admin-products';
+			window.location.href = '/admin/products';
 		}
 		context.setLoading(false);
 	};
@@ -186,7 +186,7 @@ const AdminProduct = () => {
 			if (!productData) {
 				window.alert('商品が存在しません');
 				context.setLoading(false);
-				window.location.href = '/admin/admin-products';
+				window.location.href = '/admin/products';
 				return ;
 			}
 			try {
@@ -226,7 +226,7 @@ const AdminProduct = () => {
 
 	return (
 		<div className='px-4'>
-			<a href='/admin/admin-products'>
+			<a href='/admin/products'>
 				&lt; <span className='text-sm hover:underline'>商品一覧に戻る</span>
 			</a>
 

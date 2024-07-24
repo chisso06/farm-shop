@@ -13,7 +13,7 @@ const AdminProducts = () => {
 
 	const handleClick = (e, product_id) => {
 		e.preventDefault();
-		navigate(`/admin/admin-products/${product_id}`);
+		navigate(`/admin/products/${product_id}`);
 	}
 
 	useEffect(() => {
@@ -54,7 +54,7 @@ const AdminProducts = () => {
 				<p className='w-1/2 font-mono text-2xl font-bold'>商品管理</p>
 				<div className='w-1/2 flex justify-end'>
 					<a
-						href='/admin/admin-products/0'
+						href='/admin/products/0'
 						className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
 						+商品を作成する
 					</a>
