@@ -13,7 +13,7 @@ const AdminOrders = () => {
 
 	const handleClick = (e, orderId) => {
 		e.preventDefault();
-		navigate(`/admin/admin-orders/${orderId}`);
+		navigate(`/admin/orders/${orderId}`);
 	}
 
 	useEffect(() => {

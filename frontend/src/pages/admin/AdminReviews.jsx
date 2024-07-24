@@ -12,7 +12,7 @@ const AdminReviews = () => {
 
 	const handleClick = (e, reviewId) => {
 		e.preventDefault();
-		navigate(`/admin/admin-reviews/${reviewId}`);
+		navigate(`/admin/reviews/${reviewId}`);
 	}
 
 	useEffect(() => {

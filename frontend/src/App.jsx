@@ -105,27 +105,27 @@ const App = () => {
           element: <AdminOrders />,
         },
         {
-          path: 'admin-orders',
+          path: 'orders',
           element: <AdminOrders />,
         },
         {
-          path: 'admin-orders/:order_id',
+          path: 'orders/:order_id',
           element: <AdminOrder />,
         },
         {
-          path: 'admin-products',
+          path: 'products',
           element: <AdminProducts />,
         },
         {
-          path: 'admin-products/:product_id',
+          path: 'products/:product_id',
           element: <AdminProduct />,
         },
         {
-          path: 'admin-blogs',
+          path: 'blogs',
           element: <AdminBlogs />,
         },
         {
-          path: 'admin-blogs/:blog_id',
+          path: 'blogs/:blog_id',
           element: <AdminBlog />,
         },
         {
@@ -137,23 +137,23 @@ const App = () => {
           element: <AdminArticle />,
         },
         {
-          path: 'admin-reviews',
+          path: 'reviews',
           element: <AdminReviews />,
         },
         {
-          path: 'admin-reviews/:review_id',
+          path: 'reviews/:review_id',
           element: <AdminReview />,
         },
         {
-          path: 'admin-shipping-methods',
+          path: 'shipping-methods',
           element: <AdminShippingMethods />,
         },
         {
-          path: 'admin-shipping-methods/:method_id',
+          path: 'shipping-methods/:method_id',
           element: <AdminShippingMethod />,
         },
         {
-          path: 'admin-news',
+          path: 'news',
           element: <AdminNews />,
         },
       ],

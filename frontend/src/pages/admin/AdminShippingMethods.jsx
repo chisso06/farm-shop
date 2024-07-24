@@ -12,7 +12,7 @@ const AdminShippingMethods = () => {
 
 	const handleClick = (e, method_id) => {
 		e.preventDefault();
-		navigate(`/admin/admin-shipping-methods/${method_id}`);
+		navigate(`/admin/shipping-methods/${method_id}`);
 	}
 
 	useEffect(() => {
@@ -37,7 +37,7 @@ const AdminShippingMethods = () => {
 				<p className='w-1/2 font-mono text-2xl font-bold'>送料管理</p>
 				<div className='w-1/2 flex justify-end'>
 					<a
-						href='/admin/admin-shipping-methods/0'
+						href='/admin/shipping-methods/0'
 						className='w-40 p-2 text-center text-white font-mono font-bold bg-amber-600 font-mono hover:bg-amber-500 rounded'>
 						+配送方法を追加
 					</a>

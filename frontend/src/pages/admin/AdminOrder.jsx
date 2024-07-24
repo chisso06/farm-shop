@@ -252,7 +252,7 @@ const AdminOrder = () => {
 			}
 			if (!orderData) {
 				context.setLoading(false);
-				window.location.href = '/admin/admin-orders';
+				window.location.href = '/admin/orders';
 				return ;
 			}
 			const orderStatus = orderStatusList.find(
@@ -284,7 +284,7 @@ const AdminOrder = () => {
 		<div className='px-4'>
 			<ExportModal />
 			<MailModal />
-			<a href='/admin/admin-orders'>
+			<a href='/admin/orders'>
 				&lt; <span className='text-sm hover:underline'>注文一覧に戻る</span>
 			</a>
 			<p className='my-6 font-mono text-xl font-bold'>注文詳細</p>
