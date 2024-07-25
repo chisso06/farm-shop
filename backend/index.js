@@ -20,7 +20,7 @@ const NO_STOCK_ERROR = "Error: no stock";
 
 // config
 require('dotenv').config();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8080;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 const STRIPE_SK_KEY = process.env.STRIPE_SK_KEY;
 
