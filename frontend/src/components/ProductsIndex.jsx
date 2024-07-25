@@ -11,18 +11,28 @@ const ProductsIndex = ({products, category, base64Images}) => {
 		const item = {
 			product_id: products[p_i].id,
 			number: 1,
+			subscription: products[p_i].subscription
 		};
 		const cart = JSON.parse(localStorage.getItem('cart'));
-		const i = cart.findIndex(({product_id}) => product_id === item.product_id);
 
-		if ((i < 0 && products[p_i].stock < item.number)
-			|| (i >= 0 && products[p_i].stock < cart[i].number + item.number))
+		for (var i = 0; i < cart.length; i ++) {
+			if ((products[p_i].subscription || cart[i].subscription) && cart[i].number && cart[i].product_id !== products[p_i].id) {
+				window.alert('定期便の商品と他の商品を同時に購入することはできません');
+				return ;
+			}
+		}
+
+		const same_item_i = cart.findIndex(({product_id}) => product_id === item.product_id);
+		if ((same_item_i < 0 && products[p_i].stock < item.number)
+			|| (same_item_i >= 0 && products[p_i].stock < cart[same_item_i].number + item.number))
 			window.alert('在庫数を超えています。');
+		else if (same_item_i >= 0 && cart[same_item_i].subscription && cart[same_item_i].number > 0)
+			window.alert('定期便の購入は1度につき1つまでです');
 		else {
-			if (i < 0)
+			if (same_item_i < 0)
 				cart.push(item);
 			else
-				cart[i].number += item.number;
+				cart[same_item_i].number += item.number;
 			localStorage.setItem('cart', JSON.stringify(cart));
 			toast_context.setMessage('商品を買い物かごに追加しました');
 		}

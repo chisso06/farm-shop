@@ -122,7 +122,7 @@ export const orderStatusList = [
 	},
 ];
 
-export const categoryList = ['フィナンシェ', 'ケーキ', 'その他'];
+export const categoryList = ['フィナンシェ', 'ケーキ'];
 
 export const areaList = [
 	{method_name: 'Hokkaido', name: '北海道', prefectures: ['北海道']},

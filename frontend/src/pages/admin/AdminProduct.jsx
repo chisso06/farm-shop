@@ -29,7 +29,8 @@ const AdminProduct = () => {
 		category: '',
 		shipping_method: '',
 		public_status: 0,
-		popular_status: 0
+		popular_status: 0,
+		subscription: 0
 	});
 	const [images, setImages] = useState([]);
 	const [shippingMethods, setShippingMethods] = useState([]);
@@ -316,13 +317,12 @@ const AdminProduct = () => {
 				</div>
 				{/* カテゴリー */}
 				<div className='mt-4 flex items-center'>
-					<label className='mr-2 w-1/2'>カテゴリー<span className='text-amber-600'>*</span></label>
+					<label className='mr-2 w-1/2'>カテゴリー</label>
 					<select
 						onChange={handleInputChange}
 						name='category'
 						className='p-2 w-1/2 h-10 border rounded invalid:border-amber-600'
-						value={product.category ? product.category : ''}
-						required>
+						value={product.category ? product.category : ''}>
 						<option value=''>選択してください</option>
 						{categoryList.map((c, i) => {
 							return <option key={i} value={c}>{c}</option>
@@ -373,6 +373,17 @@ const AdminProduct = () => {
 						type='checkbox'
 						value={product.popular_status}
 						checked={product.popular_status}
+						className='w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500 focus:ring-2 before:text-amber-200' />
+				</div>
+				{/* 定期便 */}
+				<div className='mt-4 flex items-center'>
+					<label className='mr-2 w-1/2'>定期便</label>
+					<input
+						onChange={handleInputChange}
+						name='subscription'
+						type='checkbox'
+						value={product.subscription}
+						checked={product.subscription}
 						className='w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500 focus:ring-2 before:text-amber-200' />
 				</div>
 				{/* Buttons */}
