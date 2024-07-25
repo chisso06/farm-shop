@@ -20,6 +20,7 @@ const NO_STOCK_ERROR = "Error: no stock";
 
 // config
 require('dotenv').config();
+const PORT = process.env.PORT;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 const STRIPE_SK_KEY = process.env.STRIPE_SK_KEY;
 
@@ -67,8 +68,11 @@ app.use((req, res, next) => {
 });
 app.use(express.urlencoded({extended:true}))
 
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-app.get('/', (req, res) => {
+
+app.get('/backend', (req, res) => {
 	res.send('Hello World!');
 });
 
@@ -82,7 +86,7 @@ const productsStorage = multer.diskStorage({
 	filename: (req, file, cb) => {cb(null, file.originalname)}
 });
 const uploadProducts = multer({ storage: productsStorage }).array('files[]', 10);
-app.post('/upload/products', (req, res) => {
+app.post('/backend/upload/products', (req, res) => {
 	uploadProducts(req, res, (err) => {
 		if (err) {
 			console.log("Error: Can't upload files");
@@ -95,7 +99,7 @@ app.post('/upload/products', (req, res) => {
 	})
 });
 
-app.get('/products', (req, res) => {
+app.get('/backend/products', (req, res) => {
 	const category = req.query.category;
 	const popular_status = Number(req.query.popular_status);
 	const public_status = Number(req.query.public_status);
@@ -133,7 +137,7 @@ app.get('/products', (req, res) => {
   );
 });
 
-// app.get('/products/images', (req, res) => {
+// app.get('/backend/products/images', (req, res) => {
 // 	const sql_prompt = `
 // 		SELECT * FROM images
 // 		WHERE order_of_images=1
@@ -149,7 +153,7 @@ app.get('/products', (req, res) => {
 //   );
 // });
 
-app.get('/products/:id', (req, res) => {
+app.get('/backend/products/:id', (req, res) => {
 	const productId = Number(req.params.id);
 	const public_status = Number(req.query.public_status);
 
@@ -179,7 +183,7 @@ app.get('/products/:id', (req, res) => {
   );
 });
 
-app.post('/products', async (req, res) => {
+app.post('/backend/products', async (req, res) => {
 	const productData = req.body.product;
 	const imagesData = req.body.images;
 	const product = {
@@ -291,7 +295,7 @@ app.post('/products', async (req, res) => {
 	});
 });
 
-app.post('/products/:id', async (req, res) => {
+app.post('/backend/products/:id', async (req, res) => {
 	const productId = Number(req.params.id);
 	const productData = req.body.product;
 	const imagesData = req.body.images;
@@ -393,7 +397,7 @@ app.post('/products/:id', async (req, res) => {
 	});
 });
 
-app.delete('/products/:id', async (req, res) => {
+app.delete('/backend/products/:id', async (req, res) => {
 	const productId = Number(req.params.id);
 	var error_message = '';
 
@@ -439,7 +443,7 @@ app.delete('/products/:id', async (req, res) => {
 	);
 });
 
-app.get('/products/:id/images', (req, res) => {
+app.get('/backend/products/:id/images', (req, res) => {
 	const productId = Number(req.params.id);
 
 	if (productId <= 0) {
@@ -474,7 +478,7 @@ const blogsStorage = multer.diskStorage({
 	filename: (req, file, cb) => {cb(null, file.originalname)}
 });
 const uploadBlogs = multer({ storage: blogsStorage }).array('files[]', 10);
-app.post('/upload/blogs', (req, res) => {
+app.post('/backend/upload/blogs', (req, res) => {
 	uploadBlogs(req, res, (err) => {
 		if (err) {
 			console.log("Error: Can't upload files");
@@ -487,7 +491,7 @@ app.post('/upload/blogs', (req, res) => {
 	})
 });
 
-app.get('/blogs', (req, res) => {
+app.get('/backend/blogs', (req, res) => {
 	const sql_prompt = `
 		SELECT
 			id,
@@ -511,7 +515,7 @@ app.get('/blogs', (req, res) => {
   );
 });
 
-// app.get('/blogs/images', (req, res) => {
+// app.get('/backend/blogs/images', (req, res) => {
 // 	const sql_prompt = `
 // 		SELECT * FROM images
 // 		WHERE order_of_images=1
@@ -527,7 +531,7 @@ app.get('/blogs', (req, res) => {
 //   );
 // });
 
-app.get('/blogs/:id', (req, res) => {
+app.get('/backend/blogs/:id', (req, res) => {
 	const blogId = Number(req.params.id);
 
 	if (isNaN(blogId) || blogId <= 0) {
@@ -555,7 +559,7 @@ app.get('/blogs/:id', (req, res) => {
   );
 });
 
-app.post('/blogs', async (req, res) => {
+app.post('/backend/blogs', async (req, res) => {
 	const blogData = req.body;
 	const blog = {
 		title: blogData.title,
@@ -584,7 +588,7 @@ app.post('/blogs', async (req, res) => {
 	return res.status(200).json({ blog });
 });
 
-app.post('/blogs/:id', async (req, res) => {
+app.post('/backend/blogs/:id', async (req, res) => {
 	const blogId = Number(req.params.id);
 	const blogData = req.body;
 	const blog = {
@@ -618,7 +622,7 @@ app.post('/blogs/:id', async (req, res) => {
 	return res.status(200).json({ blog });
 });
 
-app.delete('/blogs/:id', async (req, res) => {
+app.delete('/backend/blogs/:id', async (req, res) => {
 	const blogId = Number(req.params.id);
 
 	if (isNaN(blogId) || blogId <= 0) {
@@ -656,7 +660,7 @@ const articlesStorage = multer.diskStorage({
 	filename: (req, file, cb) => {cb(null, file.originalname)}
 });
 const uploadArticles = multer({ storage: articlesStorage }).array('files[]', 10);
-app.post('/upload/articles', (req, res) => {
+app.post('/backend/upload/articles', (req, res) => {
 	uploadArticles(req, res, (err) => {
 		if (err) {
 			console.log("Error: Can't upload files");
@@ -669,7 +673,7 @@ app.post('/upload/articles', (req, res) => {
 	})
 });
 
-app.get('/articles', (req, res) => {
+app.get('/backend/articles', (req, res) => {
 	const sql_prompt = `
 		SELECT
 			id,
@@ -693,7 +697,7 @@ app.get('/articles', (req, res) => {
   );
 });
 
-// app.get('/articles/images', (req, res) => {
+// app.get('/backend/articles/images', (req, res) => {
 // 	const sql_prompt = `
 // 		SELECT * FROM images
 // 		WHERE order_of_images=1
@@ -709,7 +713,7 @@ app.get('/articles', (req, res) => {
 //   );
 // });
 
-app.get('/articles/:id', (req, res) => {
+app.get('/backend/articles/:id', (req, res) => {
 	const articleId = Number(req.params.id);
 
 	if (isNaN(articleId) || articleId <= 0) {
@@ -737,7 +741,7 @@ app.get('/articles/:id', (req, res) => {
   );
 });
 
-app.post('/articles', async (req, res) => {
+app.post('/backend/articles', async (req, res) => {
 	const articleData = req.body;
 	const article = {
 		title: articleData.title,
@@ -765,7 +769,7 @@ app.post('/articles', async (req, res) => {
 	return res.status(200).json({ article });
 });
 
-app.post('/articles/:id', async (req, res) => {
+app.post('/backend/articles/:id', async (req, res) => {
 	const articleId = Number(req.params.id);
 	const articleData = req.body;
 	const article = {
@@ -799,7 +803,7 @@ app.post('/articles/:id', async (req, res) => {
 	return res.status(200).json({ article });
 });
 
-app.delete('/articles/:id', async (req, res) => {
+app.delete('/backend/articles/:id', async (req, res) => {
 	const articleId = Number(req.params.id);
 
 	if (isNaN(articleId) || articleId <= 0) {
@@ -832,7 +836,7 @@ app.delete('/articles/:id', async (req, res) => {
 	review
 ========== */
 
-app.get('/reviews', (req, res) => {
+app.get('/backend/reviews', (req, res) => {
 	const productId = Number(req.query.product_id);
 	const public_status = Number(req.query.public_status);
 
@@ -872,7 +876,7 @@ app.get('/reviews', (req, res) => {
   );
 });
 
-app.get('/reviews/:id', (req, res) => {
+app.get('/backend/reviews/:id', (req, res) => {
 	const reviewId = Number(req.params.id);
 
 	if (isNaN(reviewId) || reviewId <= 0) {
@@ -904,7 +908,7 @@ app.get('/reviews/:id', (req, res) => {
   );
 });
 
-app.post('/reviews', async (req, res) => {
+app.post('/backend/reviews', async (req, res) => {
 	const reviewData = req.body;
 	const review = {
 		id: reviewData.id,
@@ -937,7 +941,7 @@ app.post('/reviews', async (req, res) => {
 	return res.status(200).json({ review });
 });
 
-app.post('/reviews/:id', async (req, res) => {
+app.post('/backend/reviews/:id', async (req, res) => {
 	const reviewId = Number(req.params.id);
 	const reviewData = req.body;
 	var error_message = '';
@@ -970,7 +974,7 @@ app.post('/reviews/:id', async (req, res) => {
 	news
 ========== */
 
-app.get('/news', (req, res) => {
+app.get('/backend/news', (req, res) => {
 	connection.query(`
 		SELECT id, DATE_FORMAT(date, '%Y年%m月%d日') AS date, content
 		FROM news ORDER BY date desc`,
@@ -983,7 +987,7 @@ app.get('/news', (req, res) => {
 	});
 });
 
-app.post('/news', (req, res) => {
+app.post('/backend/news', (req, res) => {
 	const newsData = req.body;
 	const news = {
 		date: newsData.date,
@@ -1002,7 +1006,7 @@ app.post('/news', (req, res) => {
 		});
 });
 
-app.delete('/news/:id', (req, res) => {
+app.delete('/backend/news/:id', (req, res) => {
 	const newsId = Number(req.params.id);
 
 	if (isNaN(newsId) || newsId <= 0) {
@@ -1025,7 +1029,7 @@ app.delete('/news/:id', (req, res) => {
 	shipping
 ========== */
 
-app.get('/shipping', (req, res) => {
+app.get('/backend/shipping', (req, res) => {
 	connection.query(
 		`SELECT * FROM shipping_methods`,
 		(err, results, fields) => {
@@ -1037,7 +1041,7 @@ app.get('/shipping', (req, res) => {
 		});
 });
 
-app.get('/shipping/:id', (req, res) => {
+app.get('/backend/shipping/:id', (req, res) => {
 	var methodId = Number(req.params.id);
 
 	if (isNaN(methodId) || methodId <= 0) {
@@ -1056,7 +1060,7 @@ app.get('/shipping/:id', (req, res) => {
 	);
 });
 
-app.post('/shipping', async(req, res) => {
+app.post('/backend/shipping', async(req, res) => {
 	const methodData = req.body.method;
 	const feesData = req.body.fees;
 	var error_message = '';
@@ -1140,7 +1144,7 @@ app.post('/shipping', async(req, res) => {
 	});
 });
 
-app.post('/shipping/:id', async (req, res) => {
+app.post('/backend/shipping/:id', async (req, res) => {
 	var methodId = Number(req.params.id);
 	const methodData = req.body.method;
 	const feesData = req.body.fees;
@@ -1243,7 +1247,7 @@ app.post('/shipping/:id', async (req, res) => {
 	});
 })
 
-app.delete('/shipping/:id', (req, res) => {
+app.delete('/backend/shipping/:id', (req, res) => {
 	const shippingId = Number(req.params.id);
 	var error_message = '';
 
@@ -1276,7 +1280,7 @@ app.delete('/shipping/:id', (req, res) => {
 	);
 });
 
-app.get('/shipping/:id/fee', (req, res) => {
+app.get('/backend/shipping/:id/fee', (req, res) => {
 	const methodId = Number(req.params.id);
 
 	if (methodId <= 0) {
@@ -1301,7 +1305,7 @@ app.get('/shipping/:id/fee', (req, res) => {
 	order
 ========== */
 
-app.get('/orders', (req, res) => {
+app.get('/backend/orders', (req, res) => {
   connection.query(
     `SELECT
 			id,
@@ -1323,7 +1327,7 @@ app.get('/orders', (req, res) => {
   );
 });
 
-app.get('/orders/:id', (req, res) => {
+app.get('/backend/orders/:id', (req, res) => {
 	const orderId = req.params.id;
 
 	if (!orderId) {
@@ -1352,7 +1356,7 @@ app.get('/orders/:id', (req, res) => {
   );
 });
 
-app.post('/orders/:id', (req, res) => {
+app.post('/backend/orders/:id', (req, res) => {
 	const status = req.body.status;
 	const orderId = req.params.id;
 
@@ -1374,7 +1378,7 @@ app.post('/orders/:id', (req, res) => {
 	);
 });
 
-app.get('/ordered_products', (req, res) => {
+app.get('/backend/ordered_products', (req, res) => {
 	const orderId = req.query.order_id;
 
 	if (!orderId) {
@@ -1393,7 +1397,7 @@ app.get('/ordered_products', (req, res) => {
   );
 });
 
-app.get('/ordered_products/:id', (req, res) => {
+app.get('/backend/ordered_products/:id', (req, res) => {
 	const orderedProductId = Number(req.params.id);
 
 	if (isNaN(orderedProductId) || orderedProductId <= 0) {
@@ -1417,7 +1421,7 @@ app.get('/ordered_products/:id', (req, res) => {
 	stripe
 ========== */
 
-app.post('/create-checkout-session', async (req, res) => {
+app.post('/backend/create-checkout-session', async (req, res) => {
 	const orderId = crypto.randomUUID().substring(0, 8).toUpperCase();;
 	const cart = req.body.cart;
 	const customer = req.body.customer;
@@ -1609,6 +1613,7 @@ app.post('/create-checkout-session', async (req, res) => {
 	};
 	const session = await stripe.checkout.sessions.create(create_checkout_session_data)
 		.catch((err) => {
+			console.log(err);
 			error_message = "Error: could not create stripe session";
 			console.error(error_message);
 			return ;
@@ -1696,7 +1701,7 @@ app.post('/create-checkout-session', async (req, res) => {
 	res.status(200).json({session_url: session.url});
 });
 
-app.post('/stripe-webhook', async (req, res) => {
+app.post('/backend/stripe-webhook', async (req, res) => {
   const event = req.body;
 	const connectionPromise = await mysqlPromise.createConnection({
 		host: 'localhost',
@@ -1800,11 +1805,11 @@ app.post('/stripe-webhook', async (req, res) => {
 	others
 ========== */
 
-app.get('/test', (req, res) => {
+app.get('/backend/test', (req, res) => {
 	res.status(200).json({ message: "Hello World!" });
 });
 
-app.get('/images/:id', (req, res) => {
+app.get('/backend/images/:id', (req, res) => {
 	const imageId = Number(req.params.id);
 	const tableName = req.query.table;
 
@@ -1829,11 +1834,20 @@ app.get('/images/:id', (req, res) => {
 });
 
 
-app.all("*", (req, res) => {
-	console.log('[backend]404 ');
-  return res.status(404).json({ message: "not exist path" });
-})
+// app.all("*", (req, res) => {
+// 	console.log('[backend]404 ');
+//   return res.status(404).json({ message: "not exist path" });
+// })
 
-app.listen(4242, () => {
-	console.log('Running on port 4242');
+app.get('*', (req, res) => {
+	res.sendFile(path.join(__dirname,'../frontend/build/index.html'));
+});
+
+// app.listen(4242, () => {
+// 	console.log('Running on port 4242');
+// });
+
+app.listen(PORT, () => {
+	console.log('Running on port ' + PORT);
+	console.log('FRONTEND_ORIGIN: ' + FRONTEND_ORIGIN);
 });
