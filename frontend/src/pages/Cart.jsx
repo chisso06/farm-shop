@@ -1,24 +1,19 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components';
 import { createCart, getIndexBase64Images, imageSrc } from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
-import { ToastContext } from '../functions/context/ToastFunc';
 
 const Cart = () => {
-	const search = useLocation().search;
-	const query = new URLSearchParams(search);
-	const message = query.get('message');
   const [sum, setSum] = useState(0);
   const [cart, setCart] = useState([]);
   const [base64Images, setBase64Images] = useState([]);
 	const { showBoundary } = useErrorBoundary();
-	const toast_context = useContext(ToastContext);
-	const loading_context = useContext(LoadingContext);
+	const context = useContext(LoadingContext);
 	const navigate = useNavigate();
 
-	const handleChange = (e, i) => {
+	const handleChange = (e, item_i) => {
 		e.preventDefault();
 
 		var value = Number(e.target.value);
@@ -30,8 +25,22 @@ const Cart = () => {
 			return ;
 		}
 
-		cartListData[i].number = value;
-		cartStorage[i].number = value;
+		if (cart[item_i].subscription && value > 1) {
+			window.alert('定期便の購入は1度につき1つまでです');
+			value = 1;
+		}
+		if (value) {
+			for (var i = 0; i < cart.length; i ++) {
+				if ((cart[item_i].subscription || cart[i].subscription) && cart[i].number && cart[i].product_id !== cart[item_i].product_id) {
+					window.alert('定期便の商品と他の商品を同時に購入することはできません');
+					value = 0;
+					break ;
+				}
+			}
+		}
+
+		cartListData[item_i].number = value;
+		cartStorage[item_i].number = value;
 
 		setCart([...cartListData]);
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
@@ -47,9 +56,19 @@ const Cart = () => {
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
 	}
 
+	const handleSubmit = () => {
+		for (var i = 0; i < cart.length; i ++) {
+			if (cart[i].subscription && (cart[i].number > 1 || i !== 0)) {
+				window.alert('定期便の購入は1度につき1つまでです。\nまた、他の商品との同時購入はできません。');
+				return ;
+			}
+		}
+		navigate('/order-form');
+	}
+
 	useEffect(() => {
 		const getData = async () => {
-			loading_context.setLoading(true);
+			context.setLoading(true);
 
 			var cartListData;
 			try {
@@ -59,7 +78,7 @@ const Cart = () => {
 				return ;
 			}
 			if (!cartListData) {
-				loading_context.setLoading(false);
+				context.setLoading(false);
 				return ;
 			}
 
@@ -72,13 +91,9 @@ const Cart = () => {
 			}
 			setBase64Images(base64ImagesData);
 
-			loading_context.setLoading(false);
+			context.setLoading(false);
 		}
 		getData();
-
-		if (message) {
-			toast_context.setMessage(message);
-		}
 	}, []);
 
 	useEffect(() => {
@@ -136,9 +151,11 @@ const Cart = () => {
 							小計：{sum}円
 						</p>
 						<p className='pt-4 mb-8 text-center text-sm text-stone-600'>※送料は購入手続き時に計算されます</p>
-						<a href='/order-form' className='w-60 p-2 inline-block text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
+						<button
+							onClick={handleSubmit}
+							className='w-60 p-2 inline-block text-center text-white bg-amber-600 hover:bg-amber-500 rounded'>
 							お支払いにすすむ
-						</a>
+						</button>
 					</div>
 				</div>
 				: <p className='my-48 text-center'>現在、カートに入っている商品はありません。</p>

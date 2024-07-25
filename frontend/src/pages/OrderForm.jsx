@@ -14,6 +14,14 @@ const CartComponent = ({cart, shippingFee, setShippingMethods}) => {
 
 	useEffect(() => {
 		if (cart.length && Object.keys(cart[0]).length) {
+			for (var i = 0; i < cart.length; i ++) {
+				if (cart[i].subscription && (cart[i].number !== 1 || i !== 0)) {
+					window.alert('定期便の購入は1度につき1つまでです。\nまた、他の商品との同時購入はできません。');
+					navigate('/cart');
+					return ;
+				}
+			}
+
 			var sum_calc = 0;
 			const shippingMethodList = [];
 
@@ -152,7 +160,7 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 		const cartStorage = JSON.parse(localStorage.getItem('cart'));
 		const result = cartStorage.find(
 			(item, i) => (item.product_id !== cart[i].product_id || item.number !== cart[i].number));
-		if (result) {
+		if (result || cart.length !== cartStorage.length) {
 			window.alert("カートの内容が変更された可能性があります。");
 			context.setLoading(false);
 			navigate('/cart');
