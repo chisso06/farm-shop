@@ -41,9 +41,9 @@ const Blogs = () => {
 	return (
 		<div className='my-16'>
 			<p className='py-20 sm:py-40 text-center text-2xl sm:text-4xl bg-yellow-600 text-white'>ブログ</p>
-			<ul className='w-3/4 mx-auto my-20 grid sm:grid-cols-3 gap-4' >{
-				blogs.length ? blogs.map((blog, i) => {
-					return (
+			{ blogs.length ? 
+				<ul className='w-3/4 mx-auto my-20 grid sm:grid-cols-3 gap-4' >
+					{ blogs.map((blog, i) => { return (
 						<li key={i} className='hover:opacity-60'>
 							<a href={'/blogs/' + blog.id} className='aspect-square' >
 								<img
@@ -58,9 +58,11 @@ const Blogs = () => {
 								</div>
 							</a>
 						</li>
-					);
-				}):''
-			}</ul>
+					)})}
+				</ul>
+				:
+				<p className='mt-20 mb-80 text-center'>ブログ記事はありません</p>
+			}
 		</div>
 	);
 };

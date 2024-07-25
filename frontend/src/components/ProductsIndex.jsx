@@ -39,6 +39,7 @@ const ProductsIndex = ({products, category, base64Images}) => {
 	};
 
 	return (
+		products.length ? 
 		<ul className='grid sm:grid-cols-2 gap-8' >
 		{ products.length ? products.map((p, i) => {
 			if (!category || p.category === category)
@@ -69,6 +70,8 @@ const ProductsIndex = ({products, category, base64Images}) => {
 			);
 		}):''
 	}</ul>
+	:
+	<p className='mt-20 mb-80 text-center'>商品がありません</p>
 	);
 };
 
