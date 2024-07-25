@@ -2,9 +2,9 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
   app.use(
-    'https://farm-shop-deploy.vercel.app/backend',
+    '/backend',
     createProxyMiddleware({
-      target: "https://farm-shop-deploy.vercel.app",
+      target: process.env.REACT_APP_BACKEND_ORIGIN,
       changeOrigin: true,
     })
   );
