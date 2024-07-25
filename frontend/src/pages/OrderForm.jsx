@@ -174,7 +174,7 @@ const FormComponent = ({cart, shippingMethods, setShippingFee}) => {
 		}
 
 		context.setLoading(false);
-	}
+	};
 
 	return (
 		<form onSubmit={handleSubmit} className='w-full sm:order-first sm:w-3/5'>

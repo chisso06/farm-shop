@@ -1454,15 +1454,15 @@ app.post('/create-checkout-session', async (req, res) => {
 		}
 	}
 
-	// 在庫確認
+	// 商品確認
+	var valid_status = 1;
 	var stock_status = 1;
 	var error_message = '';
 	await Promise.all(cart.map(async (item, i) => {
-		// 在庫確認
-		if (stock_status) {
+		if (valid_status && stock_status) {
 			// await connectionPromise.beginTransaction();
-			const [stock_results] = await connectionPromise.query(
-				`SELECT stock FROM products WHERE id=${item.product_id}`
+			const [results] = await connectionPromise.query(
+				`SELECT stock FROM products WHERE id=${item.product_id} AND public_status>0`
 			).catch((err) => {
 				console.log(err);
 				error_message =  CONNECTION_ERROR;
@@ -1470,7 +1470,11 @@ app.post('/create-checkout-session', async (req, res) => {
 			});
 			if (error_message)
 				return ;
-			const stock = stock_results[0].stock;
+			if (!results.length) {
+				valid_status = 0;
+				return ;
+			}
+			const stock = results[0].stock;
 			item['stock'] = stock;
 			if (stock < 0 || stock < item.number)
 				stock_status = 0;
@@ -1478,6 +1482,9 @@ app.post('/create-checkout-session', async (req, res) => {
 	}));
 	if (error_message) {
 		return res.status(500).json({ error: true, message: error_message });
+	} else if (!valid_status) {
+		console.error("Error: not available product");
+		return res.status(500).json({ error: true, message: "Error: not available product" });
 	} else if (!stock_status) {
 		console.error(NO_STOCK_ERROR);
 		return res.status(500).json({ error: true, message: NO_STOCK_ERROR });

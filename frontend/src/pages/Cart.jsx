@@ -56,7 +56,8 @@ const Cart = () => {
 		localStorage.setItem('cart', JSON.stringify(cartStorage));
 	}
 
-	const handleSubmit = () => {
+	const handleSubmit = (e) => {
+		e.preventDefault();
 		for (var i = 0; i < cart.length; i ++) {
 			if (cart[i].subscription && (cart[i].number > 1 || i !== 0)) {
 				window.alert('定期便の購入は1度につき1つまでです。\nまた、他の商品との同時購入はできません。');
@@ -64,7 +65,7 @@ const Cart = () => {
 			}
 		}
 		navigate('/order-form');
-	}
+	};
 
 	useEffect(() => {
 		const getData = async () => {
