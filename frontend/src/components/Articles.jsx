@@ -1,6 +1,5 @@
 import { React, useContext, useEffect, useState } from 'react';
 import { useErrorBoundary } from "react-error-boundary";
-import { useNavigate } from 'react-router-dom';
 import { getArticles, getIndexBase64Images, imageSrc } from '../functions';
 import { LoadingContext } from '../functions/context/LoadingFunc';
 
@@ -9,12 +8,6 @@ const Articles = () => {
 	const [base64Images, setBase64Images] = useState([]);
 	const { showBoundary } = useErrorBoundary();
 	const context = useContext(LoadingContext);
-	const navigate = useNavigate();
-
-	const handleClick = (e, articleId) => {
-		e.preventDefault();
-		navigate(`/articles/${articleId}`);
-	}
 
 	useEffect(() => {
 		const getData = async () => {
@@ -46,13 +39,13 @@ const Articles = () => {
 	}, []);
 
 	return (
+		articles.length ? 
 		<div className='my-20'>
-			<ul className='mb-20 grid sm:grid-cols-3' >{
-				articles.length ? articles.map((article, i) => {
+			<ul className='mb-20 grid sm:grid-cols-3' >
+				{ articles.length ? articles.map((article, i) => {
 					return (
 						<li key={i} className='hover:opacity-60'>
 							<a
-								// onClick={(e) => handleClick(e, article.id)}
 								href={'/articles/' + article.id}
 								className='relative aspect-video block' >
 								<img
@@ -68,9 +61,10 @@ const Articles = () => {
 							</a>
 						</li>
 					);
-				}):''
-			}</ul>
+				}):''}
+			</ul>
 		</div>
+		:''
 	);
 };
 

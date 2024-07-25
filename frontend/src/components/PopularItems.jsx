@@ -37,10 +37,12 @@ const PopularItems = () => {
 	}, []);
 
 	return (
+		products.length ? 
 		<div className='my-20'>
 			<p className='mb-20 text-center text-4xl text-black'>人気商品</p>
 			<ProductsIndex products={products} base64Images={base64Images} />
 		</div>
+		:''
 	);
 };
 
