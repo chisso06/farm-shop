@@ -6,6 +6,7 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 
 axios.defaults.baseURL = process.env.REACT_APP_BACKEND_ORIGIN;
+axios.defaults.headers = {'X-Requested-With': 'XMLHttpRequest'};
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
