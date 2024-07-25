@@ -5,7 +5,7 @@ module.exports = function(app) {
     '/backend',
     createProxyMiddleware({
       target: process.env.REACT_APP_BACKEND_ORIGIN,
-      changeOrigin: true,
+      // changeOrigin: true,
     })
   );
 };
