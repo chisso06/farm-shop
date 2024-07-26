@@ -18,11 +18,11 @@ const INVALID_REVIEW_ID_ERROR = "Error: invalid review id";
 const INVALID_PRODUCT_STATUS_ERROR = "Error: invalid product status"
 const NO_STOCK_ERROR = "Error: no stock";
 
-// config
+// env
 require('dotenv').config();
 const PORT = process.env.PORT || 8080;
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 const STRIPE_SK_KEY = process.env.STRIPE_SK_KEY;
+// const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 
 //stripe
 const stripe = require('stripe')(STRIPE_SK_KEY);
@@ -38,7 +38,7 @@ const connection = mysql.createConnection({
 const mysqlPromise = require('mysql2/promise');
 
 // cors
-// const cors = require('cors');
+const cors = require('cors');
 
 // crypto
 const crypto = require('crypto');
@@ -53,31 +53,31 @@ const multer  = require('multer');
 const express = require('express');
 const app = express();
 app.use(express.json());
-// app.use(cors());
+app.use(cors());
 app.use((req, res, next) => {
 	console.log(`[${req.method}] ${req.url}`);
 
 	// cors
-	const origin = req.headers.origin;
+	// const origin = req.headers.origin;
 	// if (origin === FRONTEND_ORIGIN) {
 	// 	res.header('Access-Control-Allow-Origin', origin);
 	// 	res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
 	// 	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 	// }
 	// res.setHeader('Access-Control-Allow-Credentials', true)
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  // another common pattern
-  // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
-	if ('OPTIONS' == req.method) {
-    res.send(204);
-  } else {
+  // res.setHeader('Access-Control-Allow-Origin', '*')
+  // // another common pattern
+  // // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+  // res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+  // res.setHeader(
+  //   'Access-Control-Allow-Headers',
+  //   'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  // )
+	// if ('OPTIONS' == req.method) {
+  //   res.send(204);
+  // } else {
     next();
-  }
+  // }
 });
 app.use(express.urlencoded({extended:true}))
 
@@ -1445,7 +1445,7 @@ app.post('/backend/create-checkout-session', async (req, res) => {
 		database: 'farm_shop',
 		// namedPlaceholders: true
 	});
-	const mode = cart[0].subscription ? 'subscription' : 'payment';
+	const mode = Number(cart[0].subscription) ? 'subscription' : 'payment';
 	const line_items = [];
 	const shippingMethods = [];
 	const areaList = [
@@ -1461,11 +1461,12 @@ app.post('/backend/create-checkout-session', async (req, res) => {
 		{method_name: 'Hokkaido', name: '九州', prefectures: ['福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県']},
 		{method_name: 'Hokkaido', name: '沖縄', prefectures: ['沖縄県']},
 	];
+	const frontendOrigin = req.protocol + '://' + req.get('host');
 	var total_amount = 0;
 	var shipping_fee = 0;
 
 	for (var i = 0; i < cart.length; i ++) {
-		if (cart[i].subscription && (cart[i].number !== 1 || i !== 0)) {
+		if (Number(cart[i].subscription) && (cart[i].number !== 1 || i !== 0)) {
 			console.log("Error: invalid subscription purchase")
 			return res.status(500).json({ error: true, message: "Error: invalid subscription purchase" });
 		}
@@ -1621,8 +1622,8 @@ app.post('/backend/create-checkout-session', async (req, res) => {
 		line_items,
 		mode,
 		expires_at: Math.floor(Date.now() / 1000) + (60 * 30),
-		success_url: `${FRONTEND_ORIGIN}/order-completed?order_id=${orderId}`,
-		cancel_url: `${FRONTEND_ORIGIN}/cart`,
+		success_url: `${frontendOrigin}/order-completed?order_id=${orderId}`,
+		cancel_url: `${frontendOrigin}/cart`,
 	};
 	const session = await stripe.checkout.sessions.create(create_checkout_session_data)
 		.catch((err) => {
@@ -1862,5 +1863,5 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
 	console.log('Running on port ' + PORT);
-	console.log('FRONTEND_ORIGIN: ' + FRONTEND_ORIGIN);
+	// console.log('FRONTEND_ORIGIN: ' + FRONTEND_ORIGIN);
 });

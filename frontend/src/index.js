@@ -5,12 +5,15 @@ import App from './App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 
-axios.defaults.baseURL = process.env.REACT_APP_BACKEND_ORIGIN;
+const uri = new URL(window.location.href);
+axios.defaults.baseURL = uri.origin;
+// axios.defaults.baseURL = process.env.REACT_APP_BACKEND_ORIGIN;
+
 // axios.defaults.headers.post['Access-Control-Allow-Credentials'] = 'true';
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
-axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
-axios.defaults.headers.post['Access-Control-Allow-Methods'] = 'GET,OPTIONS,PATCH,DELETE,POST,PUT';
-axios.defaults.headers.post['X-Requested-With'] = 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version';
+// axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
+// axios.defaults.headers.post['Access-Control-Allow-Methods'] = 'GET,OPTIONS,PATCH,DELETE,POST,PUT';
+// axios.defaults.headers.post['X-Requested-With'] = 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
