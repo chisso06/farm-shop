@@ -20,9 +20,9 @@ const NO_STOCK_ERROR = "Error: no stock";
 
 // env
 require('dotenv').config();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 const STRIPE_SK_KEY = process.env.STRIPE_SK_KEY;
-// const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 
 //stripe
 const stripe = require('stripe')(STRIPE_SK_KEY);
@@ -1461,7 +1461,7 @@ app.post('/backend/create-checkout-session', async (req, res) => {
 		{method_name: 'Hokkaido', name: '九州', prefectures: ['福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県']},
 		{method_name: 'Hokkaido', name: '沖縄', prefectures: ['沖縄県']},
 	];
-	const frontendOrigin = req.protocol + '://' + req.get('host');
+	const frontendOrigin = FRONTEND_ORIGIN || (req.protocol + '://' + req.get('host'));
 	var total_amount = 0;
 	var shipping_fee = 0;
 
@@ -1857,9 +1857,6 @@ app.get('*', (req, res) => {
 	res.sendFile(path.join(__dirname,'../frontend/build/index.html'));
 });
 
-// app.listen(4242, () => {
-// 	console.log('Running on port 4242');
-// });
 
 app.listen(PORT, () => {
 	console.log('Running on port ' + PORT);
